@@ -1,5 +1,8 @@
 <?php
 
+include_once "formatter.php";
+include_once "utils.php";
+
 function object($array=array())
 {
 	$obj = ((object) NULL);
@@ -16,25 +19,26 @@ function object($array=array())
 
 function debugHostAllow()
 {
-    $allowedHosts = array(
-        '127.0.0.1',
-        '127.0.1.1',
-        '10.0.2.2',
-        '10.10.5.103',
-        '10.10.5.116',
-        '10.10.101.1',
-	    '10.10.5.49', //lukasz.lan.ifresearch.org
-	    '10.10.5.40', //WinXP with IE7
-	    '10.10.5.50', //Pejotr
-	    '192.168.56.1', //VBox host
-	    '10.5.0.115', //lukasz home local
-	    '10.5.10.135', //lukasz home local2
-	    '89.191.162.220', //Lukasz home
-        '87.206.45.163',
-        '84.10.100.73',
-        '89.69.132.33'
-    );
-    return ((isCLI() && APPLICATION_ENV !== 'production')) || (!isCLI() && isset($_SERVER['REMOTE_ADDR']) && in_array($_SERVER['REMOTE_ADDR'], $allowedHosts));
+	$allowedHosts = array(
+		'127.0.0.1',
+		'127.0.1.1',
+		'10.0.2.2',
+		'10.10.5.103',
+		'10.10.5.116',
+		'10.10.101.1',
+		'10.10.5.49',     //lukasz.lan.ifresearch.org
+		'10.10.5.40',     //WinXP with IE7
+		'10.10.5.50',     //Pejotr
+		'192.168.56.1',   //VBox host
+		'10.5.0.115',     //lukasz home local
+		'10.5.10.135',    //lukasz home local2
+		'89.191.162.220', //Lukasz home
+		'87.206.45.163',
+		'84.10.100.73',
+		'89.69.132.33'
+	);
+	return ((isCLI() && APPLICATION_ENV !== 'production'))
+			|| (!isCLI() && isset($_SERVER['REMOTE_ADDR']) && in_array($_SERVER['REMOTE_ADDR'], $allowedHosts));
 }
 
 function ifrShowDebugOutput()
