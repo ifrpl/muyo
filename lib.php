@@ -1,8 +1,5 @@
 <?php
 
-include_once "formatter.php";
-include_once "utils.php";
-
 function object($array=array())
 {
 	$obj = ((object) NULL);
