@@ -24,6 +24,7 @@ function debugHostAllow()
 		'10.10.5.116',
 		'10.10.101.1',
 		'10.10.5.49',     //lukasz.lan.ifresearch.org
+		'10.10.5.117',
 		'10.10.5.40',     //WinXP with IE7
 		'10.10.5.50',     //Pejotr
 		'192.168.56.1',   //VBox host
