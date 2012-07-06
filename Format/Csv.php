@@ -1,9 +1,9 @@
 <?php
 
-class IFR_Main_Format_Csv
+class IFR_Main_Format_Csv implements IFR_Main_Format
 {
-	public $extension = 'csv';
-	public $mime = 'text/csv';
+	private $extension = 'csv';
+	private $mime = 'text/csv';
 
 	private $file;
 
@@ -14,10 +14,8 @@ class IFR_Main_Format_Csv
 
 	public function __destruct()
 	{
-		if(is_resource($this->file))
-		{
+		if ( is_resource($this->file) )
 			fclose($this->file);
-		}
 	}
 
 	/**
@@ -45,6 +43,41 @@ class IFR_Main_Format_Csv
 
 		$ret = stream_get_contents($this->file, -1, 0);
 
+		$this->__destruct();
+		$this->__construct();
+
 		return $ret;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getExtension()
+	{
+		return $this->extension;
+	}
+
+	/**
+	 * @param string $value
+	 */
+	public function setExtension($value)
+	{
+		$this->extension = $value;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getMime()
+	{
+		return $this->mime;
+	}
+
+	/**
+	 * @param string $value
+	 */
+	public function setMime($value)
+	{
+		$this->mime = $value;
 	}
 }
