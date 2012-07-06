@@ -14,7 +14,10 @@ class IFR_Main_Format_Csv
 
 	public function __destruct()
 	{
-		fclose($this->file);
+		if(is_resource($this->file))
+		{
+			fclose($this->file);
+		}
 	}
 
 	/**
@@ -41,9 +44,6 @@ class IFR_Main_Format_Csv
 		fflush($this->file);
 
 		$ret = stream_get_contents($this->file, -1, 0);
-
-		$this->__destruct();
-		$this->__construct();
 
 		return $ret;
 	}
