@@ -23,7 +23,7 @@ class IFR_Main_Format_Csv implements IFR_Main_Format
 	 */
 	public function addHeaders(array $headers)
 	{
-		fputcsv($this->file, $headers);
+		fputcsv($this->file, $headers, ';');
 	}
 
 	/**
@@ -31,7 +31,7 @@ class IFR_Main_Format_Csv implements IFR_Main_Format
 	 */
 	public function addRow(array $row)
 	{
-		fputcsv($this->file, $row);
+		fputcsv($this->file, $row, ';');
 	}
 
 	/**
