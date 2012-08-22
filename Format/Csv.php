@@ -1,11 +1,9 @@
 <?php
 
-class IFR_Main_Format_Csv implements IFR_Main_Format
+class IFR_Main_Format_Csv extends IFR_Main_Format
 {
-	private $extension = 'csv';
-	private $mime = 'text/csv';
-
 	private $file;
+	public $separator = ';';
 
 	public function __construct()
 	{
@@ -18,20 +16,24 @@ class IFR_Main_Format_Csv implements IFR_Main_Format
 			fclose($this->file);
 	}
 
-	/**
-	 * @param array $headers
-	 */
-	public function addHeaders(array $headers)
+	protected function getDefaultExtension()
 	{
-		fputcsv($this->file, $headers, ';');
+		return 'csv';
 	}
 
-	/**
-	 * @param array $row
-	 */
+	protected function getDefaultMime()
+	{
+		return 'text/csv';
+	}
+
+	public function addHeaders(array $headers)
+	{
+		fputcsv($this->file, $headers, $this->separator);
+	}
+
 	public function addRow(array $row)
 	{
-		fputcsv($this->file, $row, ';');
+		fputcsv($this->file, $row, $this->separator);
 	}
 
 	/**
@@ -47,37 +49,5 @@ class IFR_Main_Format_Csv implements IFR_Main_Format
 		$this->__construct();
 
 		return $ret;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getExtension()
-	{
-		return $this->extension;
-	}
-
-	/**
-	 * @param string $value
-	 */
-	public function setExtension($value)
-	{
-		$this->extension = $value;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getMime()
-	{
-		return $this->mime;
-	}
-
-	/**
-	 * @param string $value
-	 */
-	public function setMime($value)
-	{
-		$this->mime = $value;
 	}
 }
