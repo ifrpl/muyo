@@ -3,6 +3,7 @@
 class IFR_Main_Format_Csv extends IFR_Main_Format
 {
 	private $file;
+	public $separator = ';';
 
 	public function __construct()
 	{
@@ -27,12 +28,12 @@ class IFR_Main_Format_Csv extends IFR_Main_Format
 
 	public function addHeaders(array $headers)
 	{
-		fputcsv($this->file, $headers);
+		fputcsv($this->file, $headers, $this->separator);
 	}
 
 	public function addRow(array $row)
 	{
-		fputcsv($this->file, $row);
+		fputcsv($this->file, $row, $this->separator);
 	}
 
 	/**
