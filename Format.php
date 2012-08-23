@@ -112,9 +112,14 @@ abstract class IFR_Main_Format
 	public static function getAll()
 	{
 		$ret = array();
-		foreach( array(new IFR_Main_Format_Csv, new IFR_Main_Format_Xls) as $format ) //FIXME: auto
+
+		foreach( glob(__DIR__ . '/Format/*.php') as $format )
 		{ /** @var IFR_Main_Format $format */
-			$ret[get_class($format)] = $format;
+
+			$format = str_replace(array(__DIR__ . '/Format/', '.php'), '', $format);
+			$class = "IFR_Main_Format_{$format}";
+
+			$ret[$class] = new $class;
 		}
 		return $ret;
 	}
