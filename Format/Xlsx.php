@@ -23,7 +23,10 @@ class IFR_Main_Format_Xlsx extends IFR_Main_Format
 	    $cacheSettings = array(
 		    'dir'  => APPLICATION_PATH . '/../data/tmp/'
 	    );
-	    PHPExcel_Settings::setCacheStorageMethod($cacheMethod,$cacheSettings);
+	    if(!PHPExcel_Settings::setCacheStorageMethod($cacheMethod,$cacheSettings))
+	    {
+		    throw new Exception('Problem with creating cache');
+	    }
 
 		$objPHPExcel = new PHPExcel();
 		$objPHPExcel->getProperties()->setTitle( $this->getTitle() );
