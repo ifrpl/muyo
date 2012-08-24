@@ -8,7 +8,10 @@ abstract class IFR_Main_Format
 	private $extension;
 	private $mime;
 
-
+	protected $_cache_handler;
+	protected $_cache_dir;
+	protected $_cache_objects;
+	protected $_cache_ptr;
 
 	/**
 	 * @abstract
@@ -28,6 +31,32 @@ abstract class IFR_Main_Format
 	 */
 	abstract protected function getDefaultMime();
 
+	/**
+	 * @param string $dir
+	 *
+	 * @return IFR_Main_Format
+	 */
+	public function setCacheDir($dir)
+	{
+		$this->_cache_dir = $dir;
+		return $this;
+	}
+
+	public function getCacheHandler()
+	{
+		if(!$this->_cache_handler)
+		{
+			if(is_null($this->_cache_dir))
+			{
+				$this->_cache_dir = APPLICATION_PATH . '/../data/tmp/';
+			}
+
+			$file = $this->_cache_dir . uniqid('cache_format');
+			file_put_contents($file, '');
+			$this->_cache_handler = fopen($file, 'w+');
+		}
+		return $this->_cache_handler;
+	}
 
 	/**
 	 * @return string
@@ -88,7 +117,36 @@ abstract class IFR_Main_Format
 	 */
 	public function addRow(array $row)
 	{
-		$this->rows []= $row;
+		fseek($this->getCacheHandler(), 0, SEEK_END);
+		$offset = ftell($this->getCacheHandler());
+		fwrite($this->getCacheHandler(), serialize($row));
+
+		$this->_cache_objects[$this->_cache_ptr] = array(
+			'ptr' => $offset,
+			'size' => ftell($this->getCacheHandler()) - $offset
+		);
+
+		$this->_cache_ptr++;
+	}
+
+	public function readRow()
+	{
+		if(!isset($this->_cache_objects[$this->_cache_ptr]))
+		{
+			return false;
+		}
+
+		$obj = $this->_cache_objects[$this->_cache_ptr];
+
+		$this->_cache_ptr++;
+
+		fseek($this->getCacheHandler(), $obj['ptr']);
+		return unserialize( fread($this->getCacheHandler(), $obj['size']) );
+	}
+
+	public function resetPointer()
+	{
+		$this->_cache_ptr = 0;
 	}
 
 	/**

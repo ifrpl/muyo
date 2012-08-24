@@ -33,8 +33,25 @@ class IFR_Main_Format_Xlsx extends IFR_Main_Format
 		$objPHPExcel->getProperties()->setTitle( $this->getTitle() );
 
 		$objPHPExcel->setActiveSheetIndex(0);
-		$objPHPExcel->getActiveSheet()->fromArray(__::flatten($this->headers), null, 'A1');
-		$objPHPExcel->getActiveSheet()->fromArray($this->rows, null, 'A2');
+		$sheet = $objPHPExcel->getActiveSheet();
+
+		$sheet->fromArray(__::flatten($this->headers), null, 'A1');
+
+		$rowIndex = 2;
+		while($row = $this->readRow())
+		{
+			$colIndex = 0;
+			foreach($row as $cellValue)
+			{
+				if ($cellValue != null)
+				{
+					$columnLetter = PHPExcel_Cell::stringFromColumnIndex($colIndex);
+					$sheet->SetCellValue($columnLetter.$rowIndex, $cellValue);
+				}
+				$colIndex++;
+			}
+			$rowIndex++;
+		}
 
 		$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
 
