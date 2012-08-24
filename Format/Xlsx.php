@@ -16,6 +16,7 @@ class IFR_Main_Format_Xlsx extends IFR_Main_Format
 
 	/**
 	 * @return string file contents
+	 * @throws Exception
 	 */
 	public function getData()
 	{
