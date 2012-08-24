@@ -8,6 +8,7 @@ abstract class IFR_Main_Format
 	private $extension;
 	private $mime;
 
+	protected $_cache_filename;
 	protected $_cache_handler;
 	protected $_cache_dir;
 	protected $_cache_objects;
@@ -51,9 +52,9 @@ abstract class IFR_Main_Format
 				$this->_cache_dir = APPLICATION_PATH . '/../data/tmp/';
 			}
 
-			$file = $this->_cache_dir . uniqid('cache_format');
-			file_put_contents($file, '');
-			$this->_cache_handler = fopen($file, 'w+');
+			$this->_cache_filename = $this->_cache_dir . uniqid('cache_format');
+			file_put_contents($this->_cache_filename, '');
+			$this->_cache_handler = fopen($this->_cache_filename, 'w+');
 		}
 		return $this->_cache_handler;
 	}
@@ -185,5 +186,15 @@ abstract class IFR_Main_Format
 	public static function getDefault()
 	{
 		return new IFR_Main_Format_Csv();
+	}
+
+	public function __destruct()
+	{
+		if (!is_null($this->_cache_handler))
+		{
+			fclose($this->_cache_handler);
+			unlink($this->_cache_filename);
+		}
+		$this->_cache_handler = null;
 	}
 }
