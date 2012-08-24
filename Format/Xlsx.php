@@ -19,9 +19,9 @@ class IFR_Main_Format_Xlsx extends IFR_Main_Format
 	 */
 	public function getData()
 	{
-		$cacheMethod = PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp;
+		$cacheMethod = PHPExcel_CachedObjectStorageFactory::cache_to_discISAM;
 	    $cacheSettings = array(
-		    'memoryCacheSize'  => '10MB'
+		    'dir'  => APPLICATION_PATH . '/../data/tmp/'
 	    );
 	    PHPExcel_Settings::setCacheStorageMethod($cacheMethod,$cacheSettings);
 
