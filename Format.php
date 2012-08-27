@@ -114,6 +114,10 @@ abstract class IFR_Main_Format
 		{ /** @var IFR_Main_Format $format */
 
 			$format = str_replace(array(__DIR__ . '/Format/', '.php'), '', $format);
+			if(strtolower($format) == 'xlsx')
+			{
+				continue;
+			}
 			$class = "IFR_Main_Format_{$format}";
 
 			$ret[$class] = new $class;
