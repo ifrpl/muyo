@@ -336,3 +336,25 @@ function ifr_path_rel($from, $to, $to_as_root = false)
 
 	return $ret;
 }
+
+assert_options(ASSERT_QUIET_EVAL, true);
+assert_options(ASSERT_WARNING, false);
+
+function ifr_assert($assertion, $message = null, $level = Zend_Log::WARN)
+{
+	if(!assert($assertion))
+	{
+		if(!$message)
+		{
+			$message = "Assertion of '{$assertion}' is failed";
+		}
+
+		$exc = new Exception($message);
+		if(class_exists('Zend_Controller_Action_HelperBroker'))
+		{
+			Zend_Controller_Action_HelperBroker::getStaticHelper('log')->log($exc, $level);
+		}
+
+		throw $exc;
+	}
+}
