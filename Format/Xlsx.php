@@ -32,7 +32,7 @@ class IFR_Main_Format_Xlsx extends IFR_Main_Format
 	public function addHeaders(array $headers)
 	{
 		$this->phpexcelObj->setActiveSheetIndex(0);
-		$this->phpexcelObj->getActiveSheet()->fromArray(__::flatten($headers), null, 'A1');
+		$this->phpexcelObj->getActiveSheet()->fromArray(__($headers)->flatten(), null, 'A1');
 		$this->rowIndex++;
 	}
 

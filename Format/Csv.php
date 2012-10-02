@@ -48,6 +48,9 @@ class IFR_Main_Format_Csv extends IFR_Main_Format
 		$this->__destruct();
 		$this->__construct();
 
+		// HACK for MS Excel
+		$ret =  chr(255).chr(254).iconv('UTF-8', 'UTF-16LE', $ret);
+
 		return $ret;
 	}
 }
