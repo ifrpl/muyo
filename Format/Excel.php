@@ -8,9 +8,22 @@ class IFR_Main_Format_Excel extends IFR_Main_Format
 	protected $phpexcelObj;
 	protected $rowIndex = 1;
 
-	public function __construct()
+	public function __construct($options = null)
 	{
-		if(!PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_to_discISAM))
+
+		$cache_dir = null;
+		if(is_array($options))
+		{
+			if(isset($options['cache_dir']))
+			{
+				ifr_assert(file_exists($options['cache_dir']), 'Cache dir not exists');
+				$cache_dir = $options['cache_dir'];
+			}
+		}
+
+		if(!PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_to_discISAM, array(
+			'dir' => $cache_dir
+		)))
 	    {
 		    throw new Exception('Problem with creating cache');
 	    }
@@ -32,7 +45,7 @@ class IFR_Main_Format_Excel extends IFR_Main_Format
 	public function addHeaders(array $headers)
 	{
 		$this->phpexcelObj->setActiveSheetIndex(0);
-		$this->phpexcelObj->getActiveSheet()->fromArray(__::flatten($headers), null, 'A1');
+		$this->phpexcelObj->getActiveSheet()->fromArray(__($headers)->flatten(), null, 'A1');
 		$this->rowIndex++;
 	}
 
