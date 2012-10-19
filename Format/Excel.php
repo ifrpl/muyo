@@ -24,9 +24,9 @@ class IFR_Main_Format_Excel extends IFR_Main_Format
 		if(!PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_to_discISAM, array(
 			'dir' => $cache_dir
 		)))
-	    {
-		    throw new Exception('Problem with creating cache');
-	    }
+		{
+			throw new Exception('Problem with creating cache');
+		}
 
 		$this->phpexcelObj = new PHPExcel();
 		$this->phpexcelObj->getProperties()->setTitle( $this->getTitle() );

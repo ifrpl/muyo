@@ -10,10 +10,10 @@ class IFR_Main_Format_Xlsx extends IFR_Main_Format
 
 	public function __construct()
 	{
-			if(!PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_to_discISAM))
-		    {
-			    throw new Exception('Problem with creating cache');
-		    }
+		if(!PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_to_discISAM))
+		{
+			throw new Exception('Problem with creating cache');
+		}
 
 		$this->phpexcelObj = new PHPExcel();
 		$this->phpexcelObj->getProperties()->setTitle( $this->getTitle() );
