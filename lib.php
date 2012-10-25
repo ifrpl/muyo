@@ -358,3 +358,29 @@ function ifr_assert($assertion, $message = null, $level = Zend_Log::WARN)
 		throw $exc;
 	}
 }
+
+/**
+ * @param array $target
+ * @param string|int|float $target_key
+ * @param array $to_insert
+ */
+function array_insert_before(&$target,$target_key,$to_insert)
+{
+	$tmp = array();
+	foreach($target as $k=>$v)
+	{
+		$tmp[$k] = $v;
+		unset($target[$k]);
+	}
+	foreach($tmp as $k=>$v)
+	{
+		if( $k === $target_key )
+		{
+			foreach( $to_insert as $ik=>$iv )
+			{
+				$target[$ik] = $iv;
+			}
+		}
+		$target[$k] = $v;
+	}
+}

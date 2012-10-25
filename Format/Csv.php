@@ -28,12 +28,12 @@ class IFR_Main_Format_Csv extends IFR_Main_Format
 
 	public function addHeaders(array $headers)
 	{
-		fputcsv($this->file, $headers, $this->separator);
+		fputcsv($this->file, __($headers)->map(array($this,'map_cell')), $this->separator);
 	}
 
 	public function addRow(array $row)
 	{
-		fputcsv($this->file, $row, $this->separator);
+		fputcsv($this->file, __($row)->map(array($this,'map_cell')), $this->separator);
 	}
 
 	/**
@@ -52,5 +52,20 @@ class IFR_Main_Format_Csv extends IFR_Main_Format
 		$ret =  chr(255).chr(254).iconv('UTF-8', 'UTF-16LE', $ret);
 
 		return $ret;
+	}
+
+	/**
+	 * Note: Please make sure it's unused before removal.
+	 * @param $cell
+	 *
+	 * @return string
+	 */
+	public function map_cell($cell)
+	{
+		if( $cell === false )
+			return '0';
+		if( $cell === null )
+			return 'N/A';
+		return $cell;
 	}
 }
