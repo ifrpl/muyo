@@ -204,7 +204,11 @@ function getClientIP()
     return $ip;
 }
 
-
+/**
+ * @param string $dir
+ *
+ * @return array
+ */
 function ifr_dir_flatten($dir)
 {
 	$ret = array();
@@ -265,6 +269,13 @@ function ifr_escaped($subject, $by = null)
 	return $ret;
 }
 
+/**
+ * @param      $from
+ * @param      $to
+ * @param bool $to_as_root
+ *
+ * @return string
+ */
 function ifr_path_rel($from, $to, $to_as_root = false)
 {
 	$from = realpath($from);
@@ -304,19 +315,21 @@ function ifr_path_rel($from, $to, $to_as_root = false)
 	$to = substr($to, $i);
 	$to_cnt = $to_cnt - $i;
 
-	// move out from `to`
-	for ( $i = $to_cnt-1; $i >= 0; $i-- )
+	for ( $i = 1; $i < $to_cnt; $i++ )
 	{
-		if ( $to[$i] === DIRECTORY_SEPARATOR )
+		for ( $j = $i+2; $j < $to_cnt; $j++ )
 		{
-			if ( ifr_escaped(substr($to, 0, $i+1)) )
-			{ // ignore escape character as well
-				$i--;
-			}
-			else
+			if ( $to[$j] === DIRECTORY_SEPARATOR )
 			{
-				$to = substr($to, 0, $i).'..'.substr($to, $i, $to_cnt);
-				$to_cnt += 2;
+				$to = substr($to, 0, $i-1).'..'.substr($to, $j, $to_cnt);
+				$to_cnt -= $j-$i+1;
+				$to_cnt +=2;
+				$i += 2;
+				break;
+			}
+			else if ( $j === $to_cnt-1 )
+			{
+				$to = substr($to, 0, $i-1);
 			}
 		}
 	}
@@ -340,6 +353,13 @@ function ifr_path_rel($from, $to, $to_as_root = false)
 assert_options(ASSERT_QUIET_EVAL, true);
 assert_options(ASSERT_WARNING, false);
 
+/**
+ * @param      $assertion
+ * @param null $message
+ * @param int  $level
+ *
+ * @throws Exception
+ */
 function ifr_assert($assertion, $message = null, $level = Zend_Log::WARN)
 {
 	if(!assert($assertion))
