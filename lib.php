@@ -16,27 +16,36 @@ function object($array=array())
 
 function debugHostAllow()
 {
+	$allowedSubNet = array(
+		'10.10.',
+		'192.168.'
+	);
+
 	$allowedHosts = array(
 		'127.0.0.1',
 		'127.0.1.1',
 		'10.0.2.2',
-		'10.10.5.103',
-		'10.10.5.116',
-		'10.10.101.1',
-		'10.10.5.49',     //lukasz.lan.ifresearch.org
-		'10.10.5.117',
-		'10.10.5.40',     //WinXP with IE7
-		'10.10.5.50',     //Pejotr
-		'192.168.56.1',   //VBox host
-		'10.5.0.115',     //lukasz home local
-		'10.5.10.135',    //lukasz home local2
 		'89.191.162.220', //Lukasz home
 		'87.206.45.163',
 		'84.10.100.73',
-		'89.69.132.33'
+		'89.69.131.15' //IFResearch Chello
 	);
-	return ((isCLI() && APPLICATION_ENV !== 'production'))
-			|| (!isCLI() && isset($_SERVER['REMOTE_ADDR']) && in_array($_SERVER['REMOTE_ADDR'], $allowedHosts));
+
+	if(((isCLI() && APPLICATION_ENV !== 'production')) || (!isCLI() && isset($_SERVER['REMOTE_ADDR'])))
+	{
+		foreach($allowedSubNet as $subNet)
+		{
+			if(strpos($_SERVER['REMOTE_ADDR'], $subNet) === 0)
+			{
+				return true;
+			}
+		}
+		if(in_array($_SERVER['REMOTE_ADDR'], $allowedHosts))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 function ifrShowDebugOutput()
