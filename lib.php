@@ -137,31 +137,40 @@ function getShellTop()
 	return shell_exec("top -bcs -n 2 -p ".getmypid());
 }
 
-function str_truncate($string, $length = 80, $etc = '...',$break_words = false, $middle = false, $nobr = true)
+function str_truncate($string, $length = 80, $etc = '...', $break_words = false, $middle = false, $nobr = true)
 {
-    if ($length == 0)
-        return '';
+	if($length == 0)
+	{
+		return '';
+	}
 
-    $string = str_replace('&oacute;',"�",$string);
-   	if($nobr)
-    {
-     	$string = preg_replace('/<br[\s]*?\/*?>/', ' ', $string);
-    }
+	$string = str_replace('&oacute;', "�", $string);
+	if($nobr)
+	{
+		$string = preg_replace('/<br[\s]*?\/*?>/', ' ', $string);
+	}
 
-    if (strlen($string) > $length) {
-        $length -= min($length, strlen($etc));
-        if (!$break_words && !$middle) {
-            $string = preg_replace('/\s+?(\S+)?$/', '', substr($string, 0, $length+1));
-        }
-        if(!$middle) {
-        	$string = substr($string, 0, $length);
-        	return substr($string, 0, strrpos($string,' ')) . $etc;
-        } else {
-            return substr($string, 0, $length/2) . $etc . substr($string, -$length/2);
-        }
-    } else {
-        return $string;
-    }
+	if(strlen($string) > $length)
+	{
+		$length -= min($length, strlen($etc));
+		if(!$break_words && !$middle)
+		{
+			$string = preg_replace('/\s+?(\S+)?$/', '', substr($string, 0, $length + 1));
+		}
+		if(!$middle)
+		{
+			$string = substr($string, 0, $length);
+			return substr($string, 0, strrpos($string, ' ')) . $etc;
+		}
+		else
+		{
+			return substr($string, 0, $length / 2) . $etc . substr($string, -$length / 2);
+		}
+	}
+	else
+	{
+		return $string;
+	}
 }
 
 function is_iterable($obj,$interface=false)
@@ -403,4 +412,12 @@ function array_insert_before(&$target,$target_key,$to_insert)
 		}
 		$target[$k] = $v;
 	}
+}
+
+/**
+ * @return string http/https
+ */
+function ifr_protocol()
+{
+	return $_SERVER['HTTPS'] ? 'https' : 'http';
 }
