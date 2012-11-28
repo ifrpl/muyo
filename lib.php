@@ -31,7 +31,11 @@ function debugHostAllow()
 		'89.69.131.15' //IFResearch Chello
 	);
 
-	if(((isCLI() && APPLICATION_ENV !== 'production')) || (!isCLI() && isset($_SERVER['REMOTE_ADDR'])))
+	if((isCLI() && APPLICATION_ENV !== 'production'))
+	{
+		return true;
+	}
+	elseif(!isCLI() && isset($_SERVER['REMOTE_ADDR']))
 	{
 		foreach($allowedSubNet as $subNet)
 		{
