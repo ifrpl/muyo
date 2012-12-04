@@ -424,9 +424,23 @@ function array_insert_before(&$target,$target_key,$to_insert)
 }
 
 /**
- * @return string http/https
+ * @return string
  */
 function ifr_protocol()
 {
-	return $_SERVER['HTTPS'] ? 'https' : 'http';
+	return isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] ? 'https' : 'http';
+}
+
+/**
+ * @param Zend_Form_Element|Zend_Form $target
+ * @param string                      $class
+ */
+function ifr_add_class($target, $class)
+{
+	$attrib  = $target->getAttrib('class');
+	$classes = explode(' ', $attrib);
+	if( false === array_search($class, $classes) )
+	{
+		$target->setAttrib('class', $attrib . ' ' . $class);
+	}
 }
