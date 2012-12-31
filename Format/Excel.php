@@ -1,6 +1,6 @@
 <?php
 
-include 'IFR/PHPexcel/Classes/PHPExcel/Classes/PHPExcel.php';
+require_once ROOT_PATH.'/library/IFR/PHPexcel/Classes/PHPExcel/Classes/PHPExcel.php';
 
 class IFR_Main_Format_Excel extends IFR_Main_Format
 {
