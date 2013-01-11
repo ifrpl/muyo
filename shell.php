@@ -1,7 +1,5 @@
 <?php
 
-namespace shell;
-
 /**
  * @return string
  */

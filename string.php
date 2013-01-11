@@ -1,7 +1,5 @@
 <?php
 
-namespace string;
-
 /**
  * @param string $haystack
  * @param string $needle
@@ -79,6 +77,23 @@ function str_truncate($string, $length = 80, $etc = '...', $break_words = false,
 	{
 		return $string;
 	}
+}
+
+/**
+ * @param string $string
+ * @param int $counter
+ * @param string $character
+ *
+ * @return string
+ */
+function str_indent($string, $counter, $character = "\t")
+{
+	$pre = '';
+	for($i = 0; $i < $counter; $i++)
+	{
+		$pre .= $character;
+	}
+	return implode(PHP_EOL, array_map(function($str) use ($pre) { return $pre.$str; },explode(PHP_EOL,$string)));
 }
 
 /**

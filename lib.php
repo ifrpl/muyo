@@ -6,15 +6,15 @@ defined('APPLICATION_ENV') || define('APPLICATION_ENV', 'development');
 
 defined('ROOT_PATH') || define('ROOT_PATH', realpath(dirname(__FILE__) . '/'));
 
-use arr;
-use cli;
-use database;
-use debug;
-use file_system;
-use locale;
-use misc;
-use net;
-use object;
-use shell;
-use string;
-use zend;
+require_once "arr.php";
+require_once "cli.php";
+require_once "database.php";
+require_once "debug.php";
+require_once "file_system.php";
+require_once "locale.php";
+require_once "misc.php";
+require_once "net.php";
+require_once "object.php";
+require_once "shell.php";
+require_once "string.php";
+require_once "zend.php";

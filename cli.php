@@ -1,7 +1,5 @@
 <?php
 
-namespace cli;
-
 /**
  * @param array $argv
  * @param array $inputs

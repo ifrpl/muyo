@@ -1,7 +1,5 @@
 <?php
 
-namespace database;
-
 /**
  * @param $sqlQuery
  * @param $pdoObject

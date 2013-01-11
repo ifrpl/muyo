@@ -1,7 +1,5 @@
 <?php
 
-namespace file_system;
-
 /**
  * @param string $dir
  *

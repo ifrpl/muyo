@@ -1,7 +1,5 @@
 <?php
 
-namespace arr;
-
 /**
  * @param array $target
  * @param string|int|float $target_key
@@ -73,6 +71,7 @@ function array_qsort(&$array, $column=0, $order=SORT_ASC)
  */
 function array_merge_recursive_overwrite($arr1, $arr2)
 {
+	assert(is_array($arr1) && is_array($arr2));
 	foreach($arr2 as $key=>$value)
 	{
 		if(array_key_exists($key, $arr1) && is_array($value))

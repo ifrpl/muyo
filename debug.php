@@ -1,7 +1,5 @@
 <?php
 
-namespace debug;
-
 /**
  * @return bool
  */
@@ -87,148 +85,6 @@ function printr($tab)
 	{
 		echo "\n";
 	}
-
-	/**
-	 * @param bool $paramName
-	 * @param bool $default
-	 *
-	 * @return array|bool
-	 */
-	function request($paramName=false,$default=false)
-	{
-		$params = requestGet();
-
-		foreach($_POST as $key=>$value)
-		{
-			$params[$key]=$value;
-		}
-
-		return $paramName?(isset($params[$paramName])?$params[$paramName]:$default):$params;
-	}
-
-	/**
-	 * @param bool $paramName
-	 * @param bool $default
-	 *
-	 * @return array|bool
-	 */
-	function requestGet($paramName=false,$default=false)
-	{
-		global $config;
-		//        $request=$_SERVER["REQUEST_URI"];
-
-		$request = isset($_SERVER['PATH_INFO'])?$_SERVER['PATH_INFO']:(isset($_SERVER['REDIRECT_URL'])?$_SERVER['REDIRECT_URL']:$_SERVER["REQUEST_URI"]);
-		$request .= isset($_SERVER['QUERY_STRING'])?'?'.$_SERVER['QUERY_STRING']:'';
-
-		if(isset($config->nginx))
-		{
-			if($config->nginx == 1)
-			{
-				$request = urldecode($request);
-			}
-		}
-
-		if(isset($config->request))
-		{
-			$names = (array)$config->request;
-		}
-		else
-		{
-			$names = array();
-		}
-
-		$params=array();
-
-		if(strpos($request,'?',0)!==false)
-		{
-			list($path,$paramsStr)=explode('?',$request);
-		}
-		else
-		{
-			$path = $request;
-			$paramsStr='';
-		}
-		$path = explode('/',trim($path,'/'));
-
-		while($node = array_shift($path))
-		{
-			if($node!='')
-			{
-				if($name = array_shift($names))
-				{
-					$params[$name]=$node;
-				}
-				else
-				{
-					$value = array_shift($path);
-					$params[$node] = $value;
-				}
-			}
-		}
-
-		if($paramsStr!='')
-		{
-			$paramsArray=explode('&',$paramsStr);
-
-			foreach($paramsArray as $param)
-			{
-				if(strpos($request,'=',0)!==false)
-				{
-					list($key,$value)=explode('=',$param);
-				}
-				else
-				{
-					$key = $param;
-					$value = true;
-				}
-
-				$params[$key]=$value;
-			}
-		}
-
-		return $paramName?(isset($params[$paramName])?$params[$paramName]:$default):$params;
-	}
-
-	/**
-	 * @param array $params
-	 * @param array $mod
-	 *
-	 * @return string
-	 */
-	function url($params=array(),$mod=array())
-	{
-		global $config;
-
-		if(isset($GLOBALS['params']))
-		{
-			$names = $GLOBALS['params'];
-		}
-		else
-		{
-			$names = array();
-		}
-
-		$chunks = array();
-
-		foreach($mod as $key=>$value)
-		{
-			$params[$key]=$value;
-		}
-
-		foreach($params as $paramName=>$paramValue)
-		{
-			if($paramValue!== null)
-			{
-				if(array_search($paramName,$names,true)===false)
-				{
-					$chunks[] = $paramName;
-				}
-				$chunks[] = $paramValue;
-			}
-		}
-
-		return '/'.join('/',$chunks).'/';
-	}
 }
 
 /**
@@ -243,6 +99,7 @@ function printrlog($tab)
 	$msg .= "\n";
 
 	file_put_contents(ROOT_PATH.'/tmp/log',$msg,FILE_APPEND);
+	writeln($tab);
 }
 
 /**
@@ -364,6 +221,7 @@ function var_dump_human_compact($var, $key = null)
 }
 
 /**
+ * @param int $ignore_depth stack frames to ignore
  * @param null|mixed $backtrace backtrace array to print
  */
 function backtrace_print($ignore_depth = 0, $backtrace = null)
@@ -419,37 +277,34 @@ function backtrace_string($ignore_depth = 0, $backtrace = null)
 }
 
 /**
- * @param      $tab
- * @param bool $wrapped
+ * @param mixed $tab
+ * @param mixed ...
  */
-function debug($tab, $wrapped = false)
+function debug($tab)
 {
 	if(!ifrShowDebugOutput()) return;
 
-	require_once('Zend/Debug.php');
-	$dbg = debug_backtrace();
-	echo "<div style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>";
-	$f = "{$dbg[0]['file']}:{$dbg[0]['line']}";
-	echo "<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'><a href='http://localhost:8091?message=$f'>$f</a></div>";
-	Zend_Debug::dump($tab);
-	echo "</div>";
-	exit();
-
-	write("\n======= Debug Break =======\n");
-	$traceIn = backtrace(1);
-	$traceOut = array();
-	foreach ( $traceIn as $val )
+	$trace = backtrace(1);
+	if( !isCLI() )
 	{
-		if ( isset($val['args']) )
-		{
-			unset($val['args']);
-		}
-		$traceOut []= $val;
+		$f = "{$trace[0]['file']}:{$trace[0]['line']}";
+
+		write("<div style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>");
+		write("<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'><a href='http://localhost:8091?message=$f'>$f</a></div>");
+		write("<hr>");
+		backtrace_print(0, $trace);
+		write("<hr>");
+		write(call_user_func_array('var_dump_human_full', func_get_args()));
+		write("</div>");
 	}
-	backtrace_print(0, $traceOut);
-	write("\n===== Debug  Variable =====\n");
-	write(call_user_func_array('var_dump_human_full', func_get_args()));
-	write("\n======= Exiting... ========\n");
+	else
+	{
+		write("\n======= Debug Break =======\n");
+		backtrace_print(0, $trace);
+		write("\n===== Debug  Variable =====\n");
+		write(call_user_func_array('var_dump_human_full', func_get_args()));
+		write("\n======= Exiting... ========\n");
+	}
 	exit();
 }
 
@@ -473,129 +328,185 @@ if(!function_exists('get_call_stack'))
 	}
 }
 
-//TODO: [application_mode => handler]
 /**
- * @param callable|null $handler set assertion handler to callable
- * @param bool $update true if want to change handler, false if refreshing debug mode
+ * @todo APPLICATION_ENV => handler
+ * @param callable $handler assertion handler to be set
  */
-function debug_assert_handler($handler = null, $update = true)
+function debug_assert_handler($handler = null)
 {
-	global $debug_mode;
-	static $assert_handler;
-	if( $update )
-	{
-		$assert_handler = array(
-			true => is_callable($handler) ? $handler :
-				function( $script, $line, $message )
-				{
-					writeln("Assertion Failed:");
-					writeln("$script:$line $message\n");
+	$default_handlers = [
+		'development' =>
+			function( $script, $line, $message )
+			{
+				writeln("Assertion Failed:");
+				writeln("$script:$line $message\n");
 
-					writeln("Backtrace:");
-					backtrace_print(1);
-				},
-			false => is_callable($handler) ? $handler :
-				function( $script, $line, $message )
-				{
-					//
-				}
-		);
+				writeln("Backtrace:");
+				backtrace_print(1);
+			},
+		'production' =>
+			function( $script, $line, $message )
+			{
+				//
+			}
+	];
+	if( null == $handler )
+	{
+		$handler = $default_handlers[APPLICATION_ENV];
 	}
-	assert_options(ASSERT_CALLBACK, $assert_handler[$debug_mode]);
-	assert_options(ASSERT_BAIL, $debug_mode);
-	assert_options(ASSERT_QUIET_EVAL, $debug_mode);
-	assert_options(ASSERT_ACTIVE, $debug_mode);
-	assert_options(ASSERT_WARNING, !$debug_mode);
+	assert_options(ASSERT_CALLBACK, $handler);
+	assert_options(ASSERT_BAIL, APPLICATION_ENV!='production');
+	assert_options(ASSERT_QUIET_EVAL, APPLICATION_ENV!='production');
+	assert_options(ASSERT_ACTIVE, APPLICATION_ENV!='production');
+	assert_options(ASSERT_WARNING, APPLICATION_ENV=='production');
 }
 
 /**
- * @param callable|null $handler set error handler to callable
- * @param bool $update true if want to change handler, false if refreshing debug mode
+ * @todo APPLICATION_ENV => handler
+ * @param callable|null $handler_map set error handler to callable
  */
-function debug_error_handler($handler = null, $update = true)
+function debug_error_handler($handler = null)
 {
-	global $debug_mode;
-	static $error;
-	if( $update )
-	{
-		$error = array(
-			true => is_callable($handler) ? $handler :
-				function( $number, $message, $script, $line )
-				{
-					writeln("PHP Error {$number}:");
-					writeln("$script:$line $message\n");
+	$default_handlers = [
+		'development' =>
+			function( $number, $message, $script, $line )
+			{
+				writeln("PHP Error {$number}:");
+				writeln("$script:$line $message\n");
 
-					writeln("Backtrace:");
-					backtrace_print(1);
-					return true;
-				},
-			false => is_callable($handler) ? $handler :
-				function( $number, $message, $script, $line )
-				{
-					return false;
-				}
-		);
+				writeln("Backtrace:");
+				backtrace_print(1);
+				return true;
+			},
+		'production' =>
+			function( $number, $message, $script, $line )
+			{
+				return false;
+			}
+	];
+	if( null == $handler )
+	{
+		$handler = $default_handlers[APPLICATION_ENV];
 	}
-	set_error_handler($error[$debug_mode]);
+	set_error_handler($handler);
 }
 
 /**
- * @param null $handler
+ * @todo APPLICATION_ENV => handler
+ * @param callable|null $handler to be called on unhandled exception
  */
 function debug_exception_handler($handler = null)
 {
-	global $debug_mode;
-	static $exception_handler;
-	if( $update )
-	{
-		$exception_handler = array(
-			true => is_callable($handler) ? $handler :
-				function( $number, $message, $script, $line )
-				{
-					writeln("PHP Error {$number}:");
-					writeln("$script:$line $message\n");
+	$default_handlers = array(
+		'development' =>
+			function( $e )
+			{
+				/** @var Exception $e */
+				$class = get_class($e);
+				writeln("Unhandled `{$class}`({$e->getCode()}):");
+				writeln("{$e->getFile()}:{$e->getLine()} {$e->getMessage()}\n");
 
-					writeln("Backtrace:");
-					backtrace_print(1);
-					return true;
-				},
-			false => is_callable($handler) ? $handler :
-				function( $number, $message, $script, $line )
-				{
-					return false;
-				}
-		);
+				writeln("Backtrace:");
+				backtrace_print(0,$e->getTrace());
+				return true;
+			},
+		'production' =>
+			function( $e )
+			{
+				return false;
+			}
+	);
+	if( null == $handler )
+	{
+		$handler = $default_handlers[APPLICATION_ENV];
 	}
-	set_error_handler($exception_handler[$debug_mode]);
-	set_exception_handler();
+	set_exception_handler($handler);
 }
 
-assert_options(ASSERT_QUIET_EVAL, true);
-assert_options(ASSERT_WARNING, false);
+/**
+ * @todo support non-null values
+ * @todo APPLICATION_ENV => handler
+ * @param handler
+ */
+function debug_handler($handler = null)
+{
+	debug_assert_handler($handler);
+	debug_error_handler($handler);
+	debug_exception_handler($handler);
+}
+
+if( class_exists('Zend_Log') )
+{
+	ifr_assert(function() {
+		foreach( [
+			LOG_EMERG => Zend_Log::EMERG,
+			LOG_ALERT => Zend_Log::ALERT,
+			LOG_CRIT => Zend_Log::CRIT,
+			LOG_ERR => Zend_Log::ERR,
+			LOG_WARNING => Zend_Log::WARN,
+			LOG_NOTICE => Zend_Log::NOTICE,
+			LOG_INFO => Zend_Log::INFO,
+			LOG_DEBUG => Zend_Log::DEBUG
+		] as $k => $v)
+		{
+			if( $k != $v )
+			{
+				return false;
+			}
+		}
+		return true;
+	}, 'One of log levels differ. Update the library.');
+}
 
 /**
  * @param      $assertion
  * @param null $message
  * @param int  $level
  *
+ * @see Zend_Log::WARN
+ * @see LOG_WARNING
+ *
  * @throws Exception
  */
-function ifr_assert($assertion, $message = null, $level = Zend_Log::WARN)
+function ifr_assert($assertion, $message = null, $level = LOG_WARNING)
 {
-	if(!assert($assertion))
+	if( is_callable($assertion) )
 	{
-		if(!$message)
+		$assertion = $assertion();
+	}
+	if( version_compare(PHP_VERSION, '5.4.8', '>=') )
+	{
+		assert($assertion, $message);
+	}
+	else
+	{
+		if( is_string($assertion) && ifrShowDebugOutput() )
 		{
-			$message = "Assertion of '{$assertion}' is failed";
+			$assertion = eval($assertion);
 		}
-
-		$exc = new Exception($message);
-		if(class_exists('Zend_Controller_Action_HelperBroker'))
+		if( !$assertion )
 		{
-			Zend_Controller_Action_HelperBroker::getStaticHelper('log')->log($exc, $level);
-		}
+			if(!$message)
+			{
+				if( $assertion !== false )
+				{
+					$assertion = var_dump_human_compact($assertion);
+					$message = "Assertion of '{$assertion}' is failed";
+				}
+				else
+				{
+					$message = "Assertion failed";
+				}
+			}
 
-		throw $exc;
+			$exc = new Exception($message);
+			if(class_exists('Zend_Controller_Action_HelperBroker'))
+			{
+				Zend_Controller_Action_HelperBroker::getStaticHelper('log')->log($exc, $level);
+			}
+
+			throw $exc;
+		}
 	}
 }
 
@@ -605,6 +516,8 @@ function ifr_assert($assertion, $message = null, $level = Zend_Log::WARN)
  */
 function write($text /**, $more_text **/)
 {
+	if(!ifrShowDebugOutput()) return null;
+
 	ob_start();
 	echo implode(',',array_map(function($arg)
 	{

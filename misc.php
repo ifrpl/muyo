@@ -1,68 +1,26 @@
 <?php
 
-namespace misc;
-
 function autoload()
 {
-	//    ini_set('unserialize_callback_func','spl_autoload_call');
-	//
-	//    spl_autoload_register("_autoload");
-
 	/**
 	 * @param $class_name
 	 *
 	 * @throws Exception
 	 */
-	function __autoload($class_name)
+	spl_autoload_register(function($class_name)
 	{
 		$filename = str_replace('_','/',$class_name) . '.php';
 
-		$found = false;
 		foreach(explode(PATH_SEPARATOR,ini_get('include_path')) as $path)
 		{
 			if(file_exists($path.'/'.$filename))
 			{
 				$found = $path.'/'.$filename;
+				include $found;
+				break;
 			}
 		}
-
-		if(!$found)
-		{
-			//			printr($filename);
-			//			$dbg = debug_backtrace();
-			//			printr($dbg);
-
-			throw new Exception('Class '.$class_name.' not found');
-		}
-
-		require_once $found;
-	}
-}
-
-/**
- * @param string $class_name
- *
- * @throws Exception
- */
-function _autoload($class_name)
-{
-	$filename = str_replace('_','/',$class_name) . '.php';
-
-	$found = false;
-	foreach(explode(PATH_SEPARATOR,ini_get('include_path')) as $path)
-	{
-		if(file_exists($path.'/'.$filename))
-		{
-			$found = $path.'/'.$filename;
-		}
-	}
-
-	if(!$found)
-	{
-		throw new Exception('Class '.$class_name.' not found');
-	}
-
-	require_once $found;
+	});
 }
 
 /**
@@ -129,4 +87,23 @@ function saveSerial($filename,$data)
 {
 	$filename = ROOT_PATH.'/tmp/'.$filename.'.phpserial';
 	file_put_contents($filename,serialize($data));
+}
+
+/**
+ * defines set of constants in key => value pairs
+ * @param $key_value
+ */
+function define_array($key_value)
+{
+	ifr_assert(is_array($key_value), $key_value);
+
+	foreach($key_value as $key => $value)
+	{
+		$defined = defined($key);
+		ifr_assert(!$defined, [$key,$value]);
+		if ( !$defined )
+		{
+			define($key, $value);
+		}
+	}
 }
