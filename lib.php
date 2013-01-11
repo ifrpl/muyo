@@ -2,10 +2,6 @@
 
 ini_set('include_path',ini_get('include_path').PATH_SEPARATOR.dirname(__FILE__));
 
-defined('APPLICATION_ENV') || define('APPLICATION_ENV', 'development');
-
-defined('ROOT_PATH') || define('ROOT_PATH', realpath(dirname(__FILE__) . '/'));
-
 require_once "arr.php";
 require_once "cli.php";
 require_once "database.php";
