@@ -334,7 +334,7 @@ if(!function_exists('get_call_stack'))
  */
 function debug_assert_handler($handler = null)
 {
-	$default_handlers = [
+	$default_handlers = array(
 		'development' =>
 			function( $script, $line, $message )
 			{
@@ -349,7 +349,7 @@ function debug_assert_handler($handler = null)
 			{
 				//
 			}
-	];
+	);
 	if( null == $handler )
 	{
 		$handler = $default_handlers[APPLICATION_ENV];
@@ -367,7 +367,7 @@ function debug_assert_handler($handler = null)
  */
 function debug_error_handler($handler = null)
 {
-	$default_handlers = [
+	$default_handlers = array(
 		'development' =>
 			function( $number, $message, $script, $line )
 			{
@@ -383,7 +383,7 @@ function debug_error_handler($handler = null)
 			{
 				return false;
 			}
-	];
+	);
 	if( null == $handler )
 	{
 		$handler = $default_handlers[APPLICATION_ENV];
@@ -438,7 +438,7 @@ function debug_handler($handler = null)
 if( class_exists('Zend_Log') )
 {
 	ifr_assert(function() {
-		foreach( [
+		foreach( array(
 			LOG_EMERG => Zend_Log::EMERG,
 			LOG_ALERT => Zend_Log::ALERT,
 			LOG_CRIT => Zend_Log::CRIT,
@@ -447,7 +447,7 @@ if( class_exists('Zend_Log') )
 			LOG_NOTICE => Zend_Log::NOTICE,
 			LOG_INFO => Zend_Log::INFO,
 			LOG_DEBUG => Zend_Log::DEBUG
-		] as $k => $v)
+		) as $k => $v)
 		{
 			if( $k != $v )
 			{

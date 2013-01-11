@@ -100,7 +100,7 @@ function define_array($key_value)
 	foreach($key_value as $key => $value)
 	{
 		$defined = defined($key);
-		ifr_assert(!$defined, [$key,$value]);
+		ifr_assert(!$defined, array($key,$value));
 		if ( !$defined )
 		{
 			define($key, $value);

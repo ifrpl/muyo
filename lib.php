@@ -1,4 +1,8 @@
 <?php
+/**
+ * @package lib\main
+ * @deprecated compatibility file, use __init__.php to include
+ */
 
 ini_set('include_path',ini_get('include_path').PATH_SEPARATOR.dirname(__FILE__));
 
