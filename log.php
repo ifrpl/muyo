@@ -35,19 +35,9 @@ function log($message, $level = LOG_INFO)
 		$name = LOGGER_NAME;
 		file_put_contents(LOGGER."/{$name}.log", $msg, FILE_APPEND);
 
-		if($level <= LOG_NOTICE)
-		{
-			file_put_contents(LOGGER."/{$name}.warn.log", $msg, FILE_APPEND);
-		}
-
 		if($level <= LOG_ERR)
 		{
 			file_put_contents(LOGGER."/{$name}.error.log", $msg, FILE_APPEND);
-		}
-
-		if($level <= LOG_INFO)
-		{
-			file_put_contents(LOGGER."/{$name}.info.log", $msg, FILE_APPEND);
 		}
 	}
 }
