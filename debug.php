@@ -1,11 +1,14 @@
 <?php
 
+namespace ifr\main\debug;
+
 /**
  * @return bool
  */
 function ifrShowDebugOutput()
 {
-	if(!debugHostAllow() || (APPLICATION_ENV === 'production' && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))) return false;
+	$env = getCurrentEnv();
+	if(!debugHostAllow() || ($env === 'production' && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))) return false;
 	return true;
 }
 
@@ -15,13 +18,12 @@ function ifrShowDebugOutput()
 function debugHostAllow()
 {
 	$allowedSubNet = array(
+		'127.',
 		'10.10.',
 		'192.168.'
 	);
 
 	$allowedHosts = array(
-		'127.0.0.1',
-		'127.0.1.1',
 		'10.0.2.2',
 		'89.191.162.220', //Lukasz home
 		'87.206.45.163',
@@ -29,7 +31,7 @@ function debugHostAllow()
 		'89.69.131.15' //IFResearch Chello
 	);
 
-	if((isCLI() && APPLICATION_ENV !== 'production'))
+	if((isCLI() && defined('APPLICATION_ENV') && APPLICATION_ENV !== 'production'))
 	{
 		return true;
 	}
@@ -181,9 +183,9 @@ function var_dump_human_compact($var, $key = null)
 	{
 		$ret .= var_dump_human_compact($key).'=>';
 	}
-	if ( is_array($var) )
+	if ( is_array($var) && (!$key || ($key && array_key_is_reference($var, $key))) )
 	{
-		$ret .= '['.implode(',', array_map('var_dump_human_compact', $var, array_keys($var))).']';
+		$ret .= '['.implode(',', array_map('\ifr\main\debug\var_dump_human_compact', $var, array_keys($var))).']';
 	}
 	elseif ( is_null($var) )
 	{
@@ -226,7 +228,8 @@ function var_dump_human_compact($var, $key = null)
  */
 function backtrace_print($ignore_depth = 0, $backtrace = null)
 {
-	writeln(backtrace_string($ignore_depth+1, $backtrace));
+	$text = backtrace_string($ignore_depth+1, $backtrace);
+	writeln($text);
 }
 
 /**
@@ -287,14 +290,16 @@ function debug($tab)
 	$trace = backtrace(1);
 	if( !isCLI() )
 	{
-		$f = "{$trace[0]['file']}:{$trace[0]['line']}";
-
 		write("<div style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>");
+
+		$traceFile = backtrace();
+		$f = "{$traceFile[0]['file']}:{$traceFile[0]['line']}";
 		write("<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'><a href='http://localhost:8091?message=$f'>$f</a></div>");
+
 		write("<hr>");
 		backtrace_print(0, $trace);
 		write("<hr>");
-		write(call_user_func_array('var_dump_human_full', func_get_args()));
+		write(call_user_func_array('\ifr\main\debug\var_dump_human_full', func_get_args()));
 		write("</div>");
 	}
 	else
@@ -302,7 +307,7 @@ function debug($tab)
 		write("\n======= Debug Break =======\n");
 		backtrace_print(0, $trace);
 		write("\n===== Debug  Variable =====\n");
-		write(call_user_func_array('var_dump_human_full', func_get_args()));
+		write(call_user_func_array('\ifr\main\debug\var_dump_human_full', func_get_args()));
 		write("\n======= Exiting... ========\n");
 	}
 	exit();
@@ -328,126 +333,19 @@ if(!function_exists('get_call_stack'))
 	}
 }
 
-/**
- * @todo APPLICATION_ENV => handler
- * @param callable $handler assertion handler to be set
- */
-function debug_assert_handler($handler = null)
-{
-	$default_handlers = array(
-		'development' =>
-			function( $script, $line, $message )
-			{
-				writeln("Assertion Failed:");
-				writeln("$script:$line $message\n");
-
-				writeln("Backtrace:");
-				backtrace_print(1);
-			},
-		'production' =>
-			function( $script, $line, $message )
-			{
-				//
-			}
-	);
-	if( null == $handler )
-	{
-		$handler = $default_handlers[APPLICATION_ENV];
-	}
-	assert_options(ASSERT_CALLBACK, $handler);
-	assert_options(ASSERT_BAIL, APPLICATION_ENV!='production');
-	assert_options(ASSERT_QUIET_EVAL, APPLICATION_ENV!='production');
-	assert_options(ASSERT_ACTIVE, APPLICATION_ENV!='production');
-	assert_options(ASSERT_WARNING, APPLICATION_ENV=='production');
-}
-
-/**
- * @todo APPLICATION_ENV => handler
- * @param callable|null $handler_map set error handler to callable
- */
-function debug_error_handler($handler = null)
-{
-	$default_handlers = array(
-		'development' =>
-			function( $number, $message, $script, $line )
-			{
-				writeln("PHP Error {$number}:");
-				writeln("$script:$line $message\n");
-
-				writeln("Backtrace:");
-				backtrace_print(1);
-				return true;
-			},
-		'production' =>
-			function( $number, $message, $script, $line )
-			{
-				return false;
-			}
-	);
-	if( null == $handler )
-	{
-		$handler = $default_handlers[APPLICATION_ENV];
-	}
-	set_error_handler($handler);
-}
-
-/**
- * @todo APPLICATION_ENV => handler
- * @param callable|null $handler to be called on unhandled exception
- */
-function debug_exception_handler($handler = null)
-{
-	$default_handlers = array(
-		'development' =>
-			function( $e )
-			{
-				/** @var Exception $e */
-				$class = get_class($e);
-				writeln("Unhandled `{$class}`({$e->getCode()}):");
-				writeln("{$e->getFile()}:{$e->getLine()} {$e->getMessage()}\n");
-
-				writeln("Backtrace:");
-				backtrace_print(0,$e->getTrace());
-				return true;
-			},
-		'production' =>
-			function( $e )
-			{
-				return false;
-			}
-	);
-	if( null == $handler )
-	{
-		$handler = $default_handlers[APPLICATION_ENV];
-	}
-	set_exception_handler($handler);
-}
-
-/**
- * @todo support non-null values
- * @todo APPLICATION_ENV => handler
- * @param handler
- */
-function debug_handler($handler = null)
-{
-	debug_assert_handler($handler);
-	debug_error_handler($handler);
-	debug_exception_handler($handler);
-}
-
 if( class_exists('Zend_Log') )
 {
-	ifr_assert(function() {
-		foreach( array(
-			LOG_EMERG => Zend_Log::EMERG,
-			LOG_ALERT => Zend_Log::ALERT,
-			LOG_CRIT => Zend_Log::CRIT,
-			LOG_ERR => Zend_Log::ERR,
-			LOG_WARNING => Zend_Log::WARN,
-			LOG_NOTICE => Zend_Log::NOTICE,
-			LOG_INFO => Zend_Log::INFO,
-			LOG_DEBUG => Zend_Log::DEBUG
-		) as $k => $v)
+	\ifr\main\debug\assert(function() {
+		foreach(array(
+		        LOG_EMERG   => Zend_Log::EMERG,
+		        LOG_ALERT   => Zend_Log::ALERT,
+		        LOG_CRIT    => Zend_Log::CRIT,
+		        LOG_ERR     => Zend_Log::ERR,
+		        LOG_WARNING => Zend_Log::WARN,
+		        LOG_NOTICE  => Zend_Log::NOTICE,
+		        LOG_INFO    => Zend_Log::INFO,
+		        LOG_DEBUG   => Zend_Log::DEBUG
+	        ) as $k => $v)
 		{
 			if( $k != $v )
 			{
@@ -466,9 +364,9 @@ if( class_exists('Zend_Log') )
  * @see Zend_Log::WARN
  * @see LOG_WARNING
  *
- * @throws Exception
+ * @throws \Exception
  */
-function ifr_assert($assertion, $message = null, $level = LOG_WARNING)
+function assert($assertion, $message = null, $level = LOG_WARNING)
 {
 	if( is_callable($assertion) )
 	{
@@ -521,14 +419,17 @@ function write($text /**, $more_text **/)
 	ob_start();
 	echo implode(',',array_map(function($arg)
 	{
-		if ( is_string($arg) )
+		if ( !is_string($arg) )
 		{
-			echo($arg);
+			$arg = var_dump_human_compact($arg);
 		}
-		else
+
+		if(!isCLI())
 		{
-			echo var_dump_human_compact($arg);
+			$arg = str_replace("\n", "<br/>", $arg);
 		}
+
+		echo($arg);
 	},func_get_args()));
 	ob_end_flush();
 }
@@ -540,6 +441,15 @@ function write($text /**, $more_text **/)
 function writeln($text /**, $more_text **/)
 {
 	$args = func_get_args();
-	call_user_func_array('write', $args);
-	write("\n");
+	call_user_func_array('ifr\main\debug\write', $args);
+
+	if(!isCLI())
+	{
+		write("<br/>");
+	}
+	else
+	{
+		write("\n");
+	}
 }
+

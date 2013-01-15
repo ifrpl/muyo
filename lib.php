@@ -10,6 +10,8 @@ require_once "arr.php";
 require_once "cli.php";
 require_once "database.php";
 require_once "debug.php";
+require_once "handler.php";
+require_once "log.php";
 require_once "file_system.php";
 require_once "locale.php";
 require_once "misc.php";

@@ -1,5 +1,7 @@
 <?php
 
+use ifr\main\debug as debug;
+
 function autoload()
 {
 	/**
@@ -95,15 +97,34 @@ function saveSerial($filename,$data)
  */
 function define_array($key_value)
 {
-	ifr_assert(is_array($key_value), $key_value);
+	debug\assert(is_array($key_value), $key_value);
 
 	foreach($key_value as $key => $value)
 	{
 		$defined = defined($key);
-		ifr_assert(!$defined, array($key,$value));
+		debug\assert(!$defined, array($key,$value));
 		if ( !$defined )
 		{
 			define($key, $value);
 		}
+	}
+}
+
+/**
+ * @return string
+ */
+function getCurrentEnv()
+{
+	if(defined('APPLICATION_ENV'))
+	{
+		return APPLICATION_ENV;
+	}
+	if(debug\debugHostAllow())
+	{
+		return 'development';
+	}
+	else
+	{
+		return 'production';
 	}
 }

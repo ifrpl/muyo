@@ -109,3 +109,22 @@ function arrayize(&$var)
 	}
 	return $var;
 }
+
+/**
+ * @param array $arr
+ * @param string|int $key
+ *
+ * @return bool
+ */
+function array_key_is_reference($arr, $key)
+{
+	$isRef = false;
+	ob_start();
+	var_dump($arr);
+	if (strpos(preg_replace("/[ \n\r]*/i", "", preg_replace("/( ){4,}.*(\n\r)*/i", "", ob_get_contents())), "[" . $key . "]=>&") !== false)
+	{
+		$isRef = true;
+	}
+	ob_end_clean();
+	return $isRef;
+}

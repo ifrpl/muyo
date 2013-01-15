@@ -1,8 +1,10 @@
 <?php
-namespace ifr\main
-{
-	ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . dirname(__FILE__));
-}
+
+ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . dirname(__FILE__));
+
+require_once "debug.php";
+require_once "handler.php";
+require_once "log.php";
 
 namespace ifr\main\arr
 {
@@ -15,10 +17,6 @@ namespace ifr\main\cli
 namespace ifr\main\database
 {
 	require_once "database.php";
-}
-namespace ifr\main\debug
-{
-	require_once "debug.php";
 }
 namespace ifr\main\file_system
 {
