@@ -32,21 +32,22 @@ function log($message, $level = LOG_INFO)
 	}
 	else
 	{
-		file_put_contents(LOGGER.'app.log', $msg, FILE_APPEND);
+		$name = LOGGER_NAME;
+		file_put_contents(LOGGER."/{$name}.log", $msg, FILE_APPEND);
 
-		if($level >= LOG_NOTICE)
+		if($level <= LOG_NOTICE)
 		{
-			file_put_contents(LOGGER.'app.warn.log', $msg, FILE_APPEND);
+			file_put_contents(LOGGER."/{$name}.warn.log", $msg, FILE_APPEND);
 		}
 
-		if($level >= LOG_ERR)
+		if($level <= LOG_ERR)
 		{
-			file_put_contents(LOGGER.'app.error.log', $msg, FILE_APPEND);
+			file_put_contents(LOGGER."/{$name}.error.log", $msg, FILE_APPEND);
 		}
 
-		if($level >= LOG_INFO)
+		if($level <= LOG_INFO)
 		{
-			file_put_contents(LOGGER.'app.info.log', $msg, FILE_APPEND);
+			file_put_contents(LOGGER."/{$name}.info.log", $msg, FILE_APPEND);
 		}
 	}
 }
@@ -68,6 +69,7 @@ function start($ident, $log = 'syslog', $option = null, $facility = LOG_SYSLOG)
 		$option = LOG_PID;
 	}
 
+	define('LOGGER_NAME', $ident);
 	if($log == 'syslog')
 	{
 		$result = openlog($ident, $option, $facility);
@@ -84,7 +86,7 @@ function start($ident, $log = 'syslog', $option = null, $facility = LOG_SYSLOG)
 	}
 	else
 	{
-		define('LOGGER', ROOT_PATH.'/tmp/');
+		define('LOGGER', ROOT_PATH.'/tmp');
 	}
 
 	return true;
