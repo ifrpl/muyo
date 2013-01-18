@@ -1,55 +1,60 @@
 <?php
 
-namespace ifr\main\debug;
-
 /**
  * @return bool
  */
-function ifrShowDebugOutput()
+function debug_allow()
 {
-	$env = getCurrentEnv();
-	if(!debugHostAllow() || ($env === 'production' && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))) return false;
-	return true;
-}
-
-/**
- * @return bool
- */
-function debugHostAllow()
-{
-	$allowedSubNet = array(
-		'127.',
-		'10.10.',
-		'192.168.'
-	);
-
-	$allowedHosts = array(
-		'10.0.2.2',
-		'89.191.162.220', //Lukasz home
-		'87.206.45.163',
-		'84.10.100.73',
-		'89.69.131.15' //IFResearch Chello
-	);
-
-	if((isCLI() && defined('APPLICATION_ENV') && APPLICATION_ENV !== 'production'))
+	if(!function_exists('is_debug_host'))
 	{
-		return true;
-	}
-	elseif(!isCLI() && isset($_SERVER['REMOTE_ADDR']))
-	{
-		foreach($allowedSubNet as $subNet)
+		/**
+		 * @return bool
+		 */
+		function is_debug_host()
 		{
-			if(strpos($_SERVER['REMOTE_ADDR'], $subNet) === 0)
+			$allowedSubNet = array(
+				'127.',
+				'10.10.',
+				'192.168.'
+			);
+
+			$allowedHosts = array(
+				'10.0.2.2',
+				'89.191.162.220', //Lukasz home
+				'87.206.45.163',
+				'84.10.100.73',
+				'89.69.131.15' //IFResearch Chello
+			);
+
+			if((isCLI() && defined('APPLICATION_ENV') && APPLICATION_ENV !== 'production'))
 			{
 				return true;
 			}
-		}
-		if(in_array($_SERVER['REMOTE_ADDR'], $allowedHosts))
-		{
-			return true;
+			elseif(!isCLI() && isset($_SERVER['REMOTE_ADDR']))
+			{
+				foreach($allowedSubNet as $subNet)
+				{
+					if(strpos($_SERVER['REMOTE_ADDR'], $subNet) === 0)
+					{
+						return true;
+					}
+				}
+				if(in_array($_SERVER['REMOTE_ADDR'], $allowedHosts))
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 	}
-	return false;
+	$env = getCurrentEnv();
+
+	if(
+		!is_debug_host() ||
+		($env === 'production' && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))
+	) return false;
+
+	return true;
 }
 
 /**
@@ -58,7 +63,7 @@ function debugHostAllow()
  */
 function printr($tab)
 {
-	if(!ifrShowDebugOutput()) return null;
+	if(!debug_allow()) return null;
 
 	if( func_num_args() > 1 )
 	{
@@ -107,28 +112,28 @@ function printrlog($tab)
 /**
  * @param string $str
  * @param int    $count
- * @param bool   $print
+ * @param bool   $do_print
  *
  * @return string|null
  */
-function printn($str='',$count=1,$print=true)
+function printn($str='',$count=1,$do_print=true)
 {
-	if(!ifrShowDebugOutput()) return null;
+	if(!debug_allow()) return null;
 
 	if(is_bool($count))
 	{
-		if(!is_bool($print))
+		if(!is_bool($do_print))
 		{
-			$tmp = $print;
+			$tmp = $do_print;
 		}
 
-		$print = $count;
+		$do_print = $count;
 
 		$count = isset($tmp)?$tmp:1;
 	}
 	$str.=str_pad('', $count, "\n");
 
-	$print and print($str);
+	$do_print and print($str);
 
 	return $str;
 }
@@ -138,7 +143,7 @@ function printn($str='',$count=1,$print=true)
  */
 function printfb($tab)
 {
-	if(!ifrShowDebugOutput()) return;
+	if(!debug_allow()) return;
 
 	header('debug: '.$tab);
 }
@@ -185,7 +190,7 @@ function var_dump_human_compact($var, $key = null)
 	}
 	if ( is_array($var) && (!$key || ($key && array_key_is_reference($var, $key))) )
 	{
-		$ret .= '['.implode(',', array_map('\ifr\main\debug\var_dump_human_compact', $var, array_keys($var))).']';
+		$ret .= '['.implode(',', array_map('var_dump_human_compact', $var, array_keys($var))).']';
 	}
 	elseif ( is_null($var) )
 	{
@@ -242,7 +247,6 @@ function backtrace_string($ignore_depth = 0, $backtrace = null)
 		$backtrace = backtrace($ignore_depth+1);
 	}
 
-	// _($backtrace)->chain()->map(function($entry){ return isset($entry['file']) ? strlen($entry['file']): 3; })->max()->value();
 	$max_len_file = 0;
 	foreach( $backtrace as $val )
 	{
@@ -275,7 +279,7 @@ function backtrace_string($ignore_depth = 0, $backtrace = null)
 		$append .= "  $function($args)\n";
 		$ret .= $append;
 	}
-	assert(is_string($ret));
+	debug_assert(is_string($ret));
 	return $ret;
 }
 
@@ -285,7 +289,7 @@ function backtrace_string($ignore_depth = 0, $backtrace = null)
  */
 function debug($tab)
 {
-	if(!ifrShowDebugOutput()) return;
+	if(!debug_allow()) return;
 
 	$trace = backtrace(1);
 	if( !isCLI() )
@@ -299,7 +303,7 @@ function debug($tab)
 		write("<hr>");
 		backtrace_print(0, $trace);
 		write("<hr>");
-		write(call_user_func_array('\ifr\main\debug\var_dump_human_full', func_get_args()));
+		write(call_user_func_array('var_dump_human_full', func_get_args()));
 		write("</div>");
 	}
 	else
@@ -307,7 +311,7 @@ function debug($tab)
 		write("\n======= Debug Break =======\n");
 		backtrace_print(0, $trace);
 		write("\n===== Debug  Variable =====\n");
-		write(call_user_func_array('\ifr\main\debug\var_dump_human_full', func_get_args()));
+		write(call_user_func_array('var_dump_human_full', func_get_args()));
 		write("\n======= Exiting... ========\n");
 	}
 	exit();
@@ -320,7 +324,6 @@ if(!function_exists('get_call_stack'))
 	 */
 	function get_call_stack()
 	{
-		if(!ifrShowDebugOutput()) return null;
 		$dbg = debug_backtrace();
 
 		array_shift($dbg);
@@ -335,17 +338,17 @@ if(!function_exists('get_call_stack'))
 
 if( class_exists('Zend_Log') )
 {
-	\ifr\main\debug\assert(function() {
+	debug_assert(function() {
 		foreach(array(
-		        LOG_EMERG   => Zend_Log::EMERG,
-		        LOG_ALERT   => Zend_Log::ALERT,
-		        LOG_CRIT    => Zend_Log::CRIT,
-		        LOG_ERR     => Zend_Log::ERR,
-		        LOG_WARNING => Zend_Log::WARN,
-		        LOG_NOTICE  => Zend_Log::NOTICE,
-		        LOG_INFO    => Zend_Log::INFO,
-		        LOG_DEBUG   => Zend_Log::DEBUG
-	        ) as $k => $v)
+			LOG_EMERG   => Zend_Log::EMERG,
+			LOG_ALERT   => Zend_Log::ALERT,
+			LOG_CRIT    => Zend_Log::CRIT,
+			LOG_ERR     => Zend_Log::ERR,
+			LOG_WARNING => Zend_Log::WARN,
+			LOG_NOTICE  => Zend_Log::NOTICE,
+			LOG_INFO    => Zend_Log::INFO,
+			LOG_DEBUG   => Zend_Log::DEBUG
+		) as $k => $v)
 		{
 			if( $k != $v )
 			{
@@ -359,52 +362,39 @@ if( class_exists('Zend_Log') )
 /**
  * @param      $assertion
  * @param null $message
- * @param int  $level
  *
- * @see Zend_Log::WARN
- * @see LOG_WARNING
- *
- * @throws \Exception
+ * @return bool
  */
-function assert($assertion, $message = null, $level = LOG_WARNING)
+function debug_assert($assertion, $message = null)
 {
 	if( is_callable($assertion) )
 	{
 		$assertion = $assertion();
 	}
+
 	if( version_compare(PHP_VERSION, '5.4.8', '>=') )
 	{
-		assert($assertion, $message);
+		return assert($assertion, $message);
 	}
 	else
 	{
-		if( is_string($assertion) && ifrShowDebugOutput() )
+		if( is_string($assertion) && debug_allow() )
 		{
 			$assertion = eval($assertion);
 		}
 		if( !$assertion )
 		{
-			if(!$message)
-			{
-				if( $assertion !== false )
-				{
-					$assertion = var_dump_human_compact($assertion);
-					$message = "Assertion of '{$assertion}' is failed";
-				}
-				else
-				{
-					$message = "Assertion failed";
-				}
-			}
+			$handler = assert_options(ASSERT_CALLBACK);
 
-			$exc = new Exception($message);
-			if(class_exists('Zend_Controller_Action_HelperBroker'))
-			{
-				Zend_Controller_Action_HelperBroker::getStaticHelper('log')->log($exc, $level);
+			if( null !== $handler )
+			{ /** @var Callable $handler */
+				$trace = backtrace(1);
+				$file = isset($trace['file']) ? $trace['file'] : '';
+				$line = isset($trace['line']) ? $trace['line'] : '';
+				$handler($file, $line, $message);
 			}
-
-			throw $exc;
 		}
+		return $assertion;
 	}
 }
 
@@ -414,7 +404,7 @@ function assert($assertion, $message = null, $level = LOG_WARNING)
  */
 function write($text /**, $more_text **/)
 {
-	if(!ifrShowDebugOutput()) return null;
+	if(!debug_allow()) return null;
 
 	ob_start();
 	echo implode(',',array_map(function($arg)
@@ -441,7 +431,7 @@ function write($text /**, $more_text **/)
 function writeln($text /**, $more_text **/)
 {
 	$args = func_get_args();
-	call_user_func_array('ifr\main\debug\write', $args);
+	call_user_func_array('write', $args);
 
 	if(!isCLI())
 	{
@@ -453,3 +443,111 @@ function writeln($text /**, $more_text **/)
 	}
 }
 
+
+
+/**
+ * Set exception AND error AND assertion handler.
+ * @param callable|null $handler that takes ($message, $script, $line, $trace, $type, $other) and returns bool accordingly if it handled or not
+ */
+function debug_handler($handler = null)
+{
+	/* forward  */
+	$exception_to_common = null;
+	$error_to_common = null;
+	$assertion_to_common = null;
+	if( null !== $handler )
+	{
+		$exception_to_common = function($e) use($handler) {
+			/** @var Exception $e */
+			return $handler($e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), 'exception', array( 'exception' => $e ));
+		};
+		$error_to_common = function($number, $message, $script, $line) use($handler) {
+			return $handler( $message, $script, $line, array(), 'php_error', array( 'php_error' => $number ) );
+		};
+		$assertion_to_common = function($script, $line, $message) use ($handler) {
+				return $handler( $message, $script, $line, array(), 'assertion', array() );
+		};
+	}
+	debug_handler_exception($exception_to_common);
+	debug_handler_error($error_to_common);
+	debug_handler_assertion($assertion_to_common);
+}
+
+/**
+ * @param callable|null $handler that takes ($exception) and returns bool true if handled, false otherwise
+ * @return bool|null
+ */
+function debug_handler_exception($handler = null)
+{
+	$default_handler = function ($e) {
+		/** @var Exception $e */
+		$class = get_class($e);
+		writeln("Unhandled `{$class}`({$e->getCode()}):");
+		writeln("{$e->getFile()}:{$e->getLine()} :: {$e->getMessage()}\n");
+		writeln("Backtrace:");
+		backtrace_print(0,$e->getTrace());
+	};
+
+	$default_handlers = array(
+		'development' => $default_handler,
+		'testing'     => $default_handler,
+		'production'  => function() { return false; }
+	);
+
+	if( null == $handler )
+	{
+		$handler = $default_handlers[ getCurrentEnv() ];
+	}
+	return set_exception_handler($handler);
+}
+
+/**
+ * @param callable|null $handler that takes ($errno , $errstr , $errfile , $errline , $errcontext) and returns true if handled, false otherwise
+ * @return callable|null
+ */
+function debug_handler_error($handler = null)
+{
+	$default_handler = function ($errno , $errstr , $errfile , $errline , $errcontext) {
+		throw new ErrorException($errstr.PHP_EOL.PHP_EOL.var_dump_human_compact($errcontext), $errno, 0, $errfile, $errline);
+	};
+
+	$default_handlers = array(
+		'development' => $default_handler,
+		'testing'     => $default_handler,
+		'production'  => function() { return true; }
+	);
+
+	if( null == $handler )
+	{
+		$handler = $default_handlers[ getCurrentEnv() ];
+	}
+	return set_error_handler($handler);
+}
+
+/**
+ * @param callable|null $handler that takes ($script, $line, $message) and returns bool accordingly if it handled or not
+ * @return callable|null
+ */
+function debug_handler_assertion($handler = null)
+{
+	$default_handler = function ($script, $line, $message) {
+		throw new Exception("{$script}:{$line} Assertion failed. {$message}");
+	};
+
+	$default_handlers = array(
+		'development' => $default_handler,
+		'testing'     => $default_handler,
+		'production'  => function() {  }
+	);
+
+	$env = getCurrentEnv();
+	if( null == $handler )
+	{
+		$handler = $default_handlers[ $env ];
+	}
+	assert_options(ASSERT_BAIL, $env!='production');
+	assert_options(ASSERT_QUIET_EVAL, $env=='production');
+	assert_options(ASSERT_ACTIVE, $env!='production');
+	assert_options(ASSERT_WARNING, false);
+	return assert_options(ASSERT_CALLBACK, $handler);
+}

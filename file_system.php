@@ -39,14 +39,14 @@ function ifr_path_rel($from, $to, $to_as_root = false)
 	$from = realpath($from);
 	$to = realpath($to);
 
-	assert( is_string($from) && is_string($to) );
+	debug_assert( is_string($from) && is_string($to) );
 
 	$from_cnt = strlen($from);
 	$to_cnt = strlen($to);
 	$min_cnt = min($from_cnt,$to_cnt);
 
 	if ( $to_as_root )
-		assert( $from_cnt > $to_cnt );
+		debug_assert( $from_cnt > $to_cnt );
 
 	// traverse through equal path
 	for( $i = 0; $i < $min_cnt; $i++)

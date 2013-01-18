@@ -23,8 +23,11 @@ function locale($lang)
 		$locale = array();
 	}
 
-	$config->lang = $lang;
-	$config->locale = object($locale);
+	if( debug_assert(isset($locale), "locale {$lang} isn't defined") )
+	{
+		$config->lang = $lang;
+		$config->locale = object($locale);
+	}
 }
 
 /**

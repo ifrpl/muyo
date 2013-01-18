@@ -6,7 +6,7 @@
  *
  * @return bool
  */
-function pgsqlLastInsertId($sqlQuery, $pdoObject)
+function pg_last_insert_id($sqlQuery, $pdoObject)
 {
 	// Checks if query is an insert and gets table name
 	if( preg_match("/^INSERT[\t\n ]+INTO[\t\n ]+([a-z0-9\_\-]+)/is", $sqlQuery, $tablename) )

@@ -68,7 +68,7 @@ function cli_parse($argv, $inputs = array())
  */
 function cli_serialize($cli)
 {
-	assert(array_key_exists('param', $cli) && array_key_exists('flag', $cli) && array_key_exists('input', $cli));
+	debug_assert(array_key_exists('param', $cli) && array_key_exists('flag', $cli) && array_key_exists('input', $cli));
 	$ret = $cli['input'][0];
 	foreach($cli['param'] as $name => $val)
 	{

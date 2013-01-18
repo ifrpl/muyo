@@ -5,6 +5,6 @@
  */
 function getShellTop()
 {
-	if(!ifrShowDebugOutput()) return null;
+	if(!debug_allow()) return null;
 	return shell_exec("top -bcs -n 2 -p ".getmypid());
 }

@@ -64,14 +64,14 @@ function array_qsort(&$array, $column=0, $order=SORT_ASC)
 }
 
 /**
- * @param $arr1
- * @param $arr2
+ * @param array $arr1
+ * @param array $arr2
  *
- * @return mixed
+ * @return array
  */
 function array_merge_recursive_overwrite($arr1, $arr2)
 {
-	assert(is_array($arr1) && is_array($arr2));
+	debug_assert(is_array($arr1) && is_array($arr2));
 	foreach($arr2 as $key=>$value)
 	{
 		if(array_key_exists($key, $arr1) && is_array($value))
@@ -91,7 +91,7 @@ function array_merge_recursive_overwrite($arr1, $arr2)
 }
 
 /**
- * @param $var
+ * @param mixed $var
  * @return array
  */
 function arrayize(&$var)
