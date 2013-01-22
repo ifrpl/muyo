@@ -18,9 +18,10 @@ function logger_log($message, $level = LOG_INFO)
 
 	if($message instanceof \Exception)
 	{ /* @var Exception $message */
-		$message = 'Exception: '.get_class($message);
-		$message .= ' | '.$message->getFile().':'.$message->getLine();
-		$message .= "\nBacktrace:\n".$message->getTraceAsString();
+		$tmp = 'Exception: '.get_class($message);
+		$tmp.= ' | '.$message->getFile().':'.$message->getLine();
+		$tmp.= "\nBacktrace:\n".$message->getTraceAsString();
+		$message = $tmp;
 	}
 
 	if( null !== $logger )
