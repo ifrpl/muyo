@@ -545,9 +545,8 @@ function debug_handler_assertion($handler = null)
 	{
 		$handler = $default_handlers[ $env ];
 	}
-	assert_options(ASSERT_BAIL, $env!='production');
 	assert_options(ASSERT_QUIET_EVAL, $env=='production');
 	assert_options(ASSERT_ACTIVE, $env!='production');
-	assert_options(ASSERT_WARNING, false);
+	assert_options(ASSERT_WARNING, true);
 	return assert_options(ASSERT_CALLBACK, $handler);
 }
