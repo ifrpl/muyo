@@ -294,7 +294,7 @@ function debug($tab)
 	$trace = backtrace(1);
 	if( !isCLI() )
 	{
-		write("<div style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>");
+		write("<pre style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>");
 
 		$traceFile = backtrace();
 		$f = "{$traceFile[0]['file']}:{$traceFile[0]['line']}";
@@ -304,7 +304,7 @@ function debug($tab)
 		backtrace_print(0, $trace);
 		write("<hr>");
 		write(call_user_func_array('var_dump_human_full', func_get_args()));
-		write("</div>");
+		write("</pre>");
 	}
 	else
 	{
