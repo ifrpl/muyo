@@ -300,10 +300,10 @@ function debug($tab)
 		$f = "{$traceFile[0]['file']}:{$traceFile[0]['line']}";
 		write("<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'><a href='http://localhost:8091?message=$f'>$f</a></div>");
 
-		write("<hr>");
-		backtrace_print(0, $trace);
-		write("<hr>");
 		write(call_user_func_array('var_dump_human_full', func_get_args()));
+//		write("<hr>");
+//		backtrace_print(0, $trace);
+//		write("<hr>");
 		write("</pre>");
 	}
 	else
