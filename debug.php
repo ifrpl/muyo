@@ -300,18 +300,18 @@ function debug($tab)
 		$f = "{$traceFile[0]['file']}:{$traceFile[0]['line']}";
 		write("<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'><a href='http://localhost:8091?message=$f'>$f</a></div>");
 
+		write("<hr>");
 		write(call_user_func_array('var_dump_human_full', func_get_args()));
-//		write("<hr>");
-//		backtrace_print(0, $trace);
-//		write("<hr>");
+		write("<hr>");
+		backtrace_print(0, $trace);
 		write("</pre>");
 	}
 	else
 	{
-		write("\n======= Debug Break =======\n");
-		backtrace_print(0, $trace);
 		write("\n===== Debug  Variable =====\n");
 		write(call_user_func_array('var_dump_human_full', func_get_args()));
+		write("\n======= Debug Break =======\n");
+		backtrace_print(0, $trace);
 		write("\n======= Exiting... ========\n");
 	}
 	exit();
@@ -465,7 +465,7 @@ function debug_handler($handler = null)
 			return $handler( $message, $script, $line, array(), 'php_error', array( 'php_error' => $number ) );
 		};
 		$assertion_to_common = function($script, $line, $message) use ($handler) {
-				return $handler( $message, $script, $line, array(), 'assertion', array() );
+			return $handler( $message, $script, $line, array(), 'assertion', array() );
 		};
 	}
 	debug_handler_exception($exception_to_common);
@@ -508,7 +508,7 @@ function debug_handler_exception($handler = null)
 function debug_handler_error($handler = null)
 {
 	$default_handler = function ($errno , $errstr , $errfile , $errline , $errcontext) {
-		throw new ErrorException($errstr.PHP_EOL.PHP_EOL.var_dump_human_compact($errcontext), $errno, 0, $errfile, $errline);
+		throw new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
 	};
 
 	$default_handlers = array(
