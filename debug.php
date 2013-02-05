@@ -188,9 +188,22 @@ function var_dump_human_compact($var, $key = null)
 	{
 		$ret .= var_dump_human_compact($key).'=>';
 	}
-	if ( is_array($var) && (!$key || ($key && array_key_is_reference($var, $key))) )
+	if ( is_array($var) )
 	{
-		$ret .= '['.implode(',', array_map('var_dump_human_compact', $var, array_keys($var))).']';
+		if( $key && array_key_is_reference($var, $key) )
+		{
+			$ret .= '&'.gettype($var);
+		}
+		else
+		{
+			$tmp = array();
+			foreach( $var as $k=>$v )
+			{
+
+				$tmp []= var_dump_human_compact($v, $k);
+			}
+			$ret .= '['.implode(',',$tmp).']';
+		}
 	}
 	elseif ( is_null($var) )
 	{
