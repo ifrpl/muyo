@@ -77,7 +77,7 @@ function ifr_path_rel($from, $to, $to_as_root = false)
 	{
 		for ( $j = $i+2; $j < $to_cnt; $j++ )
 		{
-			if ( $to[$j] === DIRECTORY_SEPARATOR )
+			if ( isset($to[$j]) && $to[$j] === DIRECTORY_SEPARATOR )
 			{
 				$to = substr($to, 0, $i-1).'..'.substr($to, $j, $to_cnt);
 				$to_cnt -= $j-$i+1;
@@ -92,10 +92,9 @@ function ifr_path_rel($from, $to, $to_as_root = false)
 		}
 	}
 
-	if ( !$to[$to_cnt-1] != DIRECTORY_SEPARATOR )
+	if ( isset($to[$to_cnt-1]) && $to[$to_cnt-1] != DIRECTORY_SEPARATOR )
 	{
 		$to .= DIRECTORY_SEPARATOR;
-		$to_cnt++;
 	}
 
 	if ( !$to_as_root )
