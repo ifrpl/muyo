@@ -21,6 +21,20 @@ function logger_log($message, $level = LOG_INFO)
 		$tmp = 'Exception: '.get_class($message) . ' :: ' . $message->getMessage();
 		$tmp.= ' | '.$message->getFile().':'.$message->getLine();
 		$tmp.= "\nBacktrace:\n".$message->getTraceAsString();
+
+		if(isset($_SERVER['REQUEST_URI']))
+		{
+			$tmp.= "\nREQUEST:\n".$_SERVER['REQUEST_URI'];
+		}
+		if(isset($_REQUEST))
+		{
+			$tmp.= "\nPARAMS:\n".json_encode($_REQUEST);
+		}
+		if(isset($_SERVER))
+		{
+			$tmp.= "\nSERVER:\n".base64_encode(json_encode($_SERVER));
+		}
+
 		$message = $tmp;
 	}
 
