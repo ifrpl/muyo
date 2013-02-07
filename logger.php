@@ -26,9 +26,9 @@ function logger_log($message, $level = LOG_INFO)
 		{
 			$tmp.= "\nREQUEST:\n".$_SERVER['REQUEST_URI'];
 		}
-		if(isset($_REQUEST))
+		if(isset($_POST))
 		{
-			$tmp.= "\nPARAMS:\n".json_encode($_REQUEST);
+			$tmp.= "\nPARAMS POST:\n".json_encode($_POST);
 		}
 		if(isset($_SERVER))
 		{
