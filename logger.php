@@ -63,3 +63,29 @@ function logger_set($val)
 		$logger = $val;
 	}
 }
+
+/**
+ * @param string $file File name to check fo rotation
+ * @param float $maxSize Max file size in MB unit
+ */
+function logger_rotate($file, $maxSize)
+{
+	$size = filesize($file) / 1024; // size in MB
+
+	if($size > $maxSize)
+	{
+		$files = glob($file.'*');
+		array_shift($files);
+
+		$count = count($files) + 1;
+		foreach(array_reverse($files) as $oldFile)
+		{
+			exec("mv {$oldFile} {$file}.{$count}.gz");
+			$count--;
+		}
+
+		exec("gzip -c {$file} > {$file}.{$count}.gz");
+		exec("> {$file}");
+	}
+
+}
