@@ -387,7 +387,7 @@ function debug_assert($assertion, $message = null)
 
 	if( version_compare(PHP_VERSION, '5.4.8', '>=') )
 	{
-		return assert($assertion, $message);
+		return assert($assertion, var_dump_human_compact($message));
 	}
 	else
 	{
