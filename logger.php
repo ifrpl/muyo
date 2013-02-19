@@ -70,7 +70,7 @@ function logger_set($val)
  */
 function logger_rotate($file, $maxSize)
 {
-	$size = filesize($file) / 1024; // size in MB
+	$size = filesize($file) / 1024 / 1024; // size in MB
 
 	if($size > $maxSize)
 	{
