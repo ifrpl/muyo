@@ -105,6 +105,11 @@ function printrlog($tab)
 	$msg .= print_r($tab,true);
 	$msg .= "\n";
 
+	$logdir = ROOT_PATH.'/tmp';
+	if( !is_dir($logdir) )
+	{
+		mkdir($logdir, 0777, true);
+	}
 	file_put_contents(ROOT_PATH.'/tmp/log',$msg,FILE_APPEND);
 	writeln($tab);
 }
