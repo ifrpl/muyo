@@ -207,7 +207,7 @@ function var_dump_human_compact($var, $key = null)
 
 				$tmp []= var_dump_human_compact($v, $k);
 			}
-			$ret .= '['.implode(',',$tmp).']';
+			$ret .= '['.str_truncate(implode(',',$tmp)).']';
 		}
 	}
 	elseif ( is_null($var) )
@@ -242,7 +242,7 @@ function var_dump_human_compact($var, $key = null)
 	{
 		$ret .= $var;
 	}
-	return $ret;
+	return str_truncate($ret);
 }
 
 /**
@@ -403,6 +403,7 @@ function debug_assert($assertion, $message = null)
 		if( !$assertion )
 		{
 			$handler = assert_options(ASSERT_CALLBACK);
+			$message = var_dump_human_compact($message);
 
 			if( null !== $handler )
 			{ /** @var Callable $handler */
@@ -414,6 +415,23 @@ function debug_assert($assertion, $message = null)
 		}
 		return $assertion;
 	}
+}
+
+/**
+ * @param int $stack_index
+ * @param int $options debug_backtrace options
+ * @return array compatible with debug_backtrace
+ */
+function debug_trace_func_call($stack_index = 0, $options = 0)
+{
+	$stack_index+=2; //ignore myself
+	$backtrace_args = array($options);
+	if( version_compare(PHP_VERSION, '5.4.0', '>=') )
+	{
+		$backtrace_args []= $stack_index+1;
+	}
+	$tmp = call_user_func_array('debug_backtrace', $backtrace_args);
+	return array( $tmp[$stack_index] );
 }
 
 /**
