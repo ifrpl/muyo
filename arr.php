@@ -98,14 +98,7 @@ function arrayize(&$var)
 {
 	if(!is_array($var))
 	{
-		if(is_object($var))
-		{
-			$var = (array)($var);
-		}
-		else
-		{
-			$var = array($var);
-		}
+		$var = array($var);
 	}
 	return $var;
 }
@@ -127,4 +120,16 @@ function array_key_is_reference($arr, $key)
 	}
 	ob_end_clean();
 	return $isRef;
+}
+
+/**
+ * @param      $arr
+ * @param      $needle
+ * @param bool $strict
+ *
+ * @return bool
+ */
+function array_contains($arr, $needle, $strict = false)
+{
+	return false !== array_search($needle, $arr, $strict);
 }
