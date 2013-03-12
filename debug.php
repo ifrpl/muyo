@@ -378,8 +378,8 @@ if( class_exists('Zend_Log') )
 }
 
 /**
- * @param      $assertion
- * @param null $message
+ * @param bool|callable|string $assertion
+ * @param string|null $message
  *
  * @return bool
  */
@@ -414,6 +414,33 @@ function debug_assert($assertion, $message = null)
 			}
 		}
 		return $assertion;
+	}
+}
+
+/**
+ * @param bool $enforcement
+ * @param string|null $message
+ *
+ * @return bool
+ * @throws App_Exception
+ */
+function debug_enforce($enforcement, $message = null)
+{
+	if( $message === null )
+	{
+		$message = 'Enforcement failed';
+	}
+	if( is_callable($enforcement) )
+	{
+		$enforcement = $enforcement();
+	}
+	if( !$enforcement )
+	{
+		throw new App_Exception(var_dump_human_compact($message));
+	}
+	else
+	{
+		return true;
 	}
 }
 

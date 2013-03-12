@@ -133,3 +133,54 @@ function array_contains($arr, $needle, $strict = false)
 {
 	return false !== array_search($needle, $arr, $strict);
 }
+
+/**
+ * @param array $array
+ * @param callable $iterator
+ * @param array $key_space
+ *
+ * @return array
+ */
+function array_group($array, $iterator, $key_space = null)
+{
+	$ret = array();
+
+	if( !is_null($key_space) )
+	{
+		foreach( $key_space as $key )
+		{
+			$ret[$key] = array();
+		}
+	}
+
+	foreach( $array as $value )
+	{
+		$key = $iterator($value);
+		if( !isset($ret[$key]) )
+		{
+			$ret[$key] = array();
+		}
+		$ret[$key] []= $value;
+	}
+
+	return $ret;
+}
+
+/**
+ * @param array $array
+ * @param callable $iterator,...
+ *
+ * @return array
+ */
+function array_chain($array, $iterator)
+{
+	$args = func_get_args();
+	$array = array_shift($args);
+	while( !empty($args) )
+	{
+		/** @var callable $iterator */
+		$iterator = array_shift($args);
+		$array = $iterator($array);
+	}
+	return $array;
+}
