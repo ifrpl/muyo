@@ -549,6 +549,8 @@ function debug_handler_exception($handler = null)
 		writeln("{$e->getFile()}:{$e->getLine()} :: {$e->getMessage()}\n");
 		writeln("Backtrace:");
 		backtrace_print(0,$e->getTrace());
+
+		logger_log($e);
 	};
 
 	$default_handlers = array(
@@ -571,7 +573,9 @@ function debug_handler_exception($handler = null)
 function debug_handler_error($handler = null)
 {
 	$default_handler = function ($errno , $errstr , $errfile , $errline , $errcontext) {
-		throw new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
+		$e = new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
+		logger_log($e);
+		throw $e;
 	};
 
 	$default_handlers = array(
@@ -594,7 +598,9 @@ function debug_handler_error($handler = null)
 function debug_handler_assertion($handler = null)
 {
 	$default_handler = function ($script, $line, $message) {
-		throw new Exception("{$script}:{$line} Assertion failed. {$message}");
+		$e = new Exception("{$script}:{$line} Assertion failed. {$message}");
+		logger_log($e);
+		throw $e;
 	};
 
 	$default_handlers = array(
