@@ -184,3 +184,58 @@ function array_chain($array, $iterator)
 	}
 	return $array;
 }
+
+/**
+ * @param array $array
+ * @param callable $iterator function($val,$key)
+ *
+ * @return array
+ */
+function array_map_val($array, $iterator)
+{
+	$keys = array_keys($array);
+	$values = array_values($array);
+	$mapped = array_map($iterator,$values,$keys);
+	return array_combine($keys,$mapped);
+}
+
+/**
+ * @param array $array
+ * @param callable $iterator function($key,$val)
+ *
+ * @return array
+ */
+function array_map_key($array, $iterator)
+{
+	$values = array_values($array);
+	$mapped = array_map_val($array,$iterator);
+	return array_combine($mapped,$values);
+}
+
+/**
+ * Warning: Opposed to {@see list_uniq} it preserves original keys
+ * @param array $array
+ * @param callable $iterator function($val,$key) returning uniqueness key
+ *
+ * @return array
+ */
+function array_uniq($array, $iterator)                   //function($val,$key){ return $val===1||$val===2; }
+{                                                        //[1=>1,2=>2,3=>3]
+	$map = array_map_val($array,$iterator);                //[1=>true,2=>true,3=>false]
+	$umap = array_unique($map);                            //[1=>true,3=>false]
+	$ukeys = array_keys($umap);                            //[1=>1,2=>3]
+	return array_intersect_key($array,array_flip($ukeys)); //[1=>1,3=>3]
+}
+
+/**
+ * Warning: Opposed to {@see array_uniq} it doesn't preserve original keys
+ *
+ * @param array $list
+ * @param callable $iterator
+ *
+ * @return array
+ */
+function list_uniq($list, $iterator)
+{
+	return array_values(array_uniq($list,$iterator));
+}
