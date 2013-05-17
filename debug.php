@@ -60,6 +60,7 @@ function debug_allow()
 /**
  * @param mixed $tab
  * @param ...
+ * @return null|string
  */
 function printr($tab)
 {
@@ -181,6 +182,65 @@ function var_dump_human_full($var)
 }
 
 /**
+ * @param mixed $var
+ * @param int $max_size
+ *
+ * @return string
+ */
+function var_dump_html_full($var,$max_size=100000)
+{
+	return '<pre>'.var_dump_human_full($var).'</pre>';
+//	$ret = '';
+//	if( is_array($var) )
+//	{
+//		$key = key($var);
+//		if( null === $key )
+//		{
+//			$ret .= '[]';
+//		}
+//		elseif( is_numeric($key) /*&&is_sorted($var)*/ )
+//		{
+//			$wrapped = array_map_val($var,function($str)use($max_size){ return '<li class="dump-value">'.var_dump_html_full($str,$max_size).'</li>'; });
+//			$ret .= '<ul class="dump-set">'.implode('',$wrapped).'</ul>';
+//		}
+//		else
+//		{
+//			$wrapped = array_map_val($var,function($val,$key)use($max_size){ return '<dt class="dump-key">'.var_dump_html_full($key,$max_size).'</dt><dd class="dump-value">'.var_dump_html_full($val,$max_size).'</dd>'; });
+//			$ret .= '<dl class="dump-map">'.implode('',$wrapped).'</dl>';
+//		}
+//	}
+//	elseif ( is_null($var) )
+//	{
+//		$ret .= 'NULL';
+//	}
+//	elseif ( false === $var )
+//	{
+//		$ret .= 'false';
+//	}
+//	elseif ( true === $var )
+//	{
+//		$ret .= 'true';
+//	}
+//	elseif ( is_object($var) )
+//	{
+//		$ret .= '<fieldset>';
+//		$ret .= '<legend class="dump-type">'.get_class($var).'</legend>';
+//		$wrapped = array_map_val(get_object_vars($var),function($val,$key)use($max_size){ return '<dt class="dump-key">'.var_dump_html_full($key,$max_size).'</dt><dd class="dump-value">'.var_dump_html_full($val,$max_size).'</dd>'; });
+//		$ret .= '<dl class="dump-property">'.implode('',$wrapped).'</dl>';
+//		$ret .= '</fieldset>';
+//	}
+//	elseif ( is_string($var) )
+//	{
+//		$ret .= '"'.htmlentities($var).'"';
+//	}
+//	else
+//	{
+//		$ret .= $var;
+//	}
+//	return str_truncate($ret,$max_size);
+}
+
+/**
  * Returns single-line human-readable representation of a variable.
  * @param mixed $var
  * @param mixed $key internal (recursive) use only, this is a key matched with array value
@@ -197,7 +257,8 @@ function var_dump_human_compact($var, $key = null)
 	{
 		if( $key && array_key_is_reference($var, $key) )
 		{
-			$ret .= '&'.gettype($var);
+			$type = is_object($var) ? get_class($var) : gettype($var);
+			$ret .= '&'.$type;
 		}
 		else
 		{
@@ -256,6 +317,8 @@ function backtrace_print($ignore_depth = 0, $backtrace = null)
 }
 
 /**
+ * @param int $ignore_depth stack frames to ignore
+ * @param null|mixed $backtrace backtrace array to print
  * @return string
  */
 function backtrace_string($ignore_depth = 0, $backtrace = null)
@@ -266,10 +329,11 @@ function backtrace_string($ignore_depth = 0, $backtrace = null)
 	}
 
 	$max_len_file = 0;
-	foreach( $backtrace as $val )
+	foreach( $backtrace as &$val )
 	{
 		if ( isset($val['file']) )
 		{
+			$val['file'] = trim_application_path($val['file']);
 			$len = strlen($val['file']);
 			$max_len_file = max($max_len_file,$len);
 		}
@@ -297,8 +361,18 @@ function backtrace_string($ignore_depth = 0, $backtrace = null)
 		$append .= "  $function($args)\n";
 		$ret .= $append;
 	}
-	debug_assert(is_string($ret));
 	return $ret;
+}
+
+/**
+ * @param int  $ignore_depth
+ * @param null $backtrace
+ *
+ * @return string
+ */
+function backtrace_html($ignore_depth = 0, $backtrace = null)
+{
+	return "<pre>\n".backtrace_string($ignore_depth,$backtrace)."\n</pre>";
 }
 
 /**

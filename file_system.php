@@ -141,3 +141,21 @@ function rrmdir($path)
 		@rmdir($path);
 	}
 }
+
+/**
+ * @param string $path
+ * @return string
+ */
+function trim_application_path($path)
+{
+	if( str_startswith($path, ROOT_PATH) )
+	{
+		$path = substr($path,strlen(ROOT_PATH)+1);
+		if( PATH_SEPARATOR === $path[0] )
+		{
+			$path = substr($path,1);
+		}
+		$path = './'.$path;
+	}
+	return $path;
+}
