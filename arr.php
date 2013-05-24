@@ -137,30 +137,25 @@ function array_contains($arr, $needle, $strict = false)
 /**
  * @param array $array
  * @param callable $iterator
- * @param array $key_space
  *
  * @return array
  */
-function array_group($array, $iterator, $key_space = null)
+function array_group($array, $iterator)
 {
 	$ret = array();
 
-	if( !is_null($key_space) )
+	foreach( $array as $origKey=>$value )
 	{
-		foreach( $key_space as $key )
+		$key = $iterator($value,$origKey);
+		if( is_bool($key) )
+		{
+			$key = (int) $key; // well, i don't exactly feel like it's a sane limitation so try to workaround
+		}
+		if( !array_key_exists($key,$ret) )
 		{
 			$ret[$key] = array();
 		}
-	}
-
-	foreach( $array as $value )
-	{
-		$key = $iterator($value);
-		if( !isset($ret[$key]) )
-		{
-			$ret[$key] = array();
-		}
-		$ret[$key] []= $value;
+		$ret[$key][$origKey] = $value;
 	}
 
 	return $ret;
