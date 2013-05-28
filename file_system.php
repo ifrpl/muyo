@@ -116,7 +116,7 @@ function ifr_path_rel($from, $to, $to_as_root = false)
 function path2array($path,$data=null)
 {
 	return array_reduce(
-		array_reverse(explode('/',trim($path,'/'))),
+		array_reverse(explode(DIRECTORY_SEPARATOR,trim($path,DIRECTORY_SEPARATOR))),
 		function($sum,$sub)
 		{
 			return array($sub=>$sum);
@@ -130,10 +130,7 @@ function path2array($path,$data=null)
  */
 function rrmdir($path)
 {
-	if(str_endswith($path,'/.') || str_endswith($path,'/..'))
-	{
-	}
-	else
+	if( !str_endswith($path,'/.') && !str_endswith($path,'/..') )
 	{
 		@array_map('rrmdir',@glob($path.'/*'));
 		@array_map('rrmdir',@glob($path.'/.*'));
