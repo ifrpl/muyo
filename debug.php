@@ -346,7 +346,7 @@ function backtrace_string($ignore_depth = 0, $backtrace = null)
 		$file = isset($val['file']) ? $val['file'] : '';
 		$line = isset($val['line']) ? $val['line'] : '';
 		$function = isset($val['function']) ? $val['function'] : '';
-		$args = isset($val['args']) ? var_dump_human_compact($val['args']) : '';
+		$args = isset($val['args']) && is_array($val['args']) ? implode(',',array_map_val($val['args'],function($v){ return var_dump_human_compact($v); })) : '';
 
 		$append = !empty($file) ? $file : '???';
 
@@ -466,7 +466,7 @@ function debug_assert($assertion, $message = null)
 
 	if( version_compare(PHP_VERSION, '5.4.8', '>=') )
 	{
-		return assert($assertion, var_dump_human_compact($message));
+		return assert($assertion, is_string($message) ? $message : var_dump_human_compact($message));
 	}
 	else
 	{
