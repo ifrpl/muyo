@@ -137,12 +137,21 @@ function array_contains($arr, $needle, $strict = false)
 /**
  * @param array $array
  * @param callable $iterator
+ * @param array|null $keyspace
  *
  * @return array
  */
-function array_group($array, $iterator)
+function array_group($array, $iterator, $keyspace = null)
 {
 	$ret = array();
+
+	if( !is_null($keyspace) )
+	{
+		foreach( $keyspace as $key )
+		{
+			$ret[$key] = array();
+		}
+	}
 
 	foreach( $array as $origKey=>$value )
 	{
