@@ -617,14 +617,17 @@ function debug_handler($handler = null)
 function debug_handler_exception($handler = null)
 {
 	$default_handler = function ($e) {
-		/** @var Exception $e */
-		$class = get_class($e);
-		writeln("Unhandled `{$class}`({$e->getCode()}):");
-		writeln("{$e->getFile()}:{$e->getLine()} :: {$e->getMessage()}\n");
-		writeln("Backtrace:");
-		backtrace_print(0,$e->getTrace());
+		do {
+			/** @var Exception $e */
+			$class = get_class($e);
+			writeln("Unhandled `{$class}`({$e->getCode()}):");
+			writeln("{$e->getFile()}:{$e->getLine()} :: {$e->getMessage()}\n");
+			writeln("Backtrace:");
+			backtrace_print(0,$e->getTrace());
 
-		logger_log($e);
+			logger_log($e);
+			$e = $e->getPrevious();
+		} while($e);
 	};
 
 	$default_handlers = array(
