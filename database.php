@@ -26,3 +26,27 @@ function pg_last_insert_id($sqlQuery, $pdoObject)
 
 	return false;
 }
+
+/**
+ * @param string|null $database
+ *
+ * @return array
+ */
+function mysql_tables_list($database=null)
+{
+    $tables = array();
+    $sql = null === $database ? 'SHOW TABLES' : "SHOW TABLES FROM {$database};";
+    $result = mysql_query($sql);
+	if( false === $result )
+	{
+		return false;
+	}
+	else
+	{
+		while($table = mysql_fetch_row($result))
+		{
+			$tables[] = $table[0];
+		}
+		return $tables;
+	}
+}

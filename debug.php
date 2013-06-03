@@ -335,6 +335,13 @@ function backtrace_string($ignore_depth = 0, $backtrace = null)
 		{
 			$val['file'] = trim_application_path($val['file']);
 			$len = strlen($val['file']);
+
+			$line = isset($val['line']) ? $val['line'] : '';
+			if ( !empty($file) && !empty($line) )
+			{
+				$len += strlen((string)$line)+1;
+			}
+
 			$max_len_file = max($max_len_file,$len);
 		}
 	}
@@ -510,7 +517,7 @@ function debug_enforce($enforcement, $message = null)
 	}
 	if( !$enforcement )
 	{
-		throw new App_Exception(var_dump_human_compact($message));
+		throw new Exception(var_dump_human_compact($message));
 	}
 	else
 	{
