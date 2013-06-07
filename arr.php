@@ -254,3 +254,16 @@ function array_pluck($array, $key)
 {
 	return array_map_val($array, function($collection)use($key){ return is_object($collection) ? $collection->$key : $collection[$key]; });
 }
+
+/**
+ * @param array $array
+ * @param callable $iterator
+ *
+ * @return array
+ */
+function array_filter_key($array,$iterator)
+{
+  $mapped = array_map_val($array,$iterator);
+  $filtered = array_filter($mapped,function($val){ return true === $val; });
+  return array_intersect_key($array,$filtered);
+}
