@@ -205,6 +205,27 @@ function array_map_val($array, $iterator)
 
 /**
  * @param array $array
+ * @param callable $iterator function($val,$key)
+ *
+ * @return array
+ */
+function array_map_val_recursive($array, $iterator)
+{
+	$keys = array_keys($array);
+	$values = array_values($array);
+	$mapped = array_map(function($value, $key) use($iterator){
+		if(is_array($value))
+		{
+			$value = array_map_val_recursive($value, $iterator);
+		}
+		$value = $iterator($value, $key);
+		return $value;
+	},$values,$keys);
+	return array_combine($keys,$mapped);
+}
+
+/**
+ * @param array $array
  * @param callable $iterator function($key,$val)
  *
  * @return array
