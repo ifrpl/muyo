@@ -288,3 +288,30 @@ function array_filter_key($array,$iterator)
   $filtered = array_filter($mapped,function($val){ return true === $val; });
   return array_intersect_key($array,$filtered);
 }
+
+/**
+ * @param array $array
+ * @param string $key
+ * @return mixed
+ */
+function array_get_unset(&$array,$key)
+{
+	$ret = array_key_exists($key,$array) ? $array[$key] : null;
+	unset($array[$key]);
+	return $ret;
+}
+
+/**
+ * @param array $array
+ * @param string $key
+ * @param mixed $value
+ * @return mixed
+ */
+function array_set_default(&$array,$key,$value)
+{
+	if( !array_key_exists($key,$array) )
+	{
+		$array[$key] = $value;
+	}
+	return $array[$key];
+}
