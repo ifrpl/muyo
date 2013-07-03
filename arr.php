@@ -197,10 +197,17 @@ function array_chain($array, $iterator)
  */
 function array_map_val($array, $iterator)
 {
-	$keys = array_keys($array);
-	$values = array_values($array);
-	$mapped = array_map($iterator,$values,$keys);
-	return array_combine($keys,$mapped);
+	if(!empty($array))
+	{
+		$keys = array_keys($array);
+		$values = array_values($array);
+		$mapped = array_map($iterator,$values,$keys);
+		return array_combine($keys,$mapped);
+	}
+	else
+	{
+		return array();
+	}
 }
 
 /**
