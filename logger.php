@@ -36,7 +36,10 @@ function logger_log($message, $level = LOG_INFO)
 		}
 
 		$message = $tmp;
-		mail('atrium-dev@ifresearch.org', 'Exception on '.$_SERVER['HTTP_HOST'], $message);
+		if(defined('APPLICATION_ENV') && (APPLICATION_ENV == 'production' || APPLICATION_ENV == 'testing'))
+		{
+			mail('atrium-dev@ifresearch.org', 'Exception on '.$_SERVER['HTTP_HOST'], $message);
+		}
 	}
 
 	if( null !== $logger )
