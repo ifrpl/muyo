@@ -239,9 +239,16 @@ function array_map_val_recursive($array, $iterator)
  */
 function array_map_key($array, $iterator)
 {
-	$values = array_values($array);
-	$mapped = array_map_val($array,$iterator);
-	return array_combine($mapped,$values);
+	if(count($array))
+	{
+		$values = array_values($array);
+		$mapped = array_map_val($array,$iterator);
+		return array_combine($mapped,$values);
+	}
+	else
+	{
+		return array();
+	}
 }
 
 /**
