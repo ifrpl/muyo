@@ -24,7 +24,18 @@ function proc_exec($command,&$output=array(),&$retval=null)
 	$output = explode(PHP_EOL,$stdout);
 
 	$retval = proc_close($res);
-	debug_assert(0 === $retval,$stderr); // FIXME: should be enforce but i wont risk it now
+	if( 0 !== $retval )
+	{
+		logger_log("Process returned error." . PHP_EOL
+			. " * Cli: " . $command          . PHP_EOL
+			. " * Return value: " . $retval  . PHP_EOL
+			. " * Stderr: "                  . PHP_EOL
+			. str_indent($stderr,1)          . PHP_EOL
+			. " * Stdout: "                  . PHP_EOL
+			. str_indent($stdout,1)          . PHP_EOL
+		);
+		debug_assert(false); // FIXME: should be enforce but i wont risk it now
+	}
 
 	$ol = count($output);
 	return $ol > 0 ? $output[$ol-1] : '';
