@@ -14,7 +14,12 @@ require_once "locale.php";
 require_once "logger.php";
 require_once "misc.php";
 require_once "net.php";
+require_once "hw.php";
+require_once "proc.php";
+require_once "parallel.php";
 require_once "object.php";
 require_once "shell.php";
 require_once "string.php";
+
 require_once "zend.php";
+require_once "wkhtmltox.php";

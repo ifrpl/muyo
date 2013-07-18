@@ -329,3 +329,13 @@ function array_set_default(&$array,$key,$value)
 	}
 	return $array[$key];
 }
+
+/**
+ * @param mixed $val
+ *
+ * @return bool
+ */
+function is_array_assoc($val)
+{
+	return is_array($val) && ((bool)count(array_filter(array_keys($val), 'is_string')));
+}
