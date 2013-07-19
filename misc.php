@@ -128,3 +128,13 @@ function now()
 {
 	return date('Y-m-d H:i:s');
 }
+
+/**
+ * @param mixed $val
+ *
+ * @return mixed
+ */
+function to_hash($val)
+{
+	return (string) $val;
+}

@@ -339,3 +339,15 @@ function is_array_assoc($val)
 {
 	return is_array($val) && ((bool)count(array_filter(array_keys($val), 'is_string')));
 }
+
+/**
+ * @param array... $arrays
+ * @return array
+ */
+function array_zip( /*$args*/ )
+{
+	$args = func_get_args();
+	$zipped = call_user_func_array('array_map', array_merge(array(null), $args));
+	$trimmed = array_slice($zipped, 0, min(array_map('count', $args)));
+	return $trimmed;
+}
