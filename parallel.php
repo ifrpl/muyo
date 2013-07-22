@@ -105,74 +105,79 @@ function parallel_exec($commands, $onerror = null)
 		1 => array('pipe','w'), //out
 		2 => array('pipe','w'), //err
 	);
-	$processes = array();
-	foreach($commands as $key => $command)
-	{
-		$key = to_hash($key);
-		$process = proc_open($command,$spec,$pipes);
-		if( is_resource($process) )
-		{
-			fclose($pipes[0]);
-			$processes[$key]= array(
-				'cmd' => $command,
-				'res' => $process,
-				'out' => $pipes[1],
-				'err' => $pipes[2],
-			);
-		}
-		else
-		{
-			$processes[$key]= $command;
-		}
-	}
+
 	$errors = array();
 	$ret = array();
-	while( !empty($processes) )
+	foreach(array_chunk($commands, hw_core_get(), true) as $chunk)
 	{
-		foreach($processes as $key => $v)
+		$processes = array();
+		foreach($chunk as $key => $command)
 		{
-			$resource = $v['res'];
-			$cmd = $v['cmd'];
-			if( is_resource($resource) )
+			$key = to_hash($key);
+			$process = proc_open($command,$spec,$pipes);
+			if( is_resource($process) )
 			{
-				$status = proc_get_status($resource);
-				if( !$status['running'] )
-				{
-					$code = $status['exitcode'];
-
-					$out = stream_get_contents($v['out']);
-					fclose($v['out']);
-
-					$err = stream_get_contents($v['err']);
-					fclose($v['err']);
-
-					proc_close($resource);
-					unset($processes[$key]);
-
-					if( 0 !== $code )
-					{
-						$errors[$key] = array(
-							'error' => "Error code '$code'",
-							'cmd' => $cmd,
-							'err' => $err,
-						);
-					}
-					else
-					{
-						$ret[$key] = $out;
-					}
-				}
+				fclose($pipes[0]);
+				$processes[$key]= array(
+					'cmd' => $command,
+					'res' => $process,
+					'out' => $pipes[1],
+					'err' => $pipes[2],
+				);
 			}
 			else
 			{
-				unset($processes[$key]);
-				$errors[$key] = array(
-					'error' => "Could not open process",
-					'cmd' => $cmd,
-				);
+				$processes[$key]= $command;
+			}
+		}
+		while( !empty($processes) )
+		{
+			foreach($processes as $key => $v)
+			{
+				$resource = $v['res'];
+				$cmd = $v['cmd'];
+				if( is_resource($resource) )
+				{
+					$status = proc_get_status($resource);
+					if( !$status['running'] )
+					{
+						$code = $status['exitcode'];
+
+						$out = stream_get_contents($v['out']);
+						fclose($v['out']);
+
+						$err = stream_get_contents($v['err']);
+						fclose($v['err']);
+
+						proc_close($resource);
+						unset($processes[$key]);
+
+						if( 0 !== $code )
+						{
+							$errors[$key] = array(
+								'error' => "Error code '$code'",
+								'cmd' => $cmd,
+								'err' => $err,
+							);
+						}
+						else
+						{
+							$ret[$key] = $out;
+						}
+					}
+				}
+				else
+				{
+					unset($processes[$key]);
+					$errors[$key] = array(
+						'error' => "Could not open process",
+						'cmd' => $cmd,
+					);
+				}
 			}
 		}
 	}
+
 	if( null !== $onerror )
 	{
 		foreach($errors as $error)
