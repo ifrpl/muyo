@@ -85,11 +85,20 @@ else
 	}
 }
 
+$cli_format_error = function($cmd,$message,$stderr)
+{
+	$err = $stderr ? 'StdErr:'.PHP_EOL.str_indent($stderr,1).PHP_EOL : '';
+	return "Message: $message".PHP_EOL
+		.  "Command: $cmd".PHP_EOL
+		.  $err;
+};
+
 /**
  * @param array $commands
+ * @param callable $onerror ($command,$code,$stderr)
  * @return array
  */
-function parallel_exec($commands)
+function parallel_exec($commands, $onerror = null)
 {
 	$spec = array(
 		0 => array('pipe','r'), //in
@@ -164,19 +173,25 @@ function parallel_exec($commands)
 			}
 		}
 	}
-	$format_errors = function($errors)
+	if( null !== $onerror )
 	{
-		$errors = array_map_val($errors, function($error)
+		foreach($errors as $error)
 		{
-			$message = $error['error'];
-			$cmd = $error['cmd'];
-			$err = array_key_exists('err',$error) ? 'StdErr:'.PHP_EOL.str_indent($error['err'],1).PHP_EOL : '';
-			return "Message: $message".PHP_EOL
-				.  "Command: $cmd".PHP_EOL
-				.  $err;
-		});
-		return implode(PHP_EOL.'==='.PHP_EOL,$errors);
-	};
-	debug_enforce( empty($errors), $format_errors($errors) );
+			$onerror($error['cmd'],$error['error'],array_key_exists('err',$error)?$error['err']:null);
+		}
+	}
+	else
+	{
+		$format_errors = function($errors)
+		{
+			$errors = array_map_val($errors, function($error)
+			{
+				global $cli_format_error;
+				return $cli_format_error($error['cmd'],$error['error'],array_key_exists('err',$error)?$error['err']:null);
+			});
+			return implode(PHP_EOL.'==='.PHP_EOL,$errors);
+		};
+		debug_enforce( empty($errors), $format_errors($errors) );
+	}
 	return $ret;
 }
