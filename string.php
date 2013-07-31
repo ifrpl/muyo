@@ -150,3 +150,26 @@ function preg_replace_r($expr, $replacement, $subject)
 	} while ( $old !== $subject );
 	return $subject;
 }
+
+/**
+ * Generates pseudo-random 7bit US-ASCII string
+ * @param int $length
+ * @param callable $allowed
+ * @return string
+ */
+function str_ascii7_prand($length = 1, $allowed = null)
+{
+	if( null === $allowed )
+	{
+		$allowed = function($char){ return true; };
+	}
+	$ret = '';
+	for ($i = 0; $i < $length; $i++)
+	{
+		do {
+			$char = chr(rand(0,127));
+		} while( !$allowed($char) );
+		$ret .= $char;
+	}
+	return $ret;
+}

@@ -138,3 +138,18 @@ function to_hash($val)
 {
 	return (string) $val;
 }
+
+/**
+ * @param int $n
+ * @param callable|null $apply
+ * @return callable
+ */
+function tuple_get($n,$apply=null)
+{
+	return function()use($n,$apply)
+	{
+		$args = func_get_args();
+		$arg = $args[$n];
+		return $apply ? $apply($arg) : $arg;
+	};
+}

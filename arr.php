@@ -71,18 +71,20 @@ function array_qsort(&$array, $column=0, $order=SORT_ASC)
  */
 function array_merge_recursive_overwrite($arr1, $arr2)
 {
-	debug_assert(is_array($arr1) && is_array($arr2));
-	foreach($arr2 as $key=>$value)
+	if( debug_assert(is_array($arr1) && is_array($arr2)) )
 	{
-		if(array_key_exists($key, $arr1) && is_array($value))
+		foreach($arr2 as $key=>$value)
 		{
-			$arr1[$key] = array_merge_recursive_overwrite($arr1[$key], $arr2[$key]);
-		}
-		else
-		{
-			if(isset($value))
+			if(array_key_exists($key, $arr1) && is_array($value))
 			{
-				$arr1[$key] = $value;
+				$arr1[$key] = array_merge_recursive_overwrite($arr1[$key], $arr2[$key]);
+			}
+			else
+			{
+				if(isset($value))
+				{
+					$arr1[$key] = $value;
+				}
 			}
 		}
 	}
@@ -132,6 +134,42 @@ function array_key_is_reference($arr, $key)
 function array_contains($arr, $needle, $strict = false)
 {
 	return false !== array_search($needle, $arr, $strict);
+}
+
+/**
+ * @param array $arr
+ * @param callable $iterator
+ *
+ * @return bool
+ */
+function array_some($arr, $iterator)
+{
+	foreach($arr as $k => $v)
+	{
+		if( $iterator($v,$k) )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * @param array $arr
+ * @param callable $iterator
+ *
+ * @return bool
+ */
+function array_all($arr, $iterator)
+{
+	foreach($arr as $k => $v)
+	{
+		if( !$iterator($v,$k) )
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 /**
@@ -197,7 +235,7 @@ function array_chain($array, $iterator)
  */
 function array_map_val($array, $iterator)
 {
-	if(!empty($array))
+	if( debug_assert(is_array($array) && is_callable($iterator),'Invalid parameters') && !empty($array) )
 	{
 		$keys = array_keys($array);
 		$values = array_values($array);
@@ -220,7 +258,8 @@ function array_map_val_recursive($array, $iterator)
 {
 	$keys = array_keys($array);
 	$values = array_values($array);
-	$mapped = array_map(function($value, $key) use($iterator){
+	$mapped = array_map(function($value, $key) use($iterator)
+	{
 		if(is_array($value))
 		{
 			$value = array_map_val_recursive($value, $iterator);
@@ -298,9 +337,16 @@ function array_pluck($array, $key)
  */
 function array_filter_key($array,$iterator)
 {
-  $mapped = array_map_val($array,$iterator);
-  $filtered = array_filter($mapped,function($val){ return true === $val; });
-  return array_intersect_key($array,$filtered);
+	if( debug_assert(is_array($array) && is_callable($iterator),'Invalid parameters') )
+	{
+		$mapped = array_map_val($array,$iterator);
+		$filtered = array_filter($mapped,function($val){ return true === $val; });
+		return array_intersect_key($array,$filtered);
+	}
+	else
+	{
+		return array();
+	}
 }
 
 /**
@@ -332,12 +378,20 @@ function array_set_default(&$array,$key,$value)
 
 /**
  * @param mixed $val
- *
  * @return bool
  */
 function is_array_assoc($val)
 {
-	return is_array($val) && ((bool)count(array_filter(array_keys($val), 'is_string')));
+	return is_array($val) && array_some($val,tuple_get(1,'is_string'));
+}
+
+/**
+ * @param mixed $val
+ * @return bool
+ */
+function is_array_list($val)
+{
+	return is_array($val) && array_some($val,tuple_get(1,'is_int'));
 }
 
 /**
