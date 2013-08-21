@@ -156,3 +156,50 @@ function trim_application_path($path)
 	}
 	return $path;
 }
+
+/**
+ * @param string $suffix
+ * @param string $prefix
+ * @param string|null $dir
+ * @param int $tries
+ * @return string path to new (existing) temporary file
+ */
+function tempfile_str($suffix = '',$prefix = '',$dir = null,$tries = 5)
+{
+	if( !debug_assert( is_string($suffix), "Invalid suffix '$suffix'" ) )
+	{
+		$suffix = '';
+	}
+	if( !debug_assert( is_string($prefix), "Invalid prefix '$prefix'" ) )
+	{
+		$prefix = '';
+	}
+	if( is_null($dir) )
+	{
+		$dir = sys_get_temp_dir();
+	}
+	else
+	{
+		if( !debug_assert( is_dir($dir), "Invalid directory '$dir'" ) )
+		{
+			$dir = sys_get_temp_dir();
+		}
+	}
+	if( !str_endswith($dir,DIRECTORY_SEPARATOR) )
+	{
+		$dir .= DIRECTORY_SEPARATOR;
+	}
+
+	for ($i = 0; $i < $tries; $i++)
+	{
+		$path = $dir.$prefix.str_ascii7_prand(20,'ctype_alnum').$suffix;
+		$handle = @fopen($path,'xb');
+		if( false !== $handle )
+		{
+			debug_assert( true === fclose($handle) );
+			return $path;
+		}
+	}
+	debug_enforce( false, "Failed to create temporary file '$tries' times in a row." );
+	return false;
+}
