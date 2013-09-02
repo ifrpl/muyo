@@ -271,6 +271,18 @@ function array_map_val_recursive($array, $iterator)
 }
 
 /**
+ * @param callable $iterator
+ * @return callable
+ */
+function array_map_val_dg($iterator)
+{
+	return function($array)use($iterator)
+	{
+		return array_map_val($array,$iterator);
+	};
+}
+
+/**
  * @param array $array
  * @param callable $iterator function($key,$val)
  *
@@ -330,6 +342,18 @@ function array_pluck($array, $key)
 }
 
 /**
+ * @param string $attribute
+ * @return callable
+ */
+function array_pluck_dg($attribute)
+{
+	return function($array)use($attribute)
+	{
+		return array_pluck($array,$attribute);
+	};
+}
+
+/**
  * @param array $array
  * @param callable $iterator
  *
@@ -347,6 +371,18 @@ function array_filter_key($array,$iterator)
 	{
 		return array();
 	}
+}
+
+/**
+ * @param callable $iterator
+ * @return callable
+ */
+function array_filter_key_dg($iterator)
+{
+	return function($array)use($iterator)
+	{
+		return array_filter_key($array,$iterator);
+	};
 }
 
 /**
@@ -404,4 +440,26 @@ function array_zip( /*$args*/ )
 	$zipped = call_user_func_array('array_map', array_merge(array(null), $args));
 	$trimmed = array_slice($zipped, 0, min(array_map('count', $args)));
 	return $trimmed;
+}
+
+/**
+ * @param string|null $key
+ * @return callable
+ */
+function array_key_exists_dg($key=null)
+{
+	if( null !== $key )
+	{
+		return function($arr,$unused)use($key)
+		{
+			return array_key_exists($key,$arr);
+		};
+	}
+	else
+	{
+		return function($arr,$key)
+		{
+			return array_key_exists($key,$arr);
+		};
+	}
 }
