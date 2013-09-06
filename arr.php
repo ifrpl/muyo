@@ -387,6 +387,19 @@ function array_filter_key_dg($iterator)
 
 /**
  * @param array $array
+ * @param mixed $val
+ * @param bool $strict
+ */
+function array_unset_val(&$array, $val, $strict = true)
+{
+	foreach(array_keys($array, $val, $strict) as $key)
+	{
+		unset($array[$key]);
+	}
+}
+
+/**
+ * @param array $array
  * @param string $key
  * @return mixed
  */
