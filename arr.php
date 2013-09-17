@@ -476,3 +476,48 @@ function array_key_exists_dg($key=null)
 		};
 	}
 }
+
+/**
+ * @param mixed $needle
+ * @param array $haystack
+ *
+ * @return mixed
+ */
+function array_search_recursive($needle,$haystack)
+{
+	foreach($haystack as $key => $value)
+	{
+		$current_key = $key;
+		if($needle === $value || (is_array($value) && array_search_recursive($needle,$value) !== false))
+		{
+			return $current_key;
+		}
+	}
+	return false;
+}
+
+/**
+ * @param mixed $needle
+ * @param array $haystack
+ *
+ * @return mixed
+ */
+function array_search_by_key_recursive($needle,$haystack)
+{
+	foreach($haystack as $key => $value)
+	{
+		if($needle === $key)
+		{
+			return $value;
+		}
+		elseif(is_array($value))
+		{
+			$result = array_search_by_key_recursive($needle,$value);
+			if($result !== false)
+			{
+				return $result;
+			}
+		}
+	}
+	return false;
+}
