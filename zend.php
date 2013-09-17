@@ -16,15 +16,31 @@ function getConfig($path, $env = null)
 }
 
 /**
- * @param Zend_Form_Element|Zend_Form $target
- * @param string                      $class
+ * @param Zend_Form_Element|Zend_Form|array $target
+ * @param string                            $class
  */
-function ifr_add_class($target, $class)
+function ifr_add_class(&$target, $class)
 {
-	$attrib  = $target->getAttrib('class');
-	$classes = explode(' ', $attrib);
-	if( false === array_search($class, $classes) )
+	if( !is_array($target) )
 	{
-		$target->setAttrib('class', $attrib . ' ' . $class);
+		$attrib  = $target->getAttrib('class');
+		$classes = explode(' ', $attrib);
+	}
+	else
+	{
+		$attrib = array_key_exists('class',$target) ? $target['class'] : '';
+		$classes = is_array($attrib) ? $attrib : explode(' ',$attrib);
+	}
+	if( !array_contains($classes,$class) )
+	{
+		if( !is_array($target) )
+		{
+			$target->setAttrib('class', $attrib . ' ' . $class);
+		}
+		else
+		{
+			$classes []= $class;
+			$target['class'] = implode(' ',$classes);
+		}
 	}
 }
