@@ -478,17 +478,17 @@ function array_key_exists_dg($key=null)
 }
 
 /**
- * @param mixed $needle
  * @param array $haystack
+ * @param mixed $needle
  *
  * @return mixed
  */
-function array_search_recursive($needle,$haystack)
+function array_search_recursive($haystack, $needle)
 {
 	foreach($haystack as $key => $value)
 	{
 		$current_key = $key;
-		if($needle === $value || (is_array($value) && array_search_recursive($needle,$value) !== false))
+		if( $needle===$value || (is_array($value) && array_search_recursive($needle, $value)!==false) )
 		{
 			return $current_key;
 		}
@@ -497,23 +497,23 @@ function array_search_recursive($needle,$haystack)
 }
 
 /**
- * @param mixed $needle
  * @param array $haystack
+ * @param mixed $needle
  *
  * @return mixed
  */
-function array_search_by_key_recursive($needle,$haystack)
+function array_search_by_key_recursive($haystack, $needle)
 {
 	foreach($haystack as $key => $value)
 	{
-		if($needle === $key)
+		if( $needle===$key )
 		{
 			return $value;
 		}
-		elseif(is_array($value))
+		elseif( is_array($value) )
 		{
-			$result = array_search_by_key_recursive($needle,$value);
-			if($result !== false)
+			$result = array_search_by_key_recursive($needle, $value);
+			if( $result!==false )
 			{
 				return $result;
 			}
