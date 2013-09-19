@@ -103,7 +103,7 @@ function array_merge_recursive_overwrite($arr1, $arr2)
  */
 function arrayize(&$var)
 {
-	if(!is_array($var))
+	if( !is_array($var) )
 	{
 		$var = array($var);
 	}
@@ -111,7 +111,7 @@ function arrayize(&$var)
 }
 
 /**
- * @param array $arr
+ * @param array      $arr
  * @param string|int $key
  *
  * @return bool
@@ -121,7 +121,12 @@ function array_key_is_reference($arr, $key)
 	$isRef = false;
 	ob_start();
 	var_dump($arr);
-	if (strpos(preg_replace("/[ \n\r]*/i", "", preg_replace("/( ){4,}.*(\n\r)*/i", "", ob_get_contents())), "[" . $key . "]=>&") !== false)
+	if(
+		false !== strpos(
+			preg_replace("/[ \n\r]*/i", "", preg_replace("/( ){4,}.*(\n\r)*/i", "", ob_get_contents())),
+			"[".$key."]=>&"
+		)
+	)
 	{
 		$isRef = true;
 	}
@@ -130,26 +135,26 @@ function array_key_is_reference($arr, $key)
 }
 
 /**
- * @param      $arr
+ * @param      $array
  * @param      $needle
  * @param bool $strict
  *
  * @return bool
  */
-function array_contains($arr, $needle, $strict = false)
+function array_contains($array, $needle, $strict = false)
 {
-	return false !== array_search($needle, $arr, $strict);
+	return in_array($needle,$array,$strict);
 }
 
 /**
- * @param array $arr
+ * @param array $array
  * @param callable $iterator
  *
  * @return bool
  */
-function array_some($arr, $iterator)
+function array_some($array, $iterator)
 {
-	foreach($arr as $k => $v)
+	foreach($array as $k => $v)
 	{
 		if( $iterator($v,$k) )
 		{
@@ -160,14 +165,14 @@ function array_some($arr, $iterator)
 }
 
 /**
- * @param array $arr
+ * @param array $array
  * @param callable $iterator
  *
  * @return bool
  */
-function array_all($arr, $iterator)
+function array_all($array, $iterator)
 {
-	foreach($arr as $k => $v)
+	foreach($array as $k => $v)
 	{
 		if( !$iterator($v,$k) )
 		{
@@ -309,13 +314,14 @@ function array_map_key($array, $iterator)
 
 /**
  * Warning: Opposed to {@see list_uniq} it preserves original keys
+ *
  * @param array $array
  * @param callable $iterator function($val,$key) returning uniqueness key
  *
  * @return array
  */
-function array_uniq($array, $iterator)                   //function($val,$key){ return $val===1||$val===2; }
-{                                                        //[1=>1,2=>2,3=>3]
+function array_uniq($array, $iterator)                     //function($val,$key){ return $val===1||$val===2; }
+{                                                          //[1=>1,2=>2,3=>3]
 	$map = array_map_val($array,$iterator);                //[1=>true,2=>true,3=>false]
 	$umap = array_unique($map);                            //[1=>true,3=>false]
 	$ukeys = array_keys($umap);                            //[1=>1,2=>3]
@@ -468,18 +474,115 @@ function array_key_exists_dg($key=null)
 {
 	if( null !== $key )
 	{
-		return function($arr,$unused)use($key)
+		return function($array,$unused)use($key)
 		{
-			return array_key_exists($key,$arr);
+			return array_key_exists($key,$array);
 		};
 	}
 	else
 	{
-		return function($arr,$key)
+		return function($array,$key)
 		{
-			return array_key_exists($key,$arr);
+			return array_key_exists($key,$array);
 		};
 	}
+}
+
+/**
+ * @param array $array
+ * @param int $count
+ *
+ * @return array
+ */
+function array_first($array,$count)
+{
+	return array_slice($array,0,$count,null,is_array_assoc($array));
+}
+
+/**
+ * @param int $count
+ *
+ * @return callable
+ */
+function array_first_dg($count)
+{
+	return function($array,$unused)use($count)
+	{
+		return array_first($array,$count);
+	};
+}
+
+
+/**
+ * @param array $array
+ * @param int $idx
+ *
+ * @return array
+ */
+function array_initial($array,$idx)
+{
+	return array_slice($array,0,-$idx,null,is_array_assoc($array));
+}
+
+/**
+ * @param int $idx
+ *
+ * @return callable
+ */
+function array_initial_dg($idx)
+{
+	return function($array,$unused)use($idx)
+	{
+		return array_initial($array,$idx);
+	};
+}
+
+/**
+ * @param array $array
+ * @param int $idx
+ *
+ * @return array
+ */
+function array_rest($array,$idx)
+{
+	return array_slice($array,$idx,null,is_array_assoc($array));
+}
+
+/**
+ * @param int $idx
+ *
+ * @return callable
+ */
+function array_rest_dg($idx)
+{
+	return function($array,$unused)use($idx)
+	{
+		return array_rest($array,$idx);
+	};
+}
+
+/**
+ * @param array $array
+ * @param int $count
+ *
+ * @return array
+ */
+function array_last($array,$count)
+{
+	return array_slice($array,-$count,null,is_array_assoc($array));
+}
+
+/**
+ * @param int $count
+ *
+ * @return callable
+ */
+function array_last_dg($count)
+{
+	return function($array,$unused)use($count)
+	{
+		return array_last($array,$count);
+	};
 }
 
 /**
