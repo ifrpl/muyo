@@ -10,5 +10,6 @@ Some of the key-points we are trying achieve are:
 * No mandatory external dependencies (we're trying to gracefully degrade, or make move depending-parts to separate modules)
 * We're loving defaults-based configuration ( unspecified things always fallback to defaults leaving you a fully-working system ). Still, we're trying to be as customizable as possible.
 
+License: Boost v1.0
 
 Warning: it's very bleeding-edge and has no versioning yet! If you like it, use it, but you should inspect changes before every update.
