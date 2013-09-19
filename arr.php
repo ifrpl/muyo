@@ -489,55 +489,92 @@ function array_key_exists_dg($key=null)
 }
 
 /**
+ * Returns [0..count]
+ *
  * @param array $array
  * @param int $count
  *
  * @return array
  */
-function array_first($array,$count)
+function array_first($array,$count = 1)
 {
 	return array_slice($array,0,$count,null,is_array_assoc($array));
 }
 
 /**
+ * Returns [0..count]
+ *
  * @param int $count
  *
  * @return callable
  */
-function array_first_dg($count)
+function array_first_dg($count = 1)
 {
-	return function($array,$unused)use($count)
+	return function($array)use($count)
 	{
 		return array_first($array,$count);
 	};
 }
 
-
 /**
+ * Returns [0..$-idx]
+ *
  * @param array $array
  * @param int $idx
  *
  * @return array
  */
-function array_initial($array,$idx)
+function array_initial($array,$idx = 1)
 {
 	return array_slice($array,0,-$idx,null,is_array_assoc($array));
 }
 
 /**
+ * Returns [0..$-idx]
+ *
  * @param int $idx
  *
  * @return callable
  */
-function array_initial_dg($idx)
+function array_initial_dg($idx = 1)
 {
-	return function($array,$unused)use($idx)
+	return function($array)use($idx)
 	{
 		return array_initial($array,$idx);
 	};
 }
 
 /**
+ * Returns [$-count..$]
+ *
+ * @param array $array
+ * @param int $count
+ *
+ * @return array
+ */
+function array_last($array,$count = 1)
+{
+	return array_slice($array,-$count,null,is_array_assoc($array));
+}
+
+/**
+ * Returns [$-count..$]
+ *
+ * @param int $count
+ *
+ * @return callable
+ */
+function array_last_dg($count = 1)
+{
+	return function($array)use($count)
+	{
+		return array_last($array,$count);
+	};
+}
+
+/**
+ * Returns [idx..$]
+ *
  * @param array $array
  * @param int $idx
  *
@@ -549,47 +586,73 @@ function array_rest($array,$idx)
 }
 
 /**
+ * Returns [idx..$]
+ *
  * @param int $idx
  *
  * @return callable
  */
 function array_rest_dg($idx)
 {
-	return function($array,$unused)use($idx)
+	return function($array)use($idx)
 	{
 		return array_rest($array,$idx);
 	};
 }
 
 /**
- * @param array $array
- * @param int $count
+ * [[1,2,3],[a,b,c],[]] => [1,2,3,a,b,c]
  *
+ * @param $array
  * @return array
  */
-function array_last($array,$count)
+function array_flatten($array)
 {
-	return array_slice($array,-$count,null,is_array_assoc($array));
+	$array = array_map_val($array,function($val,$key){ return array($val); });
+	return array_reduce($array,'array_merge');
 }
 
 /**
- * @param int $count
+ * [[1,2,3],[a,b,c],[]] => [1,2,3,a,b,c]
  *
  * @return callable
  */
-function array_last_dg($count)
+function array_flatten_dg()
 {
-	return function($array,$unused)use($count)
+	return function($array)
 	{
-		return array_last($array,$count);
+		return array_flatten($array);
 	};
 }
 
 /**
+ * @param $array
+ * @return array
+ */
+function array_flatten_recursive($array)
+{
+	$array = array_map_val($array,function($val,$key){ return array($val); });
+	return array_reduce($array,'array_merge_recursive');
+}
+
+/**
+ * @return callable
+ */
+function array_flatten_recursive_dg()
+{
+	return function($array)
+	{
+		return array_flatten_recursive($array);
+	};
+}
+
+/**
+ * Returns key of value, key of array which contains value or false.
+ *
  * @param array $haystack
  * @param mixed $needle
  *
- * @return mixed
+ * @return int|string|bool
  */
 function array_search_recursive($haystack, $needle)
 {
@@ -605,6 +668,8 @@ function array_search_recursive($haystack, $needle)
 }
 
 /**
+ * Returns first value identified by key existing in $haystack (or contained subarrays).
+ *
  * @param array $haystack
  * @param mixed $needle
  *
