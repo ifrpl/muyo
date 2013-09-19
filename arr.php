@@ -580,7 +580,7 @@ function array_last_dg($count = 1)
  *
  * @return array
  */
-function array_rest($array,$idx)
+function array_rest($array,$idx = 1)
 {
 	return array_slice($array,$idx,null,is_array_assoc($array));
 }
@@ -592,7 +592,7 @@ function array_rest($array,$idx)
  *
  * @return callable
  */
-function array_rest_dg($idx)
+function array_rest_dg($idx = 1)
 {
 	return function($array)use($idx)
 	{
@@ -608,8 +608,8 @@ function array_rest_dg($idx)
  */
 function array_flatten($array)
 {
-	$array = array_map_val($array,function($val,$key){ return array($val); });
-	return array_reduce($array,'array_merge');
+	$array = array_map_val($array,function($val,$key){ return arrayize($val); });
+	return array_reduce($array,'array_merge',array());
 }
 
 /**
@@ -631,7 +631,7 @@ function array_flatten_dg()
  */
 function array_flatten_recursive($array)
 {
-	$array = array_map_val($array,function($val,$key){ return array($val); });
+	$array = array_map_val($array,function($val,$key){ return arrayize($val); });
 	return array_reduce($array,'array_merge_recursive');
 }
 
