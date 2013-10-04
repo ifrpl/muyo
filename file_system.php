@@ -208,3 +208,19 @@ function tempfile_str($suffix = '',$prefix = '',$dir = null,$tries = 5)
 	debug_enforce( false, "Failed to create temporary file '$tries' times in a row." );
 	return false;
 }
+
+/**
+ * @param string $path
+ * @throws ErrorException
+ */
+function ensure_dir_exists($path)
+{
+	if( !@mkdir($path) )
+	{
+		$error = error_get_last();
+		if( $error['type'] !== 2 )
+		{
+			throw new ErrorException($error['message'],$error['type'],1,$error['file'],$error['line']);
+		}
+	}
+}

@@ -611,7 +611,14 @@ function debug_handler($handler = null)
 			return $handler($e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), 'exception', array( 'exception' => $e ));
 		};
 		$error_to_common = function($number, $message, $script, $line) use($handler) {
-			return $handler( $message, $script, $line, array(), 'php_error', array( 'php_error' => $number ) );
+			if( error_reporting() === 0 )
+			{
+				return false;
+			}
+			else
+			{
+				return $handler( $message, $script, $line, array(), 'php_error', array( 'php_error' => $number ) );
+			}
 		};
 		$assertion_to_common = function($script, $line, $message) use ($handler) {
 			return $handler( $message, $script, $line, array(), 'assertion', array() );
@@ -662,6 +669,10 @@ function debug_handler_exception($handler = null)
 function debug_handler_error($handler = null)
 {
 	$default_handler = function ($errno , $errstr , $errfile , $errline , $errcontext) {
+		if( error_reporting() === 0 )
+		{
+			return false;
+		}
 		$e = new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
 		logger_log($e);
 		throw $e;
