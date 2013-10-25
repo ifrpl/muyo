@@ -178,3 +178,58 @@ function str_ascii7_prand($length = 1, $allowed = null)
 	}
 	return $ret;
 }
+
+/**
+ * @param string $string
+ * @param callable|string|int $by
+ * @return array
+ */
+function str_splitter($string, $by)
+{
+	$ret = array();
+	$last = '';
+	$length = strlen($string);
+	for( $i=0; $i<$length; $i++ )
+	{
+		$char = $string[$i];
+		if( !$by($char) )
+		{
+			$last .= $char;
+		}
+		else
+		{
+			if( !empty($last) )
+			{
+				$ret []= $last;
+			}
+			$last = $char;
+		}
+	}
+	if( !empty($last) )
+	{
+		$ret []= $last;
+	}
+	return $ret;
+}
+
+/**
+ * @param string $string
+ * @param callable $iterator
+ * @return array
+ */
+function str_map($string,$iterator)
+{
+	return implode('',array_map_val(str_split($string),$iterator));
+}
+
+/**
+ * @param callable $iterator
+ * @return callable
+ */
+function str_map_dg($iterator)
+{
+	return function($string)use($iterator)
+	{
+		return str_map($string,$iterator);
+	};
+}
