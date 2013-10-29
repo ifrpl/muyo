@@ -165,6 +165,44 @@ function array_some($array, $iterator)
 }
 
 /**
+ * Finds first value matching the $iterator from the $array
+ *
+ * @param array $array
+ * @param callable $iterator
+ * @return mixed
+ */
+function array_find_val($array, $iterator)
+{
+	foreach( $array as $k => $v )
+	{
+		if( $iterator($v,$k) )
+		{
+			return $v;
+		}
+	}
+	return null;
+}
+
+/**
+ * Finds first key matching the $iterator from the $array
+ *
+ * @param array $array
+ * @param callable $iterator
+ * @return int|null|string
+ */
+function array_find_key($array, $iterator)
+{
+	foreach( $array as $k => $v )
+	{
+		if( $iterator($v,$k) )
+		{
+			return $k;
+		}
+	}
+	return null;
+}
+
+/**
  * @param array $array
  * @param callable $iterator
  *

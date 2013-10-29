@@ -158,3 +158,15 @@ function tuple_get($n,$apply=null)
 		return $apply ? $apply($arg) : $arg;
 	};
 }
+
+/**
+ * @param int|string $eq
+ * @return callable
+ */
+function key_eq_dg($eq)
+{
+	return function($val,$key)use($eq)
+	{
+		return $key === $eq;
+	};
+}
