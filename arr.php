@@ -454,6 +454,7 @@ function array_unset_val(&$array, $val, $strict = true)
  */
 function array_get_unset(&$array,$key)
 {
+	debug_enforce( is_array($array), "array_get_unset expects first parameter to be array, ".gettype($array)." given" );
 	$ret = array_key_exists($key,$array) ? $array[$key] : null;
 	unset($array[$key]);
 	return $ret;
