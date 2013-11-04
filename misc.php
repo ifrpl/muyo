@@ -4,28 +4,37 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-
 function autoload()
 {
 	/**
-	 * @param $class_name
+	 * Warning: namespaces are not completely implemented
 	 *
+	 * @param $class_name
 	 * @throws Exception
 	 */
-	spl_autoload_register(function($class_name)
-	{
-		$filename = str_replace('_','/',$class_name) . '.php';
-
-		foreach(explode(PATH_SEPARATOR,ini_get('include_path')) as $path)
+	spl_autoload_register(
+		function ( $class_name )
 		{
-			if(file_exists($path.'/'.$filename))
+			$parts = explode( '\\', $class_name );
+			$class_name = array_pop( $parts );
+			$filename = str_replace( '_', DIRECTORY_SEPARATOR, $class_name ).'.php';
+
+			if( count( $parts )>0 )
 			{
-				$found = $path.'/'.$filename;
-				include $found;
-				break;
+				$filename = implode( DIRECTORY_SEPARATOR, $parts ) . DIRECTORY_SEPARATOR. $filename;
+			}
+
+			foreach( explode( PATH_SEPARATOR, ini_get( 'include_path' ) ) as $path )
+			{
+				$candidate = $path.DIRECTORY_SEPARATOR.$filename;
+				if( file_exists( $candidate ) )
+				{
+					include $candidate;
+					break;
+				}
 			}
 		}
-	});
+	);
 }
 
 /**
