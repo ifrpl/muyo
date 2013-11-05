@@ -719,3 +719,23 @@ function debug_handler_assertion($handler = null)
 	assert_options(ASSERT_WARNING, true);
 	return assert_options(ASSERT_CALLBACK, $handler);
 }
+
+/**
+ * @param mixed $var
+ * @param string $type
+ */
+function debug_enforce_type($var,$type)
+{
+	$t = gettype($var);
+	debug_enforce( $t === $type, "Parameter of type $type expected, but $t passed" );
+}
+
+/**
+ * @param array $var
+ * @param int $count
+ */
+function debug_enforce_count_gte($var,$count)
+{
+	$c = count($var);
+	debug_enforce( $c >= $count, "Expected array count >= $c, but $count given" );
+}

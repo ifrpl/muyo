@@ -144,6 +144,21 @@ function rrmdir($path)
 	}
 }
 
+function rmkdir($path)
+{
+	$blocks = explode( DIRECTORY_SEPARATOR, $path );
+	$assembled = '';
+	foreach( $blocks as $block ) //FIXME: quoted paths
+	{
+		$assembled .= $block;
+		if( !empty($block) && !is_dir($assembled) )
+		{
+			mkdir($assembled);
+		}
+		$assembled .= DIRECTORY_SEPARATOR;
+	}
+}
+
 /**
  * @param string $path
  * @return string

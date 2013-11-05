@@ -135,16 +135,54 @@ function array_key_is_reference($arr, $key)
 }
 
 /**
- * @param      $array
- * @param      $needle
- * @param bool $strict
+ * @param array $array
+ * @param mixed $needle
+ * @param bool  $strict
  *
  * @return bool
  */
 function array_contains($array, $needle, $strict = false)
 {
-	return in_array($needle,$array,$strict);
+	debug_enforce( is_array($array), "Expected array" );
+
+	if( is_array($needle) )
+	{
+		return array_some( $needle, function($val,$key) use ($array,$strict)
+		{
+			return in_array($val,$array,$strict);
+		} );
+	}
+	else
+	{
+		return in_array($needle,$array,$strict);
+	}
 }
+/**
+ * @param mixed $needle
+ * @return callable
+ */
+function array_contains_dg($needle)
+{
+	return function($array)use($needle)
+	{
+		return array_contains($array,$needle);
+	};
+}
+
+/**
+ * TODO: Think about better tuple chaining (composition method).
+ *
+ * @param mixed $needle
+ * @return callable
+ */
+function array_not_contains_dg($needle)
+{
+	return function($array)use($needle)
+	{
+		return !array_contains($array,$needle);
+	};
+}
+
 
 /**
  * @param array $array

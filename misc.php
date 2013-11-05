@@ -169,6 +169,8 @@ function tuple_get($n,$apply=null)
 }
 
 /**
+ * Prepare a delegate that returns results with comparision of $key parameter to $eq.
+ *
  * @param int|string $eq
  * @return callable
  */
