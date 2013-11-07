@@ -233,3 +233,86 @@ function str_map_dg($iterator)
 		return str_map($string,$iterator);
 	};
 }
+
+/**
+ * @param string $string
+ * @param string $substring
+ * @return null|string
+ */
+function str_find_after($string, $substring)
+{
+	debug_enforce_type( $string, 'string' );
+	debug_enforce_type( $substring, 'string' );
+
+	$thisLen = strlen( $substring );
+	$thisAndAfter = strstr( $string, $substring, false );
+	if( $thisAndAfter===false )
+	{
+		return null;
+	}
+	$after = substr( $thisAndAfter, $thisLen );
+	return $after;
+}
+
+/**
+ * @param string $string
+ * @param string $substring
+ * @return null|string
+ */
+function str_find_before($string, $substring)
+{
+	debug_enforce_type( $string, 'string' );
+	debug_enforce_type( $substring, 'string' );
+
+	$before = strstr( $string, $substring, true );
+	if( $before===false )
+	{
+		return null;
+	}
+	else
+	{
+		return $before;
+	}
+}
+
+/**
+ * @param $string
+ * @param $substring
+ * @return string
+ */
+function str_find_from( $string, $substring )
+{
+	debug_enforce_type( $string, 'string' );
+	debug_enforce_type( $substring, 'string' );
+
+	$from = strstr( $string, $substring, false );
+	if( $from===false )
+	{
+		return null;
+	}
+	else
+	{
+		return $from;
+	}
+}
+
+/**
+ * @param $string
+ * @param $substring
+ * @return string
+ */
+function str_find_to( $string, $substring )
+{
+	debug_enforce_type( $string, 'string' );
+	debug_enforce_type( $substring, 'string' );
+
+	$thisPos = strpos( $string, $substring );
+
+	if( $thisPos===false )
+	{
+		return null;
+	}
+
+	$to = substr( $string, 0, $thisPos );
+	return $to===false ? null : $to;
+}
