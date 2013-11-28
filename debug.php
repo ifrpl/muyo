@@ -508,7 +508,7 @@ function debug_assert($assertion, $message = null)
  * @param string|null $message
  *
  * @return bool
- * @throws App_Exception
+ * @throws Lib_Exception
  */
 function debug_enforce($enforcement, $message = null)
 {

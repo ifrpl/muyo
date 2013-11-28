@@ -27,5 +27,6 @@ require_once "object.php";
 require_once "shell.php";
 require_once "string.php";
 
+require_once "model".DIRECTORY_SEPARATOR."_.php";
 require_once "zend.php";
 require_once "wkhtmltox.php";
