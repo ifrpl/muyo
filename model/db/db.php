@@ -534,7 +534,7 @@ abstract class Lib_Model_Db extends Lib_Model
 					{
 						$select->where($col.' IS NOT NULL');
 					}
-					if( $value instanceof Zend_Db_Expr )
+					elseif( $value instanceof Zend_Db_Expr )
 					{
 						$select->where($col.' '.$value);
 					}
