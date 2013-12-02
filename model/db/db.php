@@ -460,7 +460,10 @@ abstract class Lib_Model_Db extends Lib_Model
 							$select->where('TRUE=FALSE');
 							return $this;
 						}
-						$cond2 = 'IN';
+						if(strpos($cond2, 'IN') === false)
+						{
+							$cond2 = 'IN';
+						}
 						$valueChar = '(?)';
 					}
 
