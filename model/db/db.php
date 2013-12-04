@@ -678,6 +678,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public function findOneBy($conditions)
 	{
+		$this->setLimit(1);
 		$results = $this->findBy($conditions);
 
 		if( count($results) == 0 )
