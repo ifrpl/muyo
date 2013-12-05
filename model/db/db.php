@@ -1011,10 +1011,23 @@ abstract class Lib_Model_Db extends Lib_Model
 		}
 
 		$config = $this->getGridConfig();
+
+		$id = Lib_Grid::buildId(
+			  $export,
+			  $source,
+			  isset($config->bvbParams->id_prefix) ? $config->bvbParams->id_prefix : null
+		);
+
+		$requestParams = Zend_Controller_Front::getInstance()->getRequest()->getParams();
+		if(isset($requestParams['q']) && $requestParams['q'] == $id && isset($requestParams['_exportTo']))
+		{
+			$requestParams['_exportTo'.$id] = $requestParams['_exportTo'];
+		}
+
 		/**
 		 * @var Bvb_Grid $grid
 		 */
-		$grid = Bvb_Grid::factory($export, $config);
+		$grid = Bvb_Grid::factory($export, $config, $id, array(), $requestParams);
 		if($export == 'JqGrid')
 		{
 			Lib_Grid::prepareDeploy($grid, $config, $source);
