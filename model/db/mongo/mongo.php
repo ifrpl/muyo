@@ -124,7 +124,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 */
 	public function delete()
 	{
-		Space_Model_Log::changeLog(Space_Model_Log::TYPE_DELETE, $this); //TODO: abstract-out
+		Space_Model_Log::changeLog(Space_Model_Log::TYPE_DELETE, $this);
 
 		$pkey = $this->getPrimaryKey();
 		$pkval = $this->{$pkey};
@@ -132,9 +132,16 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		{
 			throw new Exception('Nothing to delete, id is empty');
 		}
-		$this->getCollection()->remove(array($pkey => $pkval), array('justOne'=>true));
+
+		if(!is_object($pkval)){
+			$pkval = new MongoId($pkval);
+		};
+
+		$ret = $this->getCollection()->remove(array($pkey => $pkval), array('justOne' => true));
+
 		$this->{$pkey} = null;
-		return true;
+
+		return 1 == $ret['ok'];
 	}
 
 	/**
