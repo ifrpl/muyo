@@ -688,7 +688,8 @@ function debug_handler_error($handler = null)
 	{
 		$handler = $default_handlers[ getCurrentEnv() ];
 	}
-	return set_error_handler($handler);
+	$ret = set_error_handler( $handler, -1 );
+	return $ret;
 }
 
 /**

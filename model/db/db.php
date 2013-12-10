@@ -1088,7 +1088,7 @@ abstract class Lib_Model_Db extends Lib_Model
 						$multiOptions += $config->$optionName->multiOptions->toArray();
 
 						$multiOptions = array_map(function($key, $row){
-							$translate = Zend_Registry::get('Zend_Translate');
+							$translate = App_Translate::getInstance();
 							return $key.':'.$translate->translate($row);
 						}, array_keys($multiOptions), $multiOptions);
 						ksort($multiOptions);
@@ -1199,7 +1199,7 @@ abstract class Lib_Model_Db extends Lib_Model
 							'1' => 'LABEL_YES'
 						);
 						$multiOptions = array_map(function($key, $row){
-							$translate = Zend_Registry::get('Zend_Translate');
+							$translate = App_Translate::getInstance();
 							return $key.':'.$translate->translate($row);
 						}, array_keys($multiOptions), $multiOptions);
 

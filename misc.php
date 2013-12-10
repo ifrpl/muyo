@@ -38,21 +38,14 @@ function autoload()
 }
 
 /**
- * @param object $obj
- * @param bool $interface
+ * @param mixed $obj
  *
  * @return bool
  */
-function is_iterable($obj,$interface=false)
+function is_iterable( $obj/*,$interface=false*/ )
 {
-	return
-		is_object($obj) ?
-			$interface ?
-				array_search('Iterator',class_implements($obj))!==false
-				:
-				true
-			:
-			is_array($obj)
+	return is_array( $obj )
+		|| ( is_object( $obj ) && $obj instanceof Traversable )
 	;
 }
 
