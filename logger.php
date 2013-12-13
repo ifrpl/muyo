@@ -20,42 +20,57 @@ $logger = null;
 function logger_log($message, $level = LOG_INFO)
 {
 	global $logger;
+	$eol = "\n";
+	$indent = "\t";
 
-	if($message instanceof \Exception)
-	{ /* @var Exception $message */
-		$tmp = 'Exception: '.get_class($message) . ' :: ' . $message->getMessage();
-		$tmp.= ' | '.$message->getFile().':'.$message->getLine();
-		$tmp.= "\nBacktrace:\n".$message->getTraceAsString();
+	if( $message instanceof \Exception )
+	{
+		$message = exception_str( $message, $eol );
+		if( isset( $_SERVER[ 'REQUEST_URI' ] ) && !empty( $_SERVER[ 'REQUEST_URI' ] ) )
+		{
+			$message .=
+				str_indent( "REQUEST:".$eol.
+					str_indent( $_SERVER[ 'REQUEST_URI' ], 1, $indent )
+				, 1, $indent ).$eol
+			;
+		}
+		if( isset( $_POST ) && !empty( $_POST ) )
+		{
+			$message .=
+				str_indent( "PARAMS POST:".$eol.
+					str_indent( json_encode( $_POST ), 1, $indent )
+				, 1, $indent ).$eol
+			;
+		}
+		if( isset( $_SERVER ) && !empty( $_SERVER ) )
+		{
+			$message .=
+				str_indent( "SERVER:".$eol.
+					str_indent( json_encode( $_SERVER ), 1, $indent )
+				, 1, $indent ).$eol
+			;
+		}
 
-		if(isset($_SERVER['REQUEST_URI']))
+		if( defined( 'APPLICATION_ENV' ) && ( APPLICATION_ENV=='production' || APPLICATION_ENV=='testing' ) )
 		{
-			$tmp.= "\nREQUEST:\n".$_SERVER['REQUEST_URI'];
-		}
-		if(isset($_POST))
-		{
-			$tmp.= "\nPARAMS POST:\n".json_encode($_POST);
-		}
-		if(isset($_SERVER))
-		{
-			$tmp.= "\nSERVER:\n".base64_encode(json_encode($_SERVER));
-		}
-
-		$message = $tmp;
-		if(defined('APPLICATION_ENV') && (APPLICATION_ENV == 'production' || APPLICATION_ENV == 'testing'))
-		{
-			mail('atrium-dev@ifresearch.org', 'Exception on '.$_SERVER['HTTP_HOST'], $message);
+			mail( 'atrium-dev@ifresearch.org', 'Exception on '.$_SERVER[ 'HTTP_HOST' ], $message );
 		}
 	}
 
+	$level = log_level_str($level);
 	if( null !== $logger )
 	{
 		$logger($message, $level);
 	}
 	else
 	{
-		$msg = '['.now().']';
-		$msg .= ' ['.$level.']';
-		$msg .= ' '.$message."\n";
+		$msg = '';
+		$now = now();
+		foreach( explode( $eol, $message ) as $line )
+		{
+			$msg .= "[$now] [$level] $line".$eol;
+		}
+
 		printrlog($msg);
 	}
 }

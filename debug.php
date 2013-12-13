@@ -635,18 +635,9 @@ function debug_handler($handler = null)
  */
 function debug_handler_exception($handler = null)
 {
-	$default_handler = function ($e) {
-		do {
-			/** @var Exception $e */
-			$class = get_class($e);
-			writeln("Unhandled `{$class}`({$e->getCode()}):");
-			writeln("{$e->getFile()}:{$e->getLine()} :: {$e->getMessage()}\n");
-			writeln("Backtrace:");
-			backtrace_print(0,$e->getTrace());
-
-			logger_log($e);
-			$e = $e->getPrevious();
-		} while($e);
+	$default_handler = function ($e)
+	{
+		logger_log($e);
 	};
 
 	$default_handlers = array(
@@ -674,7 +665,6 @@ function debug_handler_error($handler = null)
 			return false;
 		}
 		$e = new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
-		logger_log($e);
 		throw $e;
 	};
 
@@ -700,7 +690,6 @@ function debug_handler_assertion($handler = null)
 {
 	$default_handler = function ($script, $line, $message) {
 		$e = new Exception("{$script}:{$line} Assertion failed. {$message}");
-		logger_log($e);
 		throw $e;
 	};
 
@@ -739,4 +728,54 @@ function debug_enforce_count_gte($var,$count)
 {
 	$c = count($var);
 	debug_enforce( $c >= $count, "Expected array count >= $c, but $count given" );
+}
+
+/**
+ * @param \Exception $exception
+ * @param string $eol
+ * @return string
+ */
+function exception_str( $exception, $eol=null )
+{
+	if( $eol===null )
+	{
+		$eol="\n";
+	}
+	$ret = '';
+	$prefix="Uncaught";
+	if( debug_assert( $exception instanceof \Exception ) )
+	{
+		do
+		{
+			$class = get_class( $exception );
+			$msg   = $exception->getMessage();
+			$file  = $exception->getFile();
+			$line  = $exception->getLine();
+			$trace = backtrace_string( 0, $exception->getTrace() );
+			$ret  .= "$prefix $class in $file:$line".$eol.
+				str_indent( "Message:".$eol.
+					implode(
+						$eol,
+						array_map_val(
+							explode( $eol, $msg ),
+							function($val,$key){ return str_indent( $val, 1 ); }
+						)
+					)
+				, 1 ).$eol
+			;
+			if( !empty($trace) )
+			{
+				$ret  .=
+					str_indent( "Backtrace:".$eol.
+						str_indent( $trace, 1 )
+					, 1 ).$eol
+				;
+			}
+
+			$prefix="Caused by";
+			$exception = $exception->getPrevious();
+		}
+		while( $exception !== null );
+	}
+	return $ret;
 }
