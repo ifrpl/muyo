@@ -1209,7 +1209,17 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function __toString()
 	{
-		return get_class($this);
+		$class = get_called_class();
+		if( $this->recordExists() )
+		{
+			$data = var_dump_human_compact($this->_data);
+			return $class.'{'.$data.'}';
+		}
+		else
+		{
+			$query = $this instanceof App_Model_Db_Mysql ? $this->getSQL() : '';
+			return $class.'{'.$query.'}';
+		}
 	}
 
 	/**
