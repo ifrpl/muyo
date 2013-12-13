@@ -57,7 +57,6 @@ function logger_log($message, $level = LOG_INFO)
 		}
 	}
 
-	$level = log_level_str($level);
 	if( null !== $logger )
 	{
 		$logger($message, $level);
@@ -66,6 +65,7 @@ function logger_log($message, $level = LOG_INFO)
 	{
 		$msg = '';
 		$now = now();
+		$level = log_level_str($level);
 		foreach( explode( $eol, $message ) as $line )
 		{
 			$msg .= "[$now] [$level] $line".$eol;
