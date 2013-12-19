@@ -98,7 +98,9 @@ function str_indent($string, $counter, $character = "\t")
 	{
 		$pre .= $character;
 	}
-	return implode(PHP_EOL, array_map(function($str) use ($pre) { return $pre.$str; },explode(PHP_EOL,$string)));
+	return implode(	PHP_EOL,
+					array_map(	function($str) use ($pre) { return $pre.$str; },
+								explode(PHP_EOL, $string)));
 }
 
 /**

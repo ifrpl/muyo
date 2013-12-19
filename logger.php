@@ -8,6 +8,31 @@
 /** @var callable $logger */
 $logger = null;
 
+
+class Logger
+{
+	static public function debug($message)
+	{
+		return logger_log($message, LOG_DEBUG);
+	}
+
+	static public function info($message)
+	{
+		return logger_log($message, LOG_INFO);
+	}
+
+	static public function warn($message)
+	{
+		return logger_log($message, LOG_WARNING);
+	}
+
+	static public function error($message)
+	{
+		return logger_log($message, LOG_ERR);
+	}
+}
+
+
 /**
  * @param string|\Exception $message
  * @param int $level
@@ -66,9 +91,18 @@ function logger_log($message, $level = LOG_INFO)
 		$msg = '';
 		$now = now();
 		$level = log_level_str($level);
-		foreach( explode( $eol, $message ) as $line )
+
+		if(!is_array($message)){
+			$message = explode($eol, $message);
+		}
+
+		for($i=0; $i<count($message); $i++)
 		{
-			$msg .= "[$now] [$level] $line".$eol;
+			$msg .= sprintf("[%s] [%7s] %s", $now, $level, $message[$i]);
+			if($i<count($message)-1)
+			{
+				$msg .= PHP_EOL;
+			}
 		}
 
 		printrlog($msg);
@@ -82,10 +116,11 @@ function logger_set($val)
 {
 	global $logger;
 
-	if( debug_assert(is_callable($val), $val) )
-	{
-		$logger = $val;
+	if(null != $val){
+		debug_assert(is_callable($val), $val);
 	}
+
+	$logger = $val;
 }
 
 /**

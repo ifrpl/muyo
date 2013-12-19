@@ -29,7 +29,7 @@ function proc_exec($command,&$output=array(),&$retval=null)
 	$output = explode(PHP_EOL,$stdout);
 
 	$retval = proc_close($res);
-	if( 0 !== $retval )
+	if( 0 !== $retval)
 	{
 		logger_log("Process returned error." . PHP_EOL
 			. " * Cli: " . $command          . PHP_EOL
