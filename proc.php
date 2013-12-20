@@ -11,7 +11,7 @@
  * @param int|null &$retval
  * @return string
  */
-function proc_exec($command,&$output=array(),&$retval=null)
+function proc_exec($command, &$output=array(), &$retval=null)
 {
 	$descriptors = array(
 		0 => array("pipe","r"),

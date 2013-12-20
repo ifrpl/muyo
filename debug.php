@@ -553,24 +553,45 @@ function debug_trace_func_call($stack_index = 0, $options = 0)
  */
 function write($text /**, $more_text **/)
 {
-	if(!debug_allow()) return null;
+	if(!debug_allow())
+		return null;
 
-	ob_start();
-	echo implode(',',array_map(function($arg)
+
+
+
+	$output = implode(
+		',',
+		array_map(
+			function($arg)
+			{
+				if ( !is_string($arg) )
+				{
+					$arg = var_dump_human_compact($arg);
+				}
+
+				if(!isCLI())
+				{
+					$arg = str_replace("\n", "<br/>", $arg);
+				}
+
+				return $arg;
+			},
+			func_get_args()
+		)
+	);
+
+	if(!isCLI())
 	{
-		if ( !is_string($arg) )
-		{
-			$arg = var_dump_human_compact($arg);
-		}
+		ob_start();
+		echo $output;
+		ob_end_flush();
 
-		if(!isCLI())
-		{
-			$arg = str_replace("\n", "<br/>", $arg);
-		}
+	}else
+	{
+		fwrite(STDOUT, $output);
+	}
 
-		echo($arg);
-	},func_get_args()));
-	ob_end_flush();
+
 }
 
 /**
