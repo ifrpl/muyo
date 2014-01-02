@@ -735,8 +735,8 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public static function getById($id)
 	{
-		$dummy = self::find();
-		return self::getBy(array($dummy->getPrimaryKey()=>$id));
+		$dummy = static::find();
+		return static::getBy(array($dummy->getPrimaryKey()=>$id));
 	}
 
 	/**
@@ -748,7 +748,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public static function getListBy($conditions,$constructor=null)
 	{
-		$model = self::find()->filterBy($conditions);
+		$model = static::find()->filterBy($conditions);
 		if( null === $constructor )
 		{
 			$constructor = array_keys($model->_data);
@@ -804,7 +804,7 @@ abstract class Lib_Model_Db extends Lib_Model
 			}
 
 			$cond[$attr] = array_shift($args);
-			$result = self::getListBy($cond);
+			$result = static::getListBy($cond);
 
 			if( !$list )
 			{
@@ -841,7 +841,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public static function getCountById($id)
 	{
-		return self::find()->countById($id);
+		return static::find()->countById($id);
 	}
 
 	/**
@@ -875,7 +875,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	abstract public function load($q = null, $collection = false);
 
 	/**
-	 * @param null $q
+	 * @param Zend_Db_Select|null $q
 	 * @param bool $collection
 	 *
 	 * @return Lib_Model_Db
@@ -884,8 +884,29 @@ abstract class Lib_Model_Db extends Lib_Model
 	{
 		$ret = $this->load($q,$collection);
 		$count = count($ret);
-		debug_enforce( 1 === $count, "loadOne expects single result, but $count given" );
 
+		if( $count === 0 )
+		{
+			return new static();
+		}
+		else
+		{
+			return array_shift($ret);
+		}
+	}
+
+	/**
+	 * @param Zend_Db_Select|null $q
+	 * @param bool $collection
+	 *
+	 * @return Lib_Model_Db
+	 */
+	public function getOne( $q = null, $collection = false )
+	{
+		$ret = $this->load( $q, $collection );
+		$count = count($ret);
+
+		debug_enforce( 1 === $count, "getOne expects single result, but $count given" );
 		return array_shift($ret);
 	}
 
