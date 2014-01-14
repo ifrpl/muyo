@@ -732,6 +732,8 @@ function debug_handler_assertion($handler = null)
 }
 
 /**
+ * Enforces that gettype($var) === $type
+ *
  * @param mixed $var
  * @param string $type
  */
@@ -742,6 +744,8 @@ function debug_enforce_type($var,$type)
 }
 
 /**
+ * Enforces that count($var) >= $count
+ *
  * @param array $var
  * @param int $count
  */
@@ -749,6 +753,17 @@ function debug_enforce_count_gte($var,$count)
 {
 	$c = count($var);
 	debug_enforce( $c >= $count, "Expected array count >= $c, but $count given" );
+}
+
+/**
+ * Enforces that true === array_key_exists($key,$arr)
+ *
+ * @param string $key
+ * @param array $arr
+ */
+function debug_enforce_key_exists($key,$arr)
+{
+	debug_enforce( array_key_exists($key,$arr), "Expected key '$key' does not exists." );
 }
 
 /**

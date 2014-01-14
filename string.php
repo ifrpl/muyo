@@ -318,3 +318,28 @@ function str_find_to( $string, $substring )
 	$to = substr( $string, 0, $thisPos );
 	return $to===false ? null : $to;
 }
+
+/**
+ * @param string $string
+ * @param string $with
+ * @return string
+ */
+function str_wrap( $string, $with )
+{
+	debug_enforce_type( $string, 'string' );
+	debug_enforce_type( $with, 'string' );
+
+	return $with.$string.$with;
+}
+
+/**
+ * @param string $with
+ * @return callable
+ */
+function str_wrap_dg( $with )
+{
+	return function( $string )use( $with )
+	{
+		return str_wrap( $string, $with );
+	};
+}
