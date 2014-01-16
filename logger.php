@@ -32,10 +32,10 @@ class Logger
 	}
 }
 
-
 /**
  * @param string|\Exception $message
  * @param int $level
+ * @return null
  *
  * @see Zend_Log::WARN
  * @see LOG_WARNING
@@ -82,11 +82,47 @@ function logger_log($message, $level = LOG_INFO)
 		}
 	}
 
-	if( null !== $logger )
+	$logger( $message, $level );
+	return null;
+}
+
+/**
+ * @return callable|Zend_Log
+ */
+function logger_get()
+{
+	global $logger;
+	return $logger;
+}
+
+/**
+ * @param callable|null $val that takes ($message, $level)
+ */
+function logger_set( $val=null )
+{
+	global $logger;
+
+	if( null !== $val )
 	{
-		$logger($message, $level);
+		debug_assert(is_callable($val), $val);
 	}
 	else
+	{
+		$logger = logger_default();
+	}
+
+	$logger = $val;
+}
+
+/**
+ * Returns default logger implementation
+ *
+ * @param $eol
+ * @return callable
+ */
+function logger_default($eol="\n")
+{
+	return function( $message, $level=LOG_INFO )use($eol)
 	{
 		$msg = '';
 		$now = now();
@@ -106,22 +142,11 @@ function logger_log($message, $level = LOG_INFO)
 		}
 
 		printrlog($msg);
-	}
+	};
 }
 
-/**
- * @param callable $val that takes ($message, $level)
- */
-function logger_set($val)
-{
-	global $logger;
-
-	if(null != $val){
-		debug_assert(is_callable($val), $val);
-	}
-
-	$logger = $val;
-}
+// Set default logger
+logger_set();
 
 /**
  * @param string $file File name to check fo rotation
@@ -146,7 +171,6 @@ function logger_rotate($file, $maxSize)
 		exec("gzip -c {$file} > {$file}.{$count}.gz");
 		exec("> {$file}");
 	}
-
 }
 
 /**
