@@ -108,7 +108,7 @@ function logger_set( $val=null )
 	}
 	else
 	{
-		$logger = logger_default();
+		$val = logger_default();
 	}
 
 	$logger = $val;
