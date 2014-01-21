@@ -343,3 +343,29 @@ function str_wrap_dg( $with )
 		return str_wrap( $string, $with );
 	};
 }
+
+/**
+ * @param string $str
+ * @param int $first
+ * @return string
+ */
+function str_first( $str, $first )
+{
+	debug_enforce_type( $str, 'string' );
+	debug_enforce( intval($first) > 0, $first );
+	$ret = substr( $str, 0, $first );
+	debug_enforce( $ret !== false );
+}
+
+/**
+ * @param string $str
+ * @param int $last
+ * @return string
+ */
+function str_last( $str, $last )
+{
+	debug_enforce_type( $str, 'string' );
+	debug_enforce( intval($last) > 0, $last );
+	$ret = substr( $str, -$last );
+	debug_enforce( $ret !== false );
+}
