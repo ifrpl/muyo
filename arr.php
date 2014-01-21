@@ -325,8 +325,8 @@ function array_map_val($array, $iterator)
 	{
 		$keys = array_keys($array);
 		$values = array_values($array);
-		$mapped = array_map($iterator,$values,$keys);
-		return array_combine($keys,$mapped);
+		$mapped = array_map($iterator, $values, $keys);
+		return array_combine($keys, $mapped);
 	}
 	else
 	{
