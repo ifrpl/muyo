@@ -121,13 +121,6 @@ function getCurrentEnv()
 	}
 }
 
-$tz = @date_default_timezone_get();
-if( 'development' !== getCurrentEnv() )
-{
-	logger_log('Timezone not specified! Please set "date.timezone" in php.ini');
-}
-$tz = date_default_timezone_set($tz);
-
 /**
  * @return string
  */
