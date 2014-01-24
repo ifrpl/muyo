@@ -48,7 +48,7 @@ function str_contains($haystack,$needle)
  *
  * @return mixed|string
  */
-function str_truncate($string, $length = 80, $etc = '...', $break_words = false, $middle = false, $nobr = true)
+function str_truncate($string, $length = 200, $etc = '...', $break_words = false, $middle = false, $nobr = true)
 {
 	if($length == 0)
 	{
