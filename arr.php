@@ -362,9 +362,9 @@ function array_map_val_recursive($array, $iterator)
  */
 function array_map_val_dg($iterator)
 {
-	return function($array,$key)use($iterator)
+	return function()use($iterator)
 	{
-		return array_map_val($array,$iterator);
+		return array_map_val(array_shift(func_get_args()),$iterator);
 	};
 }
 
@@ -394,9 +394,9 @@ function array_map_key($array, $iterator)
  */
 function array_map_key_dg($iterator)
 {
-	return function($array,$key)use($iterator)
+	return function()use($iterator)
 	{
-		return array_map_key($array,$iterator);
+		return array_map_key(array_shift(func_get_args()),$iterator);
 	};
 }
 
@@ -446,9 +446,9 @@ function array_pluck($array, $key)
  */
 function array_pluck_dg($attribute)
 {
-	return function($array,$key)use($attribute)
+	return function()use($attribute)
 	{
-		return array_pluck($array,$attribute);
+		return array_pluck(array_shift(func_get_args()),$attribute);
 	};
 }
 
@@ -563,9 +563,9 @@ function array_key_exists_dg($key=null)
 {
 	if( null !== $key )
 	{
-		return function($array,$unused)use($key)
+		return function()use($key)
 		{
-			return array_key_exists($key,$array);
+			return array_key_exists($key,array_shift(func_get_args()));
 		};
 	}
 	else
@@ -683,9 +683,9 @@ function array_rest($array,$idx = 1)
  */
 function array_rest_dg($idx = 1)
 {
-	return function($array)use($idx)
+	return function()use($idx)
 	{
-		return array_rest($array,$idx);
+		return array_rest(array_shift(func_get_args()),$idx);
 	};
 }
 
@@ -697,7 +697,10 @@ function array_rest_dg($idx = 1)
  */
 function array_flatten($array)
 {
-	$array = array_map_val($array,function($val,$key){ return arrayize($val); });
+	$array = array_map_val($array,function()
+	{
+		return arrayize(array_shift(func_get_args()));
+	});
 	return array_reduce($array,'array_merge',array());
 }
 
@@ -720,7 +723,10 @@ function array_flatten_dg()
  */
 function array_flatten_recursive($array)
 {
-	$array = array_map_val($array,function($val,$key){ return arrayize($val); });
+	$array = array_map_val($array,function()
+	{
+		return arrayize(array_shift(func_get_args()));
+	});
 	return array_reduce($array,'array_merge_recursive');
 }
 
@@ -789,8 +795,9 @@ function array_search_by_key_recursive($haystack, $needle)
  */
 function array_debug_dg()
 {
-	return function($val,$key)
+	return function()
 	{
+		$val = array_shift(func_get_args());
 		debug($val);
 		return $val;
 	};
