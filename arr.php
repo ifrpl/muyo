@@ -364,7 +364,9 @@ function array_map_val_dg($iterator)
 {
 	return function()use($iterator)
 	{
-		return array_map_val(array_shift(func_get_args()),$iterator);
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return array_map_val( $array, $iterator );
 	};
 }
 
@@ -396,7 +398,9 @@ function array_map_key_dg($iterator)
 {
 	return function()use($iterator)
 	{
-		return array_map_key(array_shift(func_get_args()),$iterator);
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return array_map_key( $array, $iterator );
 	};
 }
 
@@ -448,7 +452,9 @@ function array_pluck_dg($attribute)
 {
 	return function()use($attribute)
 	{
-		return array_pluck(array_shift(func_get_args()),$attribute);
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return array_pluck( $array, $attribute );
 	};
 }
 
@@ -565,7 +571,9 @@ function array_key_exists_dg($key=null)
 	{
 		return function()use($key)
 		{
-			return array_key_exists($key,array_shift(func_get_args()));
+			$array = func_get_args();
+			$array = array_shift( $array );
+			return array_key_exists( $key, $array );
 		};
 	}
 	else
@@ -685,7 +693,9 @@ function array_rest_dg($idx = 1)
 {
 	return function()use($idx)
 	{
-		return array_rest(array_shift(func_get_args()),$idx);
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return array_rest( $array, $idx );
 	};
 }
 
@@ -699,7 +709,9 @@ function array_flatten($array)
 {
 	$array = array_map_val($array,function()
 	{
-		return arrayize(array_shift(func_get_args()));
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return arrayize( $array );
 	});
 	return array_reduce($array,'array_merge',array());
 }
@@ -725,7 +737,9 @@ function array_flatten_recursive($array)
 {
 	$array = array_map_val($array,function()
 	{
-		return arrayize(array_shift(func_get_args()));
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return arrayize( $array );
 	});
 	return array_reduce($array,'array_merge_recursive');
 }
@@ -735,8 +749,10 @@ function array_flatten_recursive($array)
  */
 function array_flatten_recursive_dg()
 {
-	return function($array)
+	return function()
 	{
+		$array = func_get_args();
+		$array = array_shift( $array );
 		return array_flatten_recursive($array);
 	};
 }
@@ -797,7 +813,8 @@ function array_debug_dg()
 {
 	return function()
 	{
-		$val = array_shift(func_get_args());
+		$array = func_get_args();
+		$val = array_shift( $array );
 		debug($val);
 		return $val;
 	};
