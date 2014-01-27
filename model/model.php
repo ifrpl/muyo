@@ -69,7 +69,15 @@ abstract class Lib_Model implements Iterator
 	 */
 	protected $_ignoreChangeLog = false;
 
+	/**
+	 * @var array
+	 */
 	private $changeRecordData = array();
+
+	/**
+	 * @var array
+	 */
+	private $_validationErrors = array();
 
 	/**
 	 * @param array|int|null $options
@@ -222,8 +230,7 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
-	 * @return bool
-	 * @throws Lib_Exception
+	 * @return bool|array
 	 */
 	public function isValid()
 	{
@@ -236,12 +243,20 @@ abstract class Lib_Model implements Iterator
 			$element = $form->getElement($column);
 			if($element && !$element->isValid($value))
 			{
-				throw new Lib_Exception(implode(' | ', $element->getErrors()));
+				$isValid = false;
+				$this->_validationErrors[$element->getId()] = $element->getErrors();
 			}
-
 		}
 
 		return $isValid;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getValidationErrors()
+	{
+		return $this->_validationErrors;
 	}
 
 	/**
