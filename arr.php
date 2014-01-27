@@ -362,7 +362,7 @@ function array_map_val_recursive($array, $iterator)
  */
 function array_map_val_dg($iterator)
 {
-	return function($array)use($iterator)
+	return function($array,$key)use($iterator)
 	{
 		return array_map_val($array,$iterator);
 	};
@@ -386,6 +386,18 @@ function array_map_key($array, $iterator)
 	{
 		return array();
 	}
+}
+
+/**
+ * @param callable $iterator
+ * @return callable
+ */
+function array_map_key_dg($iterator)
+{
+	return function($array,$key)use($iterator)
+	{
+		return array_map_key($array,$iterator);
+	};
 }
 
 /**
@@ -434,7 +446,7 @@ function array_pluck($array, $key)
  */
 function array_pluck_dg($attribute)
 {
-	return function($array)use($attribute)
+	return function($array,$key)use($attribute)
 	{
 		return array_pluck($array,$attribute);
 	};
@@ -770,4 +782,16 @@ function array_search_by_key_recursive($haystack, $needle)
 		}
 	}
 	return false;
+}
+
+/**
+ * @return callable
+ */
+function array_debug_dg()
+{
+	return function($val,$key)
+	{
+		debug($val);
+		return $val;
+	};
 }
