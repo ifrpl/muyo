@@ -31,7 +31,7 @@ function debug_allow()
 				'89.69.131.15' //IFResearch Chello
 			);
 
-			if((isCLI() && defined('APPLICATION_ENV') && APPLICATION_ENV !== 'production'))
+			if((isCLI() && getCurrentEnv() !== 'production'))
 			{
 				return true;
 			}

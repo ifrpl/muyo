@@ -4,6 +4,22 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+
+/**
+ * @return string
+ */
+function getCurrentEnv()
+{
+	if(defined('APPLICATION_ENV'))
+	{
+		return APPLICATION_ENV;
+	}
+	else
+	{
+		return 'development';
+	}
+}
+
 function autoload()
 {
 	/**
@@ -103,21 +119,6 @@ function define_array($key_value)
 				define($key, $value);
 			}
 		}
-	}
-}
-
-/**
- * @return string
- */
-function getCurrentEnv()
-{
-	if(defined('APPLICATION_ENV'))
-	{
-		return APPLICATION_ENV;
-	}
-	else
-	{
-		return 'development';
 	}
 }
 

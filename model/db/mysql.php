@@ -125,7 +125,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			}
 		}
 
-		if( APPLICATION_ENV != 'development' )
+		if( getCurrentEnv() != 'development' )
 		{
 			$this->clearAfterLoad();
 		}
@@ -162,10 +162,58 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$db = $this->getDb();
 		$myCols = array_keys( $this->schemaColumnsGet() );
 		$theirCols = $model->getColumnAliases();
-		$columns = '('.implode( ',', array_map_val( array_intersect( $theirCols, $myCols ), mysql_quote_column_dg() ) ).')';
-		$table = mysql_quote_table($this->getTable());
+		$columns = '('.implode( ',', array_map_val( array_intersect( $theirCols, $myCols ), $this->quoteColumnDg() ) ).')';
+		$table = $this->quoteTable();
 		$db->exec('INSERT INTO '.$table.' '.$columns.' '.$model->getSQL());
 		return $this->getLastInsertId();
+	}
+
+	/**
+	 * @param string|null $name
+	 * @return string
+	 */
+	public function quoteTable( $name=null )
+	{
+		if( null === $name )
+		{
+			$name = $this->getTable();
+		}
+		return $this->getDb()->quoteTableAs( $name );
+	}
+
+	/**
+	 * @return callable
+	 */
+	public function quoteTableDg()
+	{
+		$t = $this;
+		return function()use($t)
+		{
+			$name = func_get_arg(0);
+			return $t->quoteTable( $name );
+		};
+	}
+
+	/**
+	 * @param string $column
+	 * @return string
+	 */
+	public function quoteColumn( $column )
+	{
+		return $this->getDb()->quoteColumnAs( $column, null );
+	}
+
+	/**
+	 * @return callable
+	 */
+	public function quoteColumnDg()
+	{
+		$t = $this;
+		return function()use($t)
+		{
+			$name = func_get_arg(0);
+			return $t->quoteColumn( $name );
+		};
 	}
 
 }
