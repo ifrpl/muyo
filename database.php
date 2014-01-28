@@ -63,7 +63,7 @@ function mysql_tables_list($database=null)
 function mysql_quote_column( $column )
 {
 	debug_enforce_type( $column, 'string' );
-	return '`'.mysql_escape_string( $column ).'`';
+	return '`'.mysql_real_escape_string( $column ).'`';
 }
 
 /**
@@ -84,7 +84,7 @@ function mysql_quote_column_dg()
 function mysql_quote_table( $column )
 {
 	debug_enforce_type( $column, 'string' );
-	return '`'.mysql_escape_string( $column ).'`';
+	return '`'.mysql_real_escape_string( $column ).'`';
 }
 
 /**
