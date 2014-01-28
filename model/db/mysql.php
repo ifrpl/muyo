@@ -27,10 +27,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$where = array($pkey.' = ?' => $this->{$pkey});
 			$query->update($this->getTable(), $data, $where);
 
-			if($this->_ignoreChangeLog === false)
-			{
-				Space_Model_Log::changeLog(Space_Model_Log::TYPE_UPDATE, $this);
-			}
+			$this->_onUpdate();
 		}
 		else
 		{
@@ -43,10 +40,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$id = $this->getDb()->lastInsertId();
 			$this->{$pkey} = $id;
 
-			if($this->_ignoreChangeLog === false)
-			{
-				Space_Model_Log::changeLog(Space_Model_Log::TYPE_INSERT, $this);
-			}
+			$this->_onInsert();
 		}
 
 		$this->changedColumnsReset();
@@ -60,14 +54,14 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function delete()
 	{
-		Space_Model_Log::changeLog(Space_Model_Log::TYPE_DELETE, $this);
-
 		if(is_null($this->{$this->_primaryKey}))
 		{
 			throw new Exception('Nothing to delete, id is empty');
 		}
 		$delete = $this->getDb();
 		$rows = $delete->delete($this->getTable(), array($this->_primaryKey.' = ?' => $this->{$this->_primaryKey}));
+
+		$this->_onDelete();
 
 		if($rows > 0)
 		{
