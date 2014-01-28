@@ -139,4 +139,40 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		return $data;
 	}
 
+	/**
+	 * @param null $table
+	 * @param null $pkey
+	 * @return int
+	 */
+	public function getLastInsertId( $table=null, $pkey=null )
+	{
+		if( null === $table )
+		{
+			$table = $this->getTable();
+		}
+		if( null === $pkey )
+		{
+			$pkey = $this->getPrimaryKey();
+		}
+		return $this->getDb()->lastInsertId( $table, $pkey );
+	}
+
+	/**
+	 * Inserts to table from different query.
+	 * Warning: silently discards remote aliases if not existing as local column.
+	 * @param App_Model_Db_Mysql $model
+	 * @return int
+	 */
+	public static function insertFrom_s($model)
+	{
+		$t = static::find();
+		$db = $t->getDb();
+		$myCols = array_keys( $t->schemaColumnsGet() );
+		$theirCols = $model->getColumnAliases();
+		$columns = '('.implode( ',', array_map_val( array_intersect( $theirCols, $myCols ), mysql_quote_column_dg() ) ).')';
+		$table = mysql_quote_table($t->getTable());
+		$db->exec('INSERT INTO '.$table.' '.$columns.' '.$model->getSQL());
+		return $t->getLastInsertId();
+	}
+
 }

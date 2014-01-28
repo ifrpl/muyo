@@ -55,3 +55,45 @@ function mysql_tables_list($database=null)
 		return $tables;
 	}
 }
+
+/**
+ * @param string $column
+ * @return string
+ */
+function mysql_quote_column( $column )
+{
+	debug_enforce_type( $column, 'string' );
+	return '`'.mysql_escape_string( $column ).'`';
+}
+
+/**
+ * @return callable
+ */
+function mysql_quote_column_dg()
+{
+	return function()
+	{
+		return mysql_quote_column( func_get_arg(0) );
+	};
+}
+
+/**
+ * @param string $column
+ * @return string
+ */
+function mysql_quote_table( $column )
+{
+	debug_enforce_type( $column, 'string' );
+	return '`'.mysql_escape_string( $column ).'`';
+}
+
+/**
+ * @return callable
+ */
+function mysql_quote_table_dg()
+{
+	return function()
+	{
+		return mysql_quote_table( func_get_arg(0) );
+	};
+}
