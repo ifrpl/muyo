@@ -362,9 +362,11 @@ function array_map_val_recursive($array, $iterator)
  */
 function array_map_val_dg($iterator)
 {
-	return function($array)use($iterator)
+	return function()use($iterator)
 	{
-		return array_map_val($array,$iterator);
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return array_map_val( $array, $iterator );
 	};
 }
 
@@ -386,6 +388,20 @@ function array_map_key($array, $iterator)
 	{
 		return array();
 	}
+}
+
+/**
+ * @param callable $iterator
+ * @return callable
+ */
+function array_map_key_dg($iterator)
+{
+	return function()use($iterator)
+	{
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return array_map_key( $array, $iterator );
+	};
 }
 
 /**
@@ -434,9 +450,11 @@ function array_pluck($array, $key)
  */
 function array_pluck_dg($attribute)
 {
-	return function($array)use($attribute)
+	return function()use($attribute)
 	{
-		return array_pluck($array,$attribute);
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return array_pluck( $array, $attribute );
 	};
 }
 
@@ -551,9 +569,11 @@ function array_key_exists_dg($key=null)
 {
 	if( null !== $key )
 	{
-		return function($array,$unused)use($key)
+		return function()use($key)
 		{
-			return array_key_exists($key,$array);
+			$array = func_get_args();
+			$array = array_shift( $array );
+			return array_key_exists( $key, $array );
 		};
 	}
 	else
@@ -671,9 +691,11 @@ function array_rest($array,$idx = 1)
  */
 function array_rest_dg($idx = 1)
 {
-	return function($array)use($idx)
+	return function()use($idx)
 	{
-		return array_rest($array,$idx);
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return array_rest( $array, $idx );
 	};
 }
 
@@ -685,7 +707,12 @@ function array_rest_dg($idx = 1)
  */
 function array_flatten($array)
 {
-	$array = array_map_val($array,function($val,$key){ return arrayize($val); });
+	$array = array_map_val($array,function()
+	{
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return arrayize( $array );
+	});
 	return array_reduce($array,'array_merge',array());
 }
 
@@ -708,7 +735,12 @@ function array_flatten_dg()
  */
 function array_flatten_recursive($array)
 {
-	$array = array_map_val($array,function($val,$key){ return arrayize($val); });
+	$array = array_map_val($array,function()
+	{
+		$array = func_get_args();
+		$array = array_shift( $array );
+		return arrayize( $array );
+	});
 	return array_reduce($array,'array_merge_recursive');
 }
 
@@ -717,8 +749,10 @@ function array_flatten_recursive($array)
  */
 function array_flatten_recursive_dg()
 {
-	return function($array)
+	return function()
 	{
+		$array = func_get_args();
+		$array = array_shift( $array );
 		return array_flatten_recursive($array);
 	};
 }
@@ -770,4 +804,18 @@ function array_search_by_key_recursive($haystack, $needle)
 		}
 	}
 	return false;
+}
+
+/**
+ * @return callable
+ */
+function array_debug_dg()
+{
+	return function()
+	{
+		$array = func_get_args();
+		$val = array_shift( $array );
+		debug($val);
+		return $val;
+	};
 }
