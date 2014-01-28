@@ -157,16 +157,15 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * @param App_Model_Db_Mysql $model
 	 * @return int
 	 */
-	public static function insertFrom_s($model)
+	public function insertFrom($model)
 	{
-		$t = static::find();
-		$db = $t->getDb();
-		$myCols = array_keys( $t->schemaColumnsGet() );
+		$db = $this->getDb();
+		$myCols = array_keys( $this->schemaColumnsGet() );
 		$theirCols = $model->getColumnAliases();
 		$columns = '('.implode( ',', array_map_val( array_intersect( $theirCols, $myCols ), mysql_quote_column_dg() ) ).')';
-		$table = mysql_quote_table($t->getTable());
+		$table = mysql_quote_table($this->getTable());
 		$db->exec('INSERT INTO '.$table.' '.$columns.' '.$model->getSQL());
-		return $t->getLastInsertId();
+		return $this->getLastInsertId();
 	}
 
 }
