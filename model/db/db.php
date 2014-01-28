@@ -69,6 +69,10 @@ abstract class Lib_Model_Db extends Lib_Model
 	abstract public function save();
 	abstract public function delete();
 
+	protected function _onUpdate(){}
+	protected function _onInsert(){}
+	protected function _onDelete(){}
+
 	/**
 	 *  Delete records by specified conditions.
 	 *

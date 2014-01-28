@@ -66,10 +66,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			unset($data[$this->_primaryKey]);
 			$collection->update($where, $data);
 
-			if($this->_ignoreChangeLog === false)
-			{
-				Space_Model_Log::changeLog(Space_Model_Log::TYPE_UPDATE, $this); //TODO: abstract-out
-			}
+			$this->_onUpdate();
 		}
 		else
 		{
@@ -78,10 +75,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			$collection->insert($data);
 			$this->{$this->_primaryKey} = $data[$this->_primaryKey];
 
-			if($this->_ignoreChangeLog === false)
-			{
-				Space_Model_Log::changeLog(Space_Model_Log::TYPE_INSERT, $this); //TODO: abstract-out
-			}
+			$this->_onInsert();
 		}
 
 		$this->changedColumnsReset();
@@ -140,6 +134,8 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		$ret = $this->getCollection()->remove(array($pkey => $pkval), array('justOne' => true));
 
 		$this->{$pkey} = null;
+
+		$this->_onDelete();
 
 		return 1 == $ret['ok'];
 	}

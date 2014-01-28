@@ -65,11 +65,6 @@ abstract class Lib_Model implements Iterator
 	protected $_protected = array();
 
 	/**
-	 * @var bool
-	 */
-	protected $_ignoreChangeLog = false;
-
-	/**
 	 * @var array
 	 */
 	private $changeRecordData = array();
@@ -216,17 +211,6 @@ abstract class Lib_Model implements Iterator
 	protected function recordColumnsSet($array)
 	{
 		$this->_data = $array;
-	}
-
-	/**
-	 * @param $value
-	 *
-	 * @return $this
-	 */
-	public function setIgnoreChangeLog($value)
-	{
-		$this->_ignoreChangeLog = (bool)$value;
-		return $this;
 	}
 
 	/**
