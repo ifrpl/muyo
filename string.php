@@ -353,8 +353,16 @@ function str_first( $str, $first )
 {
 	debug_enforce_type( $str, 'string' );
 	$first = min( $first, strlen($str) );
-	$ret = substr( $str, 0, $first );
-	debug_enforce( $ret !== false );
+	if( $first === 0 )
+	{
+		$ret = "";
+	}
+	else
+	{
+		$ret = substr( $str, 0, $first );
+		debug_enforce( $ret !== false );
+	}
+	return $ret;
 }
 
 /**
@@ -366,6 +374,14 @@ function str_last( $str, $last )
 {
 	debug_enforce_type( $str, 'string' );
 	$last = min( $last, strlen($str) );
-	$ret = substr( $str, -$last );
-	debug_enforce( $ret !== false );
+	if( $last === 0 )
+	{
+		$ret = "";
+	}
+	else
+	{
+		$ret = substr( $str, -$last );
+		debug_enforce( $ret !== false );
+	}
+	return $ret;
 }
