@@ -33,6 +33,15 @@ class Logger
 }
 
 /**
+ * @param        $obj
+ * @param string $message
+ */
+function logger_dump($obj, $message = '[DUMP]')
+{
+	logger_log($message . ': ' . var_export($obj, true), LOG_DEBUG);
+}
+
+/**
  * @param string|\Exception $message
  * @param int $level
  * @return null
