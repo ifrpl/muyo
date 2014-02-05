@@ -156,7 +156,7 @@ function tuple_get($n,$apply=null)
 }
 
 /**
- * Prepare a delegate that returns results with comparision of $key parameter to $eq.
+ * Prepare a delegate that returns results with comparison of $key parameter to $eq.
  *
  * @param int|string $eq
  * @return callable
@@ -166,5 +166,18 @@ function key_eq_dg($eq)
 	return function($val,$key)use($eq)
 	{
 		return $key === $eq;
+	};
+}
+
+/**
+ * @param callable $callable
+ * @return callable
+ */
+function not_dg( $callable )
+{
+	return function()use($callable)
+	{
+		$args = func_get_args();
+		return ! call_user_func_array( $callable, $args );
 	};
 }

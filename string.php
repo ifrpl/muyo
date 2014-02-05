@@ -182,11 +182,14 @@ function str_ascii7_prand($length = 1, $allowed = null)
 }
 
 /**
+ * Split $string by callable in 1-character chunks, appending matched chunk $before of part.
+ *
  * @param string $string
- * @param callable|string|int $by
+ * @param callable $by
+ * @param bool $before
  * @return array
  */
-function str_splitter($string, $by)
+function str_splitter($string, $by, $before=false)
 {
 	$ret = array();
 	$last = '';
@@ -200,11 +203,22 @@ function str_splitter($string, $by)
 		}
 		else
 		{
-			if( !empty($last) )
+			if( !$before )
 			{
-				$ret []= $last;
+				if( !empty($last) )
+				{
+					$ret []= $last;
+				}
+				$last = $char;
 			}
-			$last = $char;
+			else
+			{
+				if( !empty($last) )
+				{
+					$ret []= $last.$char;
+				}
+				$last = '';
+			}
 		}
 	}
 	if( !empty($last) )
@@ -215,6 +229,8 @@ function str_splitter($string, $by)
 }
 
 /**
+ * Map individual characters in string with $iterator
+ *
  * @param string $string
  * @param callable $iterator
  * @return array
@@ -225,6 +241,8 @@ function str_map($string,$iterator)
 }
 
 /**
+ * Return delegate that maps individual characters in string with $iterator
+ *
  * @param callable $iterator
  * @return callable
  */
@@ -237,6 +255,8 @@ function str_map_dg($iterator)
 }
 
 /**
+ * Return part of $string that follows first occurrence of $substring
+ *
  * @param string $string
  * @param string $substring
  * @return null|string
@@ -257,6 +277,8 @@ function str_find_after($string, $substring)
 }
 
 /**
+ * Return part of $string that precedes first occurrence of $substring
+ *
  * @param string $string
  * @param string $substring
  * @return null|string
@@ -278,6 +300,8 @@ function str_find_before($string, $substring)
 }
 
 /**
+ * Returns part of $string that starts on first occurrence of $substring ( which is included ).
+ *
  * @param $string
  * @param $substring
  * @return string
@@ -299,6 +323,8 @@ function str_find_from( $string, $substring )
 }
 
 /**
+ * Returns part of string that ends on first occurrence of $substring ( which is included ).
+ *
  * @param $string
  * @param $substring
  * @return string
@@ -320,6 +346,8 @@ function str_find_to( $string, $substring )
 }
 
 /**
+ * Wraps $string with another string ( or character )
+ *
  * @param string $string
  * @param string $with
  * @return string
@@ -333,6 +361,7 @@ function str_wrap( $string, $with )
 }
 
 /**
+ * Returns delegate that wraps $string with another string ( or character )
  * @param string $with
  * @return callable
  */
@@ -345,6 +374,8 @@ function str_wrap_dg( $with )
 }
 
 /**
+ * Returns first n characters of $string
+ *
  * @param string $str
  * @param int $first
  * @return string
@@ -366,6 +397,8 @@ function str_first( $str, $first )
 }
 
 /**
+ * Returns last n characters of $string
+ *
  * @param string $str
  * @param int $last
  * @return string
@@ -384,4 +417,30 @@ function str_last( $str, $last )
 		debug_enforce( $ret !== false );
 	}
 	return $ret;
+}
+
+/**
+ * @param string $str
+ * @param int $n
+ * @return string
+ */
+function str_from( $str, $n )
+{
+	debug_enforce_type( $str, 'string' );
+	$length = strlen( $str );
+	$n = min( $n, $length );
+	return substr( $str, $n );
+}
+
+/**
+ * @param string $str
+ * @param int $n
+ * @return string
+ */
+function str_to( $str, $n )
+{
+	debug_enforce_type( $str, 'string' );
+	$length = strlen( $str );
+	$n = min( $n, $length );
+	return substr( $str, 0, -$n );
 }

@@ -9,7 +9,7 @@
  * @param array $argv
  * @param array $inputs
  *
- * @return array
+ * @return array ['param'=>$param,'flag'=>$flag,'input'=>$input]
  */
 function cli_parse($argv, $inputs = array())
 {
