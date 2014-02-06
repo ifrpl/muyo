@@ -75,6 +75,17 @@ abstract class Lib_Model implements Iterator
 	private $_validationErrors = array();
 
 	/**
+	 * Return row object for current id
+	 * @return $this
+	 */
+	abstract public function getRow();
+
+	/**
+	 * @return $this
+	 */
+	abstract public function debug();
+
+	/**
 	 * @param array|int|null $options
 	 */
 	public function __construct($options = null)
@@ -259,16 +270,6 @@ abstract class Lib_Model implements Iterator
 	{
 		return '';
 	}
-
-	/**
-	 * Return row object for current id
-	 */
-	abstract public function getRow();
-
-	/**
-	 * @return $this
-	 */
-	abstract public function debug();
 
 	/**
 	 * @param string $propertyName
@@ -1467,6 +1468,256 @@ abstract class Lib_Model implements Iterator
 	{
 		$this->_settingsTable = $settings;
 		return $this;
+	}
+
+	/**
+	 * @param string $export Name of deploy
+	 * @param null|mixed $source
+	 * @return Bvb_Grid
+	 * @deprecated No place in models for it
+	 */
+	public function getDataTable($export = 'JqGrid', $source = null)
+	{
+		set_time_limit(0);
+
+		if(is_null($source))
+		{
+			$source = new Lib_Grid_Source_Model($this);
+		}
+
+		$config = $this->getGridConfig();
+
+		$id = Lib_Grid::buildId(
+			  $export,
+			  $source,
+			  isset($config->bvbParams->id_prefix) ? $config->bvbParams->id_prefix : null
+		);
+
+		$requestParams = Zend_Controller_Front::getInstance()->getRequest()->getParams();
+		if(isset($requestParams['q']) && $requestParams['q'] == $id && isset($requestParams['_exportTo']))
+		{
+			$requestParams['_exportTo'.$id] = $requestParams['_exportTo'];
+		}
+
+		/**
+		 * @var Bvb_Grid $grid
+		 */
+		$grid = Bvb_Grid::factory($export, $config, $id, array(), $requestParams);
+		if($export == 'JqGrid')
+		{
+			Lib_Grid::prepareDeploy($grid, $config, $source);
+		}
+		else {
+			if($export == 'Pdf')
+			{
+				$config->export->pdf   = 'Pdf';
+				$config->disableExport = false;
+				Lib_Grid::prepareDeploy($grid, $config, $source);
+			}
+			else
+			{
+
+			}
+		}
+
+		return $grid;
+	}
+
+	/**
+	 * @deprecated unify it with Lib_Grid
+	 * @return Zend_Config
+	 */
+	public function getGridConfig()
+	{
+		$config = new Zend_Config(array(), true);
+		if(Zend_Registry::isRegistered('config') && isset(Zend_Registry::get('config')->dataGrid))
+		{
+			$config->merge(Zend_Registry::get('config')->dataGrid);
+		}
+		$config->merge(new Zend_Config($this->_settings));
+
+		foreach($config as $optionName => $optionValue)
+		{
+			if(!isset($optionValue->title) && isset($optionValue->label))
+			{
+				$config->$optionName->title = $optionValue->label;
+				unset($config->$optionName->label);
+			}
+			if(isset($optionValue->visible) && !$optionValue->visible)
+			{
+				$config->$optionName->hidden = true;
+			}
+
+			if(isset($optionValue->type))
+			{
+				if(!isset($config->$optionName->jqg))
+				{
+					$config->$optionName->jqg = new Zend_Config(array(), true);
+				}
+				switch($optionValue->type)
+				{
+					case "select":
+						$multiOptions = array();
+						$multiOptions[''] = 'LABEL_ALL';
+						$multiOptions += $config->$optionName->multiOptions->toArray();
+
+						$multiOptions = array_map(function($key, $row){
+							$translate = App_Translate::getInstance();
+							return $key.':'.$translate->translate($row);
+						}, array_keys($multiOptions), $multiOptions);
+						ksort($multiOptions);
+
+						$multiOptions = implode(';', $multiOptions);
+
+						$config->$optionName->jqg->merge(new Zend_Config(array(
+							'stype' => 'select',
+							'searchoptions' => array(
+								'sopt' => array(
+									'eq'
+								),
+								'value' => $multiOptions
+							),
+							'searchType' => '='
+						)), true);
+						break;
+					case "date":
+						$config->$optionName->merge(new Zend_Config(array(
+							'sorttype' => 'date',
+							'format'   => array(
+								'date',
+								array(
+									'date_format' => Zend_Date::DATE_MEDIUM
+								)
+							),
+							'jqg'      => array(
+								'searchoptions' => array(
+									'dataInit' => new Zend_Json_Expr('function(el){
+											jQuery(el).datepicker({
+													dateFormat: "yy-mm-dd",
+													onSelect: function(dateText, inst){
+															jQuery(el).parents(".ui-jqgrid").find(".ui-jqgrid-btable").get(0).triggerToolbar();
+													}
+											});
+									}')
+								)
+							)
+						)), true);
+
+						if(!isset($config->$optionName->defaultvalue))
+						{
+							$config->$optionName->defaultvalue = null;
+						}
+						break;
+					case "datetime":
+						$config->$optionName->merge(new Zend_Config(array(
+							'sorttype' => 'date',
+							'format'   => array(
+								'date',
+								array(
+									'date_format' => Zend_Date::DATETIME_SHORT
+								)
+							),
+							'jqg'      => array(
+								'searchoptions' => array(
+									'dataInit' => new Zend_Json_Expr('function(el){
+											jQuery(el).datetimepicker({
+													dateFormat: "yy-mm-dd",
+													timeFormat: "hh:mm",
+													onSelect: function(dateText, inst){
+															jQuery(el).parents(".ui-jqgrid").find(".ui-jqgrid-btable").get(0).triggerToolbar();
+													}
+											});
+									}')
+								)
+							)
+						)), true);
+
+						if(!isset($config->$optionName->defaultvalue))
+						{
+							$config->$optionName->defaultvalue = null;
+						}
+						break;
+					case "time":
+						$config->$optionName->merge(new Zend_Config(array(
+							'sorttype' => 'date',
+							'format'   => array(
+								'date',
+								array(
+									'date_format' => Zend_Date::TIME_SHORT
+								)
+							),
+							'jqg'      => array(
+								'searchoptions' => array(
+									'dataInit' => new Zend_Json_Expr('function(el){
+											jQuery(el).timepicker({
+													timeFormat: "hh:mm",
+													onSelect: function(dateText, inst){
+															jQuery(el).parents(".ui-jqgrid").find(".ui-jqgrid-btable").get(0).triggerToolbar();
+													}
+											});
+									}')
+								)
+							)
+						)), true);
+
+						if(!isset($config->$optionName->defaultvalue))
+						{
+							$config->$optionName->defaultvalue = null;
+						}
+						break;
+					case "boolean":
+					case "bool":
+						$multiOptions = array(
+							'' => 'LABEL_ALL',
+							'0' => 'LABEL_NO',
+							'1' => 'LABEL_YES'
+						);
+						$multiOptions = array_map(function($key, $row){
+							$translate = App_Translate::getInstance();
+							return $key.':'.$translate->translate($row);
+						}, array_keys($multiOptions), $multiOptions);
+
+						$multiOptions = implode(';', $multiOptions);
+
+						$config->$optionName->merge(new Zend_Config(array(
+							'width' => 30,
+							'align' => 'center',
+							'jqg' => array(
+								'stype' => 'select',
+								'searchoptions' => array(
+									'sopt' => array(
+										'eq'
+									),
+									'value' => $multiOptions
+								)
+							),
+							'searchType' => '='
+						)), true);
+
+						if(!isset($config->$optionName->helper) && !isset($config->$optionName->callback))
+						{
+							$config->$optionName->merge(new Zend_Config(array(
+								'jqg' => array(
+									'formatter' => 'checkbox'
+								)
+							)), true);
+						}
+
+						break;
+					case "int":
+						$config->$optionName->merge(new Zend_Config(array(
+							'searchType' => '='
+						)), true);
+
+						break;
+					default:
+						debug_assert(false !== array_search($optionValue->type, self::$types), "Unknown Grid Cell Type `{$optionValue->type}`");
+				}
+			}
+
+		}
+
+		return $config;
 	}
 
 }

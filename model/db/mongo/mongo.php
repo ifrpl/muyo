@@ -17,12 +17,13 @@ if( !class_exists('Lib_Db_Mongo_Select') )
  * @method MongoDB getDb()
  *
  * @property MongoID id
- * @property Lib_Db_Mongo_Select _select
  */
 abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 {
 	protected $_primaryKey = '_id';
 
+	/** @var Lib_Db_Mongo_Select */
+	private $_select;
 	private $_buildCondutions;
 
 	protected $_settings = array(
@@ -140,10 +141,6 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		return 1 == $ret['ok'];
 	}
 
-	/**
-	 * @var bool $clearPK
-	 * @return $this
-	 */
 	public function clearColumns($clearPK = false)
 	{
 		$this->getSelect()->clearColumns();
@@ -156,13 +153,6 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		return $this;
 	}
 
-	/**
-	 * @todo $correlationName
-	 * @param string $cols
-	 * @param null   $correlationName
-	 *
-	 * @return $this
-	 */
 	public function setColumns($cols = '*', $correlationName = null)
 	{
 		if($cols === '*')
@@ -187,6 +177,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
+	 * @override
 	 * @return array
 	 */
 	public function getColumns()
@@ -285,13 +276,13 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
-	 * @todo: please do not use $q for now
-	 * @param null $q
-	 * @param bool $collection do not index by id
-	 *
+	 * @param null|Lib_Db_Mongo_Select $q
+	 * @param bool $collection
 	 * @return array
+	 * @fixme support for multiple result collections
+	 * @fixme $q needs relation with model
 	 */
-	public function load($q = null, $collection = false)
+	public function loadArray( $q=null, $collection=false )
 	{
 		$pkey = $this->getPrimaryKey();
 		if( !__($this->getColumns())->any(function($arr)use($pkey){ return $arr[2]===$pkey; }) )
@@ -300,7 +291,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		}
 
 		$data = array();
-		$select = $this->getSelect();
+		$select = null === $q ? $this->getSelect() : $q;
 
 		$groups = $select->getGroups();
 		$initial = array("items" => array());
@@ -324,26 +315,42 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		}
 		$cursor->skip($select->getSkip());
 
-//		if(get_class($this) == 'Workflow_Model_Step') debug($cursor->info());
-
-
 		foreach( $cursor as $row )
 		{
-			/** @var Lib_Model_Db_Mongo $obj */
-			$obj = $this->modelFactory($row);
-			$obj->changedColumnsReset();
-
-			if( !$collection && $obj->id )
+			if( !$collection )
 			{
-				$id = (string) $obj->id;
-				$data[$id] = $obj;
+				$id = (string) $row[$pkey];
+				$data[$id] = $row;
 			}
 			else
 			{
-				$data[] = $obj;
+				$data[] = $row;
 			}
 		}
-		return $data;
+		$alias = $this->getAlias();
+		return array( $alias => $data );
+	}
+
+	/**
+	 * @todo: please do not use $q for now
+	 * @param null $q
+	 * @param bool $collection do not index by id
+	 *
+	 * @return array
+	 */
+	public function load( $q = null, $collection = false )
+	{
+		$alias = $this->getAlias();
+		$array = $this->loadArray( $q, $collection );
+		$t = $this;
+		$ret = array_map_val( $array[$alias], function()use($t)
+		{
+			$row = func_get_arg(0);
+			$obj = $t->modelFactory( $row );
+			$obj->changedColumnsReset();
+			return $obj;
+		} );
+		return $ret;
 	}
 
 	/**
@@ -391,7 +398,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 
 	/**
-	 * @return null|string
+	 * @return string
 	 */
 	public function getSQL()
 	{
@@ -409,7 +416,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		}
 		$cursor->skip($select->getSkip());
 
-		return $cursor->info();
+		return print_r( $cursor->info(), true );
 	}
 
 	/**
@@ -494,8 +501,6 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		return $this;
 	}
 
-
-
 	/**
 	 * @fixme Asserting incompatibility with MongoDB
 	 * @param string $export
@@ -507,18 +512,6 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	{
 		debug_assert(false);
 		return null;
-	}
-
-	/**
-	 * @fixme we might consider deprecating this one after providing alternatives
-	 * @param string $name
-	 *
-	 * @return $this
-	 */
-	public function clearPart($name)
-	{
-		debug_assert(false);
-		return $this;
 	}
 
 	/**
@@ -587,7 +580,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 */
 	public function getSelect($clear = false, $cols = '*')
 	{
-		if (!$this->_select)
+		if( !$this->_select )
 		{
 			$this->_select = new Lib_Db_Mongo_Select();
 		}
@@ -596,8 +589,8 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 	/**
 	 * @param Lib_Db_Mongo_Select $select
-	 *
 	 * @return $this
+	 * @override
 	 */
 	public function setSelect($select)
 	{
@@ -645,5 +638,16 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		return MongoDBRef::create($this->_table, (is_object($this->id) ? $this->id : new MongoId($this->id)));
 	}
 
-
+	/**
+	 * Return row object for current id
+	 * @return $this
+	 */
+	public function getRow()
+	{
+		$alias = $this->getAlias();
+		$rows = static::findById( $this->id )->loadArray();
+		$row = array_shift( $rows );
+		$ret = $this->fromArray( $row[ $alias ], true );
+		return $ret;
+	}
 }

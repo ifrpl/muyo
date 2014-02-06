@@ -13,6 +13,10 @@ if( !class_exists('Lib_Model_Db') )
  */
 abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 {
+	/**
+	 * @var Zend_Db_Select
+	 */
+	protected $_select;
 
 	/**
 	 * @return $this
@@ -134,6 +138,15 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @return int
+	 */
+	public function count()
+	{
+		$ret = $this->getDb()->fetchOne($this->getSelect()->reset('columns')->columns('count(1)'));
+		return intval($ret);
+	}
+
+	/**
 	 * @param null $table
 	 * @param null $pkey
 	 * @return int
@@ -214,6 +227,670 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$name = func_get_arg(0);
 			return $t->quoteColumn( $name );
 		};
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getColumns()
+	{
+		return $this->getSelect()->getPart('columns');
+	}
+
+	/**
+	 * @param bool $clear
+	 * @param string $cols
+	 * @return Zend_Db_Select
+	 */
+	public function getSelect($clear = false, $cols = '*')
+	{
+		if( is_null($this->_select) || $clear )
+		{
+			if( $cols === '*' )
+			{
+				$cols = array_keys($this->schemaColumnsGet());
+			}
+			$this->_select = $this->getDb()->select();
+			$this->_select->from(array($this->getAlias() => $this->getTable()), $cols);
+		}
+		return $this->_select;
+	}
+
+	/**
+	 * @param Zend_Db_Select $select
+	 * @return $this
+	 * @override
+	 */
+	public function setSelect($select)
+	{
+		$this->_select = $select;
+		return $this;
+	}
+
+	/**
+	 * Clear part of select statement. Ex: columns, limit
+	 *
+	 * @param string $name
+	 * @return $this
+	 */
+	public function clearPart($name)
+	{
+		$this->getSelect()->reset($name);
+		return $this;
+	}
+
+	public function clearColumns( $clearPK=false )
+	{
+		$this->clearPart('columns');
+		return $this;
+	}
+
+	public function setColumns($cols = '*', $correlationName = null)
+	{
+		$this->getSelect()->columns($cols, $correlationName);
+		if( $cols === '*' )
+		{
+			if( debug_assert(null === $correlationName || $correlationName === $this->getAlias(),"* pseudo-column detected. Removing every occurrence of it will give us more power.") )
+			{
+				$this->normalizeColumns();
+			}
+		}
+		return $this;
+	}
+
+	/**
+	 * @param string $cond
+	 * @param mixed $value
+	 * @param null|int $type
+	 * @return Lib_Model_Db
+	 */
+	public function setWhere($cond, $value = null, $type = null)
+	{
+		$this->getSelect()->where($cond, $value, $type);
+		return $this;
+	}
+
+	/**
+	 * @param string $cond
+	 * @param mixed $value
+	 * @param null|int $type
+	 * @return $this
+	 */
+	public function setHaving($cond, $value = null, $type = null)
+	{
+		$this->getSelect()->having($cond, $value, $type);
+		return $this;
+	}
+
+	/**
+	 * @param null|int $count
+	 * @param null|int $offset
+	 * @return $this
+	 */
+	public function setLimit($count = null, $offset = null)
+	{
+		$this->getSelect()->limit($count, $offset);
+		return $this;
+	}
+
+	/**
+	 * @param  $page
+	 * @param  $rowCount
+	 * @return $this
+	 */
+	public function setLimitPage($page, $rowCount)
+	{
+		$this->getSelect()->limitPage($page, $rowCount);
+		return $this;
+	}
+
+	/**
+	 * @param array|string $spec
+	 * @return $this
+	 */
+	public function setGroup($spec)
+	{
+		$this->getSelect()->group($spec);
+		return $this;
+	}
+
+	/**
+	 * @param string|array|Lib_Model $name
+	 * @return array|mixed
+	 */
+	protected function prepareTableForJoin($name)
+	{
+		$alias = null;
+
+		if( is_array($name) )
+		{
+			$alias = key($name);
+			$name  = current($name);
+		}
+
+		if( is_string($name) && class_exists($name) )
+		{
+			$name = new $name;
+		}
+
+		if( $name instanceOf Lib_Model_Db )
+		{
+			if(is_null($alias))
+			{
+				$alias = $name->getAlias();
+			}
+
+			$name = array($alias => $name->getTable());
+		}
+		elseif( $alias )
+		{
+			$name = array($alias => $name);
+		}
+		return $name;
+	}
+
+	/**
+	 * @param string|array|Lib_Model $name
+	 * @param string $cond
+	 * @param string|array $cols
+	 * @param null|string $schema
+	 * @return $this
+	 */
+	public function setJoin($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	{
+		$this->getSelect()->join($this->prepareTableForJoin($name), $cond, $cols, $schema);
+		return $this;
+	}
+
+	/**
+	 * @param string|array|Lib_Model $name
+	 * @param string $cond
+	 * @param string|array $cols
+	 * @param null|string $schema
+	 * @return $this
+	 */
+	public function setJoinLeft($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	{
+		$this->getSelect()->joinLeft($this->prepareTableForJoin($name), $cond, $cols, $schema);
+		return $this;
+	}
+
+	/**
+	 * @param string|array|Lib_Model $name
+	 * @param string $cond
+	 * @param string|array $cols
+	 * @param null|string $schema
+	 * @return $this
+	 */
+	public function setJoinRight($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	{
+		$this->getSelect()->joinRight($this->prepareTableForJoin($name), $cond, $cols, $schema);
+		return $this;
+	}
+
+	/**
+	 * @param string|array|Lib_Model $name
+	 * @param string $cond
+	 * @param string|array $cols
+	 * @param null|string $schema
+	 * @return $this
+	 */
+	public function setJoinInner($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	{
+		$this->getSelect()->joinInner($this->prepareTableForJoin($name), $cond, $cols, $schema);
+		return $this;
+	}
+
+	/**
+	 * @param bool $flag
+	 * @return $this
+	 */
+	public function setDistinct($flag = true)
+	{
+		$this->getSelect()->distinct($flag);
+		return $this;
+	}
+
+	/**
+	 * @param string|array $order
+	 * @return $this
+	 */
+	public function setOrderBy($order)
+	{
+		$this->getSelect()->order($order);
+		return $this;
+	}
+
+	/**
+	 * @param string|array $cond condition (if one param) or column name if more than one params
+	 *
+	 * @return $this
+	 */
+	public function filterBy($cond)
+	{
+		$select = $this->getSelect();
+
+		if ( is_array($cond) )
+		{
+			foreach($cond as $col => $value)
+			{
+				if( is_array($value) )
+				{
+					$valueChar = '?';
+					$cond2 = '=';
+
+					if(isset($value['condition']) && isset($value['value']))
+					{
+						$cond2 = $value['condition'];
+						$value = $value['value'];
+						$valueChar = '?';
+					}
+
+					if( is_array($value) )
+					{
+						if( 0 === count($value) )
+						{
+							$select->where('TRUE=FALSE');
+							return $this;
+						}
+						if(strpos($cond2, 'IN') === false)
+						{
+							$cond2 = 'IN';
+						}
+						$valueChar = '(?)';
+					}
+
+					$select->where($col.' '. $cond2 .' '.$valueChar, $value);
+				}
+				else
+				{
+					if( is_null($value) )
+					{
+						$select->where($col.' IS NULL');
+					}
+					elseif( $value instanceof Zend_Db_Expr )
+					{
+						$select->where($col.' '.$value);
+					}
+					else
+					{
+						$select->where($col.' = ?', $value);
+					}
+				}
+			}
+		}
+		else
+		{
+			$select->where($cond);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * @param string|array $cond condition (if one param) or column name if more than one params
+	 *
+	 * @return $this
+	 */
+	public function filterNotBy($cond)
+	{
+		$select = $this->getSelect();
+
+		if ( is_array($cond) )
+		{
+			foreach($cond as $col => $value)
+			{
+				if( is_array($value) )
+				{
+					$valueChar = '?';
+					$cond2 = '!=';
+
+					if(isset($value['condition']) && isset($value['value']))
+					{
+						$cond2 = $value['condition'];
+						$value = $value['value'];
+						$valueChar = '?';
+					}
+
+					if( is_array($value) )
+					{
+						if( 0 === count($value) )
+						{
+							continue;
+						}
+						$cond2 = 'NOT IN';
+						$valueChar = '(?)';
+					}
+
+					$select->where($col.' '. $cond2 .' '.$valueChar, $value);
+				}
+				else
+				{
+					if( is_null($value) )
+					{
+						$select->where($col.' IS NOT NULL');
+					}
+					elseif( $value instanceof Zend_Db_Expr )
+					{
+						$select->where($col.' '.$value);
+					}
+					else
+					{
+						$select->where($col.' != ?', $value);
+					}
+				}
+			}
+		}
+		else
+		{
+			$select->where($cond);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * @param int|array|Zend_Db_Expr $id
+	 * @return $this
+	 */
+	public function filterNotById($id)
+	{
+		$alias = $this->getAlias();
+		$key = $this->getPrimaryKey();
+		return $this->filterNotBy(array("{$alias}.{$key}"=>$id));
+	}
+
+	/**
+	 * @return $this
+	 */
+	public function groupById()
+	{
+		$alias = $this->getAlias();
+		$key = $this->getPrimaryKey();
+		return $this->setGroup("{$alias}.{$key}");
+	}
+
+	/**
+	 * WARNING: do not use if don't know internals (partially implemented)
+	 * Load model from SQL query to an array with joined columns as arrays
+	 * @param mixed $q
+	 * @param bool $collection
+	 * @return array
+	 * @throws Exception
+	 * @fixme $q and $collection
+	 */
+	public function loadArray( $q=null,$collection=false )
+	{
+		$alias = $this->getAlias();
+		$key_name = $this->getPrimaryKey();
+		$key_idx = null;
+
+		if( count($this->getColumns()) == 0 )
+		{
+			$this->setColumns(array_keys($this->schemaColumnsGet()), $alias);
+		}
+		$descriptors = $this->getColumns();
+		foreach( $descriptors as $idx=>$descriptor )
+		{
+			$colname = null !== $descriptor[2] ? $descriptor[2] : $descriptor[1];
+			$tblalias = $descriptor[0];
+			if( $tblalias === $alias && $colname === $key_name )
+			{
+				$key_idx = $idx;
+			}
+		}
+
+		debug_assert(null !== $key_idx,array($alias,$key_name));
+
+		$db = $this->getDb();
+		try {
+			$rows = $db->fetchAll($this->getSQL(), array(),Zend_Db::FETCH_NUM);
+		}
+		catch( Exception $e )
+		{
+			throw new Exception('Error while loading: '.$e->getMessage().' | SQL: '.$this->getSQL());
+		}
+
+		$ret = array();
+		foreach ( $rows as $row )
+		{
+			$key = $row[$key_idx];
+			if( !array_key_exists($key, $ret) )
+			{
+				$ret[$key] = array();
+			}
+
+			foreach( $row as $idx=>$column )
+			{
+				$descriptor = $descriptors[$idx];
+				$colalias = 3===count($descriptor)&&$descriptor[2] ? $descriptor[2] : $descriptor[1];
+				$tblalias = $descriptor[0];
+
+				if( !array_key_exists($tblalias, $ret[$key]) )
+				{
+					$ret[$key][$tblalias] = array();
+				}
+
+				$is_joined = $tblalias !== $alias;
+				if( $is_joined )
+				{
+					if( array_key_exists($colalias, $ret[$key][$tblalias]) )
+					{
+						$ret[$key][$tblalias][$colalias] []= $column;
+					}
+					else
+					{
+						$ret[$key][$tblalias][$colalias] = array($column);
+					}
+				}
+				else
+				{
+					$ret[$key][$tblalias][$colalias] = $column;
+				}
+			}
+		}
+		return $ret;
+	}
+
+	/**
+	 * @return null|string
+	 */
+	public function getSQL()
+	{
+		return $this->getSelect()->assemble();
+	}
+
+	/**
+	 * @param Lib_Model_db $model
+	 * @param string|null $column
+	 * @return string
+	 */
+	private static function prefixColumn($model, $column = null)
+	{
+		if( is_null($column) )
+		{
+			$column = $model->getAlias().'.'.$model->getPrimaryKey();
+		}
+		elseif( false === strpos($column,'.') )
+		{
+			$column = $model->getAlias().'.'.$column;
+		}
+		return $column;
+	}
+
+
+	/**
+	 * WARNING: Only columns copying supported.
+	 * @param Lib_Model_Db_Mysql $model
+	 * @param string|null $thisKeyCol may contain table prefix or not
+	 * @param string|null $thatKeyCol may contain table prefix or not
+	 * @param string $conditions ['and' => '{this}.column={that}.column' ]
+	 * @return Lib_Model_db
+	 */
+	public function joinTo($model,$thisKeyCol,$thatKeyCol=null,$conditions='')
+	{
+		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
+
+		$thatKeyCol = self::prefixColumn($model, $thatKeyCol);
+		$thisKeyCol = self::prefixColumn($this, $thisKeyCol);
+
+		$conditions = str_replace('{that}',$model->getAlias(),$conditions);
+		$conditions = str_replace('{this}',$this->getAlias(),$conditions);
+
+		$this->setJoinLeft($model, "{$thisKeyCol}={$thatKeyCol} ".$conditions, '');
+		$model->settingsJoin($this);
+		foreach( $model->getColumns() as $descriptor )
+		{
+			$table = $descriptor[0];
+			$column = $descriptor[1];
+			$alias = 3===count($descriptor) ? $descriptor[2] : null;
+
+			if( null !== $alias )
+			{
+				$this->setColumns(array($alias=>$column),$table);
+			}
+			else
+			{
+				$this->setColumns($column,$table);
+			}
+		};
+		$model->setSelect(clone $this->getSelect());
+		return $model;
+	}
+
+	/**
+	 * WARNING: Only columns copying supported.
+	 * @param Lib_Model_db $model
+	 * @param string|null $thisKeyCol may contain table prefix or not
+	 * @param string|null $thatKeyCol may contain table prefix or not
+	 * @param string $conditions
+	 * @return $this
+	 */
+	public function joinFrom($model,$thisKeyCol,$thatKeyCol=null,$conditions='')
+	{
+		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
+
+		$thatKeyCol = self::prefixColumn($model, $thatKeyCol);
+		$thisKeyCol = self::prefixColumn($this, $thisKeyCol);
+
+		$conditions = str_replace('{that}',$model->getAlias(),$conditions);
+		$conditions = str_replace('{this}',$this->getAlias(),$conditions);
+
+		$this->setJoinLeft($model, "{$thisKeyCol}={$thatKeyCol} ".$conditions, '');
+		foreach( $model->getColumns() as $descriptor )
+		{
+			$table = $descriptor[0];
+			$column = $descriptor[1];
+			$alias = 3===count($descriptor) ? $descriptor[2] : null;
+			if( null !== $alias )
+			{
+				$this->setColumns(array($alias=>$column),$table);
+			}
+			else
+			{
+				$this->setColumns($column,$table);
+			}
+		};
+		$this->settingsJoin($model);
+//		if( $this instanceof Model_Event_Invoice_Accommodation && $model instanceof Model_Reference)
+//		{
+//			$map = function($desc){ return (count($desc)===3&&$desc[2]) ? $desc[2]: $desc[1]; };
+//			debug(array_map_val(array(
+//				$this->_settings,$this->_settingsJoined, array_map_key($this->getColumns(), $map),
+//				$model->_settings,$model->_settingsJoined, array_map_key($model->getColumns(), $map)
+//			),function($val){ return array_keys($val); }));
+//		}
+//		$select = $model->getSelect();
+		return $this;
+	}
+
+	/**
+	 * @deprecated please use getListBy instead
+	 * @param array $cond
+	 * @return array
+	 */
+	public function findBy($cond)
+	{
+		$select = $this->getSelect();
+		$select->reset('where');
+		foreach($cond as $col => $value)
+		{
+			if( is_array($value) )
+			{
+				$valueChar = '?';
+				$cond = '=';
+
+				if(isset($value['condition']) && isset($value['value']))
+				{
+					$cond = $value['condition'];
+					$value = $value['value'];
+					$valueChar = '?';
+				}
+
+				if( is_array($value) )
+				{
+					$cond = 'IN';
+					$valueChar = '(?)';
+				}
+
+				$select->where($col.' '. $cond .' '.$valueChar, $value);
+			}
+			else
+			{
+				if( is_null($value) )
+				{
+					$select->where($col.' IS NULL');
+				}
+				else
+				{
+					$select->where($col.' = ?', $value);
+				}
+			}
+		}
+
+		return $this->load($select);
+	}
+
+	/**
+	 * Return one of row from DB or new row with data from params
+	 * @deprecated please use getBy instead
+	 * @see getBy
+	 * @param array $conditions
+	 * @return $this
+	 */
+	public function findOneBy($conditions)
+	{
+		$this->setLimit(1);
+		$results = $this->findBy($conditions);
+
+		if( count($results) == 0 )
+		{
+			$this->fromArray($conditions);
+		}
+		else
+		{
+			$c = current($results);
+			$this->fromArray($c->toArray());
+		}
+		$this->changedColumnsReset();
+		return $this;
+	}
+
+	/**
+	 * Return row object for current id
+	 *
+	 * @return Zend_Db_Table_Row|null
+	 * @deprecated
+	 */
+	public function getRow()
+	{
+		$pkey = $this->getPrimaryKey();
+		if( null !== $pkey )
+		{
+			$row = $this->findOneBy(array($pkey => $this->{$pkey}));
+			return $row;
+		}
+		return null;
 	}
 
 }
