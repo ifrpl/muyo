@@ -1326,47 +1326,57 @@ abstract class Lib_Model implements Iterator
 	{
 		if( !is_null($value) )
 		{
-			switch($type)
+			switch( $type )
 			{
+				case "id":
+					if( array_contains( array('',null), $value, true ) )
+					{
+						$value = null;
+					}
+					else
+					{
+						$value = intval( $value );
+					}
+				break;
 				case "bool":
 				case "boolean":
 					$value = (bool) $value;
-					break;
+				break;
 				case "int":
 					$value = (int) $value;
 					break;
 				case "float":
 					$value = (float) $value;
-					break;
+				break;
 				case "object":
 				case "array":
 					if(is_object($value) || !is_array($value))
 					{
 						$value = unserialize($value);
 					}
-					break;
+				break;
 				case "date":
 					if($value == '0000-00-00' || $value == '')
 					{
 						$value = null;
 					}
-					break;
+				break;
 				case "time":
 					if($value == '00:00:00' || $value == '')
 					{
 						$value = null;
 					}
-					break;
+				break;
 				case "datetime":
 					if($value == '0000-00-00 00:00:00' || $value == '')
 					{
 						$value = null;
 					}
-					break;
+				break;
 				case "text":
 				default:
 					$value = (string) $value;
-					break;
+				break;
 			}
 		}
 
