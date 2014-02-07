@@ -143,7 +143,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 	public function clearColumns($clearPK = false)
 	{
-		$this->getSelect()->clearColumns();
+		$this->getSelect()->clearFields();
 		if( !$clearPK )
 		{
 			$this->setColumns(array(
@@ -172,7 +172,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		{
 			$correlationName = $this->getAlias();
 		}
-		$this->getSelect()->setColumns($cols, $correlationName);
+		$this->getSelect()->setFields($cols, $correlationName);
 		return $this;
 	}
 
@@ -182,7 +182,19 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 */
 	public function getColumns()
 	{
-		return $this->getSelect()->getColumns();
+		$alias = $this->getAlias();
+		$fields = $this->getSelect()->getFields();
+		$fieldsSet = array_filter_key( $fields, function()
+		{
+			$isSet = func_get_arg(0);
+			return $isSet;
+		});
+		$ret = array_map_val( $fieldsSet, function()use($alias)
+		{
+			$name = func_get_arg(1);
+			return array( $alias, $name, null );
+		});
+		return $ret;
 	}
 
 	/**
@@ -302,7 +314,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 //		}
 //		else
 //		{
-			$cursor = $this->getCollection()->find($select->getConditions(), $select->getColumns());
+			$cursor = $this->getCollection()->find($select->getConditions(), $select->getFields());
 //		}
 
 		if($select->getOrder())
@@ -404,7 +416,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	{
 		$select = $this->getSelect();
 
-		$cursor = $this->getCollection()->find($select->getConditions(), $select->getColumns());
+		$cursor = $this->getCollection()->find($select->getConditions(), $select->getFields());
 
 		if($select->getOrder())
 		{

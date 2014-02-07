@@ -10,7 +10,7 @@ class Lib_Db_Mongo_Select
 	private $_group = array();
 	private $_order = array();
 
-	public function clearColumns()
+	public function clearFields()
 	{
 		$this->_fields = array();
 	}
@@ -20,7 +20,7 @@ class Lib_Db_Mongo_Select
 	 * @param array $cols
 	 * @param string $correlationName
 	 */
-	public function setColumns($cols, $correlationName)
+	public function setFields($cols, $correlationName)
 	{
 		foreach($cols as $key => $val)
 		{
@@ -38,7 +38,7 @@ class Lib_Db_Mongo_Select
 	/**
 	 * @return array
 	 */
-	public function getColumns()
+	public function getFields()
 	{
 		return $this->_fields;
 	}

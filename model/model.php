@@ -1255,10 +1255,17 @@ abstract class Lib_Model implements Iterator
 
 	public function serialize()
 	{
-		return array(
+		$content = array(
 			'model' => get_class($this),
-			'id' => (int)$this->id
 		);
+
+		$value = $this->_getValueByType($this->id, 'id');
+		if(!is_null($value))
+		{
+			$content['id'] = $value;
+		}
+
+		return $content;
 	}
 
 	/**
@@ -1296,51 +1303,7 @@ abstract class Lib_Model implements Iterator
 					$type = $setting['type'];
 				}
 
-				if( !is_null($value) )
-				{
-					switch($type)
-					{
-						case "bool":
-						case "boolean":
-							$value = (bool) $value;
-							break;
-						case "int":
-							$value = (int) $value;
-							break;
-						case "float":
-							$value = (float) $value;
-							break;
-						case "object":
-						case "array":
-							if(is_object($value) || !is_array($value))
-							{
-								$value = unserialize($value);
-							}
-							break;
-						case "date":
-							if($value == '0000-00-00' || $value == '')
-							{
-								$value = null;
-							}
-							break;
-						case "time":
-							if($value == '00:00:00' || $value == '')
-							{
-								$value = null;
-							}
-							break;
-						case "datetime":
-							if($value == '0000-00-00 00:00:00' || $value == '')
-							{
-								$value = null;
-							}
-							break;
-						case "text":
-						default:
-							$value = (string) $value;
-							break;
-					}
-				}
+				$value = $this->_getValueByType($value, $type);
 
 				if( isset($setting['unique']) && $setting['unique'] == true && empty($value) )
 				{
@@ -1351,6 +1314,63 @@ abstract class Lib_Model implements Iterator
 			$data[$key] = $value;
 		}
 		return $data;
+	}
+
+	/**
+	 * @param $value
+	 * @param $type
+	 *
+	 * @return bool|float|int|mixed|null
+	 */
+	protected function _getValueByType($value, $type)
+	{
+		if( !is_null($value) )
+		{
+			switch($type)
+			{
+				case "bool":
+				case "boolean":
+					$value = (bool) $value;
+					break;
+				case "int":
+					$value = (int) $value;
+					break;
+				case "float":
+					$value = (float) $value;
+					break;
+				case "object":
+				case "array":
+					if(is_object($value) || !is_array($value))
+					{
+						$value = unserialize($value);
+					}
+					break;
+				case "date":
+					if($value == '0000-00-00' || $value == '')
+					{
+						$value = null;
+					}
+					break;
+				case "time":
+					if($value == '00:00:00' || $value == '')
+					{
+						$value = null;
+					}
+					break;
+				case "datetime":
+					if($value == '0000-00-00 00:00:00' || $value == '')
+					{
+						$value = null;
+					}
+					break;
+				case "text":
+				default:
+					$value = (string) $value;
+					break;
+			}
+		}
+
+		return $value;
 	}
 
 	/**
