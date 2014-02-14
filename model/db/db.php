@@ -172,10 +172,12 @@ abstract class Lib_Model_Db extends Lib_Model
 
 	/**
 	 * @param string $value
+	 * @return $this
 	 */
 	public function setAlias($value)
 	{
 		$this->_alias = $value;
+		return $this;
 	}
 
 	/**
