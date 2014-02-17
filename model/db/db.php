@@ -418,11 +418,11 @@ abstract class Lib_Model_Db extends Lib_Model
 
 	/**
 	 * @param array $cond
-	 * @return string
+	 * @return int
 	 */
 	public function countBy($cond)
 	{
-		$this->filterBy($cond)->count();
+		return $this->filterBy($cond)->count();
 	}
 
 	/**
