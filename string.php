@@ -444,3 +444,16 @@ function str_to( $str, $n )
 	$n = min( $n, $length );
 	return substr( $str, 0, -$n );
 }
+
+/**
+ * @param string $str
+ * @return int
+ */
+function str_to_uint( $str )
+{
+	debug_enforce_string( $str );
+	debug_enforce( 0 !== strlen($str), "Cannot convert empty string to uint" );
+	$ret = (int) $str;
+	debug_enforce_gte( $ret, 0 );
+	return $ret;
+}

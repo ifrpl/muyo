@@ -736,11 +736,35 @@ function debug_handler_assertion($handler = null)
  *
  * @param mixed $var
  * @param string $type
+ * @return mixed
  */
 function debug_enforce_type($var,$type)
 {
 	$t = gettype($var);
 	debug_enforce( $t === $type, "Parameter of type $type expected, but $t passed" );
+	return $var;
+}
+
+/**
+ * @param mixed $var
+ * @return string
+ */
+function debug_enforce_string($var)
+{
+	debug_enforce_type( $var, 'string' );
+	return $var;
+}
+
+/**
+ * Enforces that $var >= $count
+ * @param number $var
+ * @param number $count
+ * @return number
+ */
+function debug_enforce_gte($var,$count)
+{
+	debug_enforce( $var >= $count );
+	return $var;
 }
 
 /**
