@@ -84,11 +84,6 @@ function logger_log($message, $level = LOG_INFO)
 				, 1, $indent ).$eol
 			;
 		}
-
-		if( in_array(getCurrentEnv(), array('production','testing') ) )
-		{
-			mail( 'atrium-dev@ifresearch.org', 'Exception on '.$_SERVER[ 'HTTP_HOST' ], $message );
-		}
 	}
 
 	$logger( $message, $level );
