@@ -958,6 +958,7 @@ abstract class Lib_Model implements Iterator
 							}
 							$settingColumn['type'] = 'time';
 							break;
+						case "uint":
 						case "int":
 							@$settingColumn['options']['validators'][] = 'Int';
 							if(!isset($settingColumn['options']['decorators']))
