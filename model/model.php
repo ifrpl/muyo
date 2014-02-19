@@ -530,12 +530,22 @@ abstract class Lib_Model implements Iterator
 
 	/**
 	 * @param string $name Checks if native setting exists
+	 * @param string|null $key
 	 *
 	 * @return bool
 	 */
-	public function settingExists($name)
+	public function settingExists($name, $key=null)
 	{
-		return array_key_exists($name,$this->_settings);
+		$ret = array_key_exists($name,$this->_settings);
+
+		if( $ret && $key !== null )
+		{
+			return array_key_exists( $key, $this->_settings[ $name ] );
+		}
+		else
+		{
+			return $ret;
+		}
 	}
 
 	/**

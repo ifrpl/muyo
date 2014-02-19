@@ -22,7 +22,7 @@ abstract class Lib_Model_Db extends Lib_Model
 
 	/** @return mixed */
 	abstract public function getDb();
-	/** @return array [[string $tableAlias,string $column,string|null $columnAlias],..] */
+	/** @return array [ [$tableAlias,$columnValueOrName,$columnAliasOrNull], ... ] */
 	abstract public function getColumns();
 
 	abstract public function save();
@@ -492,6 +492,20 @@ abstract class Lib_Model_Db extends Lib_Model
 	public function each($iterator)
 	{
 		__($this->load())->each($iterator);
+	}
+
+	/**
+	 * Returns result keys (aliases).
+	 * @return array
+	 */
+	public function getColumnAliases( )
+	{
+		return array_map_val( $this->getColumns(), function()
+		{
+			$column = func_get_arg( 0 );
+			$alias = $column[2] === null ? $column[1] : $column[2];
+			return $alias;
+		} );
 	}
 
 }
