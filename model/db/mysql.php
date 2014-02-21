@@ -182,6 +182,34 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * Load results as CSV-like file on database server.
+	 * @param string $path
+	 * @param string $fieldsTerminator
+	 * @param string $fieldsEncloser
+	 * @param string $linesTerminator
+	 */
+	public function loadFile( $path, $fieldsTerminator=',', $fieldsEncloser='"', $linesTerminator="\n" )
+	{
+		debug_enforce_string( $path );
+		debug_enforce_string( $fieldsTerminator );
+		debug_enforce_string( $fieldsEncloser );
+		debug_enforce_string( $linesTerminator );
+		$sql = $this->getSql();
+		$db = $this->getDb();
+		$path = $db->quote( $path, 'string' );
+		$linesTerminator = $db->quote( $linesTerminator, 'string' );
+		$fieldsEncloser = $db->quote( $fieldsEncloser, 'string' );
+		$fieldsTerminator = $db->quote( $fieldsTerminator, 'string' );
+		$db->exec(
+			$sql."\n"
+			. "INTO OUTFILE $path"
+			. " FIELDS TERMINATED BY $fieldsTerminator"
+			. " ENCLOSED BY $fieldsEncloser"
+			. " LINES TERMINATED BY $linesTerminator"
+		);
+	}
+
+	/**
 	 * @param string|null $name
 	 * @return string
 	 */
