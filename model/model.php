@@ -1481,7 +1481,7 @@ abstract class Lib_Model implements Iterator
 					$obj->unserializeContent($value['data']);
 					$value = $obj;
 				}
-				else
+				elseif(array_key_exists('id', $value))
 				{
 					/** @var Lib_Model $value */
 					$value = $class::getById($value['id']);
