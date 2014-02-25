@@ -141,6 +141,15 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
+	 * @param string $name
+	 * @return array
+	 */
+	protected function schemaColumnGet($name)
+	{
+		return $this->getSetting($name);
+	}
+
+	/**
 	 * @param array $columns
 	 * @return $this
 	 * @see schemaColumnSet
