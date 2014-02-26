@@ -132,11 +132,12 @@ function logger_default($eol="\n")
 		$now = now();
 		$level = log_level_str($level);
 
-		if(!is_array($message)){
+		if( !is_array($message) )
+		{
 			$message = explode($eol, $message);
 		}
 
-		for($i=0; $i<count($message); $i++)
+		for($i = 0; $i<count($message); $i++)
 		{
 			$msg .= sprintf("[%s] [%7s] %s", $now, $level, $message[$i]);
 			if($i<count($message)-1)

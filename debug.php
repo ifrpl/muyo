@@ -195,54 +195,6 @@ function var_dump_human_full($var)
 function var_dump_html_full($var,$max_size=100000)
 {
 	return '<pre>'.var_dump_human_full($var).'</pre>';
-//	$ret = '';
-//	if( is_array($var) )
-//	{
-//		$key = key($var);
-//		if( null === $key )
-//		{
-//			$ret .= '[]';
-//		}
-//		elseif( is_numeric($key) /*&&is_sorted($var)*/ )
-//		{
-//			$wrapped = array_map_val($var,function($str)use($max_size){ return '<li class="dump-value">'.var_dump_html_full($str,$max_size).'</li>'; });
-//			$ret .= '<ul class="dump-set">'.implode('',$wrapped).'</ul>';
-//		}
-//		else
-//		{
-//			$wrapped = array_map_val($var,function($val,$key)use($max_size){ return '<dt class="dump-key">'.var_dump_html_full($key,$max_size).'</dt><dd class="dump-value">'.var_dump_html_full($val,$max_size).'</dd>'; });
-//			$ret .= '<dl class="dump-map">'.implode('',$wrapped).'</dl>';
-//		}
-//	}
-//	elseif ( is_null($var) )
-//	{
-//		$ret .= 'NULL';
-//	}
-//	elseif ( false === $var )
-//	{
-//		$ret .= 'false';
-//	}
-//	elseif ( true === $var )
-//	{
-//		$ret .= 'true';
-//	}
-//	elseif ( is_object($var) )
-//	{
-//		$ret .= '<fieldset>';
-//		$ret .= '<legend class="dump-type">'.get_class($var).'</legend>';
-//		$wrapped = array_map_val(get_object_vars($var),function($val,$key)use($max_size){ return '<dt class="dump-key">'.var_dump_html_full($key,$max_size).'</dt><dd class="dump-value">'.var_dump_html_full($val,$max_size).'</dd>'; });
-//		$ret .= '<dl class="dump-property">'.implode('',$wrapped).'</dl>';
-//		$ret .= '</fieldset>';
-//	}
-//	elseif ( is_string($var) )
-//	{
-//		$ret .= '"'.htmlentities($var).'"';
-//	}
-//	else
-//	{
-//		$ret .= $var;
-//	}
-//	return str_truncate($ret,$max_size);
 }
 
 /**
@@ -317,8 +269,11 @@ function var_dump_human_compact($var, $key = null)
  */
 function backtrace_print($ignore_depth = 0, $backtrace = null)
 {
-	$text = backtrace_string($ignore_depth+1, $backtrace);
-	writeln($text);
+	if( debug_allow() )
+	{
+		$text = backtrace_string($ignore_depth+1, $backtrace);
+		writeln($text);
+	}
 }
 
 /**
@@ -440,29 +395,6 @@ if(!function_exists('get_call_stack'))
 	}
 }
 
-if( class_exists('Zend_Log') )
-{
-	debug_assert(function() {
-		foreach(array(
-			LOG_EMERG   => Zend_Log::EMERG,
-			LOG_ALERT   => Zend_Log::ALERT,
-			LOG_CRIT    => Zend_Log::CRIT,
-			LOG_ERR     => Zend_Log::ERR,
-			LOG_WARNING => Zend_Log::WARN,
-			LOG_NOTICE  => Zend_Log::NOTICE,
-			LOG_INFO    => Zend_Log::INFO,
-			LOG_DEBUG   => Zend_Log::DEBUG
-		) as $k => $v)
-		{
-			if( $k != $v )
-			{
-				return false;
-			}
-		}
-		return true;
-	}, 'One of log levels differ. Update the library.');
-}
-
 if( version_compare(PHP_VERSION, '5.4.8', '>=') )
 {
 	/**
@@ -473,18 +405,15 @@ if( version_compare(PHP_VERSION, '5.4.8', '>=') )
 	 */
 	function debug_assert( $assertion, $message = null )
 	{
-		if( debug_allow() )
+		if( is_callable($assertion) )
 		{
-			if( is_callable($assertion) )
-			{
-				$validAssertion = $assertion();
-			}
-			else
-			{
-				$validAssertion = $assertion;
-			}
-			assert( $validAssertion, is_string($message) ? $message : var_dump_human_compact($message) );
+			$validAssertion = $assertion();
 		}
+		else
+		{
+			$validAssertion = $assertion;
+		}
+		assert( $validAssertion, is_string($message) ? $message : var_dump_human_compact($message) );
 		return $assertion;
 	}
 }
@@ -498,30 +427,30 @@ else
 	 */
 	function debug_assert($assertion, $message = null)
 	{
-		if( debug_allow() )
+		if( is_callable($assertion) )
 		{
-			if( is_callable($assertion) )
-			{
-				$assertion = $assertion();
-			}
-			if( is_string($assertion) )
-			{
-				$assertion = eval($assertion);
-			}
+			$assertion = $assertion();
+		}
+		if( is_string($assertion) )
+		{
+			$assertion = eval($assertion);
+		}
 
-			if( !$assertion )
-			{
-				$handler = assert_options(ASSERT_CALLBACK);
-				$message = var_dump_human_compact($message);
+		if( !$assertion )
+		{
+			$handler = assert_options(ASSERT_CALLBACK);
+			$message = var_dump_human_compact($message);
 
-				if( null !== $handler )
-				{ /** @var Callable $handler */
-					$trace = backtrace(1);
-					$file = isset($trace['file']) ? $trace['file'] : '';
-					$line = isset($trace['line']) ? $trace['line'] : '';
-					$handler($file, $line, $message);
-				}
+			if( null === $handler )
+			{
+				$handler = debug_handler_assertion_default_dg();
 			}
+			/** @var Callable $handler */
+
+			$trace = backtrace(1);
+			$file = isset($trace['file']) ? $trace['file'] : '';
+			$line = isset($trace['line']) ? $trace['line'] : '';
+			$handler($file, $line, $message);
 		}
 		return $assertion;
 	}
@@ -554,6 +483,29 @@ function debug_enforce($enforcement, $message = null)
 	}
 }
 
+if( class_exists('Zend_Log') )
+{
+	debug_assert(function() {
+		foreach(array(
+			LOG_EMERG   => Zend_Log::EMERG,
+			LOG_ALERT   => Zend_Log::ALERT,
+			LOG_CRIT    => Zend_Log::CRIT,
+			LOG_ERR     => Zend_Log::ERR,
+			LOG_WARNING => Zend_Log::WARN,
+			LOG_NOTICE  => Zend_Log::NOTICE,
+			LOG_INFO    => Zend_Log::INFO,
+			LOG_DEBUG   => Zend_Log::DEBUG
+		) as $k => $v)
+		{
+			if( $k != $v )
+			{
+				return false;
+			}
+		}
+		return true;
+	}, 'One of log levels differ. Update the library.');
+}
+
 /**
  * @param int $stack_index
  * @param int $options debug_backtrace options
@@ -577,12 +529,6 @@ function debug_trace_func_call($stack_index = 0, $options = 0)
  */
 function write($text /**, $more_text **/)
 {
-	if(!debug_allow())
-		return null;
-
-
-
-
 	$output = implode(
 		',',
 		array_map(
@@ -593,7 +539,7 @@ function write($text /**, $more_text **/)
 					$arg = var_dump_human_compact($arg);
 				}
 
-				if(!isCLI())
+				if( !isCLI() )
 				{
 					$arg = str_replace("\n", "<br/>", $arg);
 				}
@@ -604,18 +550,17 @@ function write($text /**, $more_text **/)
 		)
 	);
 
-	if(!isCLI())
+	if( !isCLI() )
 	{
 		ob_start();
 		echo $output;
 		ob_end_flush();
 
-	}else
+	}
+	else
 	{
 		fwrite(STDOUT, $output);
 	}
-
-
 }
 
 /**
@@ -627,7 +572,7 @@ function writeln($text /**, $more_text **/)
 	$args = func_get_args();
 	call_user_func_array('write', $args);
 
-	if(!isCLI())
+	if( !isCLI() )
 	{
 		write("<br/>");
 	}
@@ -651,11 +596,13 @@ function debug_handler($handler = null)
 	$assertion_to_common = null;
 	if( null !== $handler )
 	{
-		$exception_to_common = function($e) use($handler) {
+		$exception_to_common = function($e) use($handler)
+		{
 			/** @var Exception $e */
 			return $handler($e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), 'exception', array( 'exception' => $e ));
 		};
-		$error_to_common = function($number, $message, $script, $line) use($handler) {
+		$error_to_common = function($number, $message, $script, $line) use($handler)
+		{
 			if( error_reporting() === 0 )
 			{
 				return false;
@@ -665,7 +612,8 @@ function debug_handler($handler = null)
 				return $handler( $message, $script, $line, array(), 'php_error', array( 'php_error' => $number ) );
 			}
 		};
-		$assertion_to_common = function($script, $line, $message) use ($handler) {
+		$assertion_to_common = function($script, $line, $message) use ($handler)
+		{
 			return $handler( $message, $script, $line, array(), 'assertion', array() );
 		};
 	}
@@ -675,27 +623,44 @@ function debug_handler($handler = null)
 }
 
 /**
+ * @return callable
+ */
+function debug_handler_exception_default_dg()
+{
+	return function( $e )
+	{
+		logger_log( $e, LOG_ERR );
+		exit(1);
+	};
+}
+
+/**
  * @param callable|null $handler that takes ($exception) and returns bool true if handled, false otherwise
  * @return bool|null
  */
 function debug_handler_exception($handler = null)
 {
-	$default_handler = function ($e)
-	{
-		logger_log($e);
-	};
-
-	$default_handlers = array(
-		'development' => $default_handler,
-		'testing'     => $default_handler,
-		'production'  => function() { return false; }
-	);
-
 	if( null == $handler )
 	{
-		$handler = $default_handlers[ getCurrentEnv() ];
+		$handler = debug_handler_exception_default_dg();
 	}
 	return set_exception_handler($handler);
+}
+
+/**
+ * @return callable
+ */
+function debug_handler_error_default_dg()
+{
+	return function ($errno, $errstr, $errfile, $errline, $errcontext)
+	{
+		if( error_reporting()===0 )
+		{
+			return false;
+		}
+		$e = new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
+		throw $e;
+	};
 }
 
 /**
@@ -704,27 +669,31 @@ function debug_handler_exception($handler = null)
  */
 function debug_handler_error($handler = null)
 {
-	$default_handler = function ($errno , $errstr , $errfile , $errline , $errcontext) {
-		if( error_reporting() === 0 )
-		{
-			return false;
-		}
-		$e = new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
-		throw $e;
-	};
-
-	$default_handlers = array(
-		'development' => $default_handler,
-		'testing'     => $default_handler,
-		'production'  => function() { return true; }
-	);
-
 	if( null == $handler )
 	{
-		$handler = $default_handlers[ getCurrentEnv() ];
+		$handler = debug_handler_error_default_dg();
 	}
 	$ret = set_error_handler( $handler, -1 );
 	return $ret;
+}
+
+/**
+ * @return callable
+ */
+function debug_handler_assertion_default_dg()
+{
+	return function ($script, $line, $message)
+	{
+		$e = new Exception("{$script}:{$line} Assertion failed. {$message}");
+		if( getCurrentEnv() === 'production' )
+		{
+			logger_log( $e );
+		}
+		else
+		{
+			throw $e;
+		}
+	};
 }
 
 /**
@@ -733,25 +702,15 @@ function debug_handler_error($handler = null)
  */
 function debug_handler_assertion($handler = null)
 {
-	$default_handler = function ($script, $line, $message) {
-		$e = new Exception("{$script}:{$line} Assertion failed. {$message}");
-		throw $e;
-	};
-
-	$default_handlers = array(
-		'development' => $default_handler,
-		'testing'     => $default_handler,
-		'production'  => function() {  }
-	);
-
 	$env = getCurrentEnv();
 	if( null == $handler )
 	{
-		$handler = $default_handlers[ $env ];
+		$handler = debug_handler_assertion_default_dg();
 	}
-	assert_options(ASSERT_QUIET_EVAL, $env=='production');
-	assert_options(ASSERT_ACTIVE, $env!='production');
-	assert_options(ASSERT_WARNING, true);
+	assert_options(ASSERT_ACTIVE, true);
+	assert_options(ASSERT_WARNING, false);
+	assert_options(ASSERT_BAIL, false);
+	assert_options(ASSERT_QUIET_EVAL, $env==='production');
 	return assert_options(ASSERT_CALLBACK, $handler);
 }
 

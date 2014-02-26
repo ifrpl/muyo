@@ -110,15 +110,9 @@ function saveSerial($filename,$data)
  */
 function define_array($key_value)
 {
-	if( debug_assert(is_array($key_value), $key_value) )
+	foreach($key_value as $key => $value)
 	{
-		foreach($key_value as $key => $value)
-		{
-			if( debug_assert(!defined($key), array($key,$value)) )
-			{
-				define($key, $value);
-			}
-		}
+		define($key, $value);
 	}
 }
 
