@@ -463,40 +463,64 @@ if( class_exists('Zend_Log') )
 	}, 'One of log levels differ. Update the library.');
 }
 
-/**
- * @param bool|callable|string $assertion
- * @param string|null $message
- *
- * @return bool
- */
-function debug_assert($assertion, $message = null)
+if( version_compare(PHP_VERSION, '5.4.8', '>=') )
 {
-	if( is_callable($assertion) )
+	/**
+	 * @param mixed $assertion
+	 * @param string|null $message
+	 *
+	 * @return mixed $assertion
+	 */
+	function debug_assert( $assertion, $message = null )
 	{
-		$assertion = $assertion();
-	}
-
-	if( version_compare(PHP_VERSION, '5.4.8', '>=') )
-	{
-		return assert($assertion, is_string($message) ? $message : var_dump_human_compact($message));
-	}
-	else
-	{
-		if( is_string($assertion) && debug_allow() )
+		if( debug_allow() )
 		{
-			$assertion = eval($assertion);
+			if( is_callable($assertion) )
+			{
+				$validAssertion = $assertion();
+			}
+			else
+			{
+				$validAssertion = $assertion;
+			}
+			assert( $validAssertion, is_string($message) ? $message : var_dump_human_compact($message) );
 		}
-		if( !$assertion )
+		return $assertion;
+	}
+}
+else
+{
+	/**
+	 * @param mixed $assertion
+	 * @param string|null $message
+	 *
+	 * @return mixed $assertion
+	 */
+	function debug_assert($assertion, $message = null)
+	{
+		if( debug_allow() )
 		{
-			$handler = assert_options(ASSERT_CALLBACK);
-			$message = var_dump_human_compact($message);
+			if( is_callable($assertion) )
+			{
+				$assertion = $assertion();
+			}
+			if( is_string($assertion) )
+			{
+				$assertion = eval($assertion);
+			}
 
-			if( null !== $handler )
-			{ /** @var Callable $handler */
-				$trace = backtrace(1);
-				$file = isset($trace['file']) ? $trace['file'] : '';
-				$line = isset($trace['line']) ? $trace['line'] : '';
-				$handler($file, $line, $message);
+			if( !$assertion )
+			{
+				$handler = assert_options(ASSERT_CALLBACK);
+				$message = var_dump_human_compact($message);
+
+				if( null !== $handler )
+				{ /** @var Callable $handler */
+					$trace = backtrace(1);
+					$file = isset($trace['file']) ? $trace['file'] : '';
+					$line = isset($trace['line']) ? $trace['line'] : '';
+					$handler($file, $line, $message);
+				}
 			}
 		}
 		return $assertion;
@@ -504,11 +528,11 @@ function debug_assert($assertion, $message = null)
 }
 
 /**
- * @param bool $enforcement
+ * @param mixed       $enforcement
  * @param string|null $message
  *
- * @return bool
- * @throws Lib_Exception
+ * @throws Exception
+ * @return mixed
  */
 function debug_enforce($enforcement, $message = null)
 {
@@ -526,7 +550,7 @@ function debug_enforce($enforcement, $message = null)
 	}
 	else
 	{
-		return true;
+		return $enforcement;
 	}
 }
 
