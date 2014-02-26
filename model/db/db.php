@@ -135,15 +135,26 @@ abstract class Lib_Model_Db extends Lib_Model
 			}
 		}
 
+		$this->resetColumns( $ret );
+	}
+
+	/**
+	 * @param array $newColumns [[$tableAlias,$columnValue,$columnAlias],..]
+	 * @return $this
+	 */
+	public function resetColumns($newColumns)
+	{
 		$this->clearColumns();
 
-		foreach( $ret as $descriptor )
+		foreach( $newColumns as $descriptor )
 		{
 			if ( $descriptor[2] )
 				$this->setColumns(array($descriptor[2] => $descriptor[1]), $descriptor[0]);
 			else
 				$this->setColumns($descriptor[1], $descriptor[0]);
 		}
+
+		return $this;
 	}
 
 	/**
@@ -163,6 +174,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	}
 
 	/**
+	 * Returns currently set alias
 	 * @return string
 	 */
 	public function getAlias()
@@ -171,12 +183,64 @@ abstract class Lib_Model_Db extends Lib_Model
 	}
 
 	/**
+	 * Sets alias to be used for setting columns in the future.
 	 * @param string $value
 	 * @return $this
+	 * @see aliasSet version that replaces currently set columns
 	 */
 	public function setAlias($value)
 	{
 		$this->_alias = $value;
+		return $this;
+	}
+
+	/**
+	 * Replaces current alias with different one.
+	 * @param string $value
+	 * @return $this
+	 * @see setAlias version that do not replaces currently set columns
+	 */
+	public function aliasSet( $value )
+	{
+		$columns = $this->getColumns();
+		$this->aliasGet( $oldValue );
+		foreach( $columns as &$column )
+		{
+			$tableAlias = $column[0];
+			if( $tableAlias === $oldValue )
+			{
+				$column[0] = $value;
+			}
+		}
+
+		$select = $this->getSelect();
+		$from = $select->getPart( Zend_Db_Select::FROM );
+		$select->reset( Zend_Db_Select::FROM );
+		foreach( $from as $tableAlias => $descriptor )
+		{
+			if( $tableAlias === $oldValue )
+			{
+				unset($from[$oldValue]);
+				$from[$value] = $descriptor;
+			}
+		}
+		$select->from( $value, array() );
+
+		return $this
+			->setAlias( $value )
+			->resetColumns( $columns )
+		;
+	}
+
+	/**
+	 * Returns currently set table alias.
+	 * @param &$ret
+	 * @return $this
+	 * @see aliasSet complementary setter
+	 */
+	public function aliasGet( &$ret )
+	{
+		$ret = $this->getAlias();
 		return $this;
 	}
 
