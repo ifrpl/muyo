@@ -91,16 +91,36 @@ function str_truncate($string, $length = 200, $etc = '...', $break_words = false
  *
  * @return string
  */
-function str_indent($string, $counter, $character = "\t")
+function str_indent($string, $counter=1, $character = "\t")
 {
 	$pre = '';
 	for($i = 0; $i < $counter; $i++)
 	{
 		$pre .= $character;
 	}
-	return implode(	PHP_EOL,
-					array_map(	function($str) use ($pre) { return $pre.$str; },
-								explode(PHP_EOL, $string)));
+	return implode(PHP_EOL,
+		array_map(
+			function ($str) use ($pre)
+			{
+				return $pre.$str;
+			},
+			explode(PHP_EOL, $string)
+		)
+	);
+}
+
+/**
+ * @param int  $counter
+ * @param string $character
+ * @return callable
+ */
+function str_indent_dg( $counter=1, $character="\t" )
+{
+	return function()use($counter,$character)
+	{
+		$str = func_get_arg(0);
+		return str_indent( $str, $counter, $character );
+	};
 }
 
 /**
