@@ -33,19 +33,14 @@ function ifr_dir_flatten($dir)
 }
 
 /**
- * @param      $from
- * @param      $to
+ * @param string $from absolute path from
+ * @param string $to absolute path to
  * @param bool $to_as_root
  *
  * @return string
  */
 function ifr_path_rel($from, $to, $to_as_root = false)
 {
-	$from = realpath($from);
-	$to = realpath($to);
-
-	debug_assert( is_string($from) && is_string($to) );
-
 	$from_cnt = strlen($from);
 	$to_cnt = strlen($to);
 	$min_cnt = min($from_cnt,$to_cnt);
