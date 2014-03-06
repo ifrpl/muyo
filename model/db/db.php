@@ -224,7 +224,7 @@ abstract class Lib_Model_Db extends Lib_Model
 				$from[$value] = $descriptor;
 			}
 		}
-		$select->from( $value, array() );
+		$select->from( array( $value => $this->getTable() ), array() );
 
 		return $this
 			->setAlias( $value )

@@ -822,3 +822,14 @@ function exception_str( $exception, $eol=null )
 	}
 	return $ret;
 }
+
+/**
+ * @param array $countable
+ * @param int $integer
+ * @return array
+ */
+function debug_assert_count_eq( $countable, $integer )
+{
+	$count = count( $countable );
+	return debug_assert( $count === $integer, "Expected count=='$integer', got '$count'" );
+}

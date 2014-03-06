@@ -330,7 +330,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * @param string $cond
 	 * @param mixed $value
 	 * @param null|int $type
-	 * @return Lib_Model_Db
+	 * @return Lib_Model_Db_Mysql
 	 */
 	public function setWhere($cond, $value = null, $type = null)
 	{
@@ -753,7 +753,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * @param string|null $thisKeyCol may contain table prefix or not
 	 * @param string|null $thatKeyCol may contain table prefix or not
 	 * @param string $conditions ['and' => '{this}.column={that}.column' ]
-	 * @return Lib_Model_db
+	 * @return Lib_Model_Db_Mysql
 	 */
 	public function joinTo($model,$thisKeyCol,$thatKeyCol=null,$conditions='')
 	{
