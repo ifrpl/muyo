@@ -833,3 +833,17 @@ function debug_assert_count_eq( $countable, $integer )
 	$count = count( $countable );
 	return debug_assert( $count === $integer, "Expected count=='$integer', got '$count'" );
 }
+
+/**
+ * Asserts that gettype($var) === $type
+ *
+ * @param mixed $var
+ * @param string $type
+ * @return mixed
+ */
+function debug_assert_type($var,$type)
+{
+	$t = gettype($var);
+	debug_assert( $t === $type, "Parameter of type $type expected, but $t passed" );
+	return $var;
+}
