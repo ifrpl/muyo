@@ -175,3 +175,15 @@ function not_dg( $callable )
 		return ! call_user_func_array( $callable, $args );
 	};
 }
+
+/**
+ * @return callable
+ */
+function empty_dg()
+{
+	return function()
+	{
+		$arg = func_get_arg(0);
+		return empty($arg);
+	};
+}
