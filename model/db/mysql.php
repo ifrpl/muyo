@@ -650,29 +650,35 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	public function loadArray( $q=null,$collection=false )
 	{
 		$alias = $this->getAlias();
-		$key_name = $this->getPrimaryKey();
-		$key_idx = null;
 
-		if( count($this->getColumns()) == 0 )
+		$descriptors = $this->getColumns();
+		if( empty( $descriptors ) )
 		{
 			$this->setColumns(array_keys($this->schemaColumnsGet()), $alias);
+			$descriptors = $this->getColumns();
 		}
-		$descriptors = $this->getColumns();
-		foreach( $descriptors as $idx=>$descriptor )
+
+		if( !$collection )
 		{
-			$colname = null !== $descriptor[2] ? $descriptor[2] : $descriptor[1];
-			$tblalias = $descriptor[0];
-			if( $tblalias === $alias && $colname === $key_name )
+			$key_name = $this->getPrimaryKey();
+			$key_idx = array_find_key( $descriptors, zend_column_eq_dg( $alias, $key_name ) );
+			if( !debug_assert( !is_null($key_idx), "Key '$key_name' needs to be set to load hash-set of '$alias'") )
 			{
-				$key_idx = $idx;
+				$this->setColumns( array($key_name) );
+				$descriptors = $this->getColumns();
+				$key_idx = array_find_key( $descriptors, zend_column_eq_dg( $alias, $key_name ) );
+				debug_enforce( !is_null($key_idx) );
 			}
 		}
-
-		debug_assert(null !== $key_idx,array($alias,$key_name));
+		else
+		{
+			$key_idx = null;
+		}
 
 		$db = $this->getDb();
-		try {
-			$rows = $db->fetchAll($this->getSQL(), array(),Zend_Db::FETCH_NUM);
+		try
+		{
+			$rows = $db->fetchAll( $this->getSQL(), array(), Zend_Db::FETCH_NUM );
 		}
 		catch( Exception $e )
 		{
@@ -680,41 +686,47 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		}
 
 		$ret = array();
-		foreach ( $rows as $row )
+		foreach( $rows as $row )
 		{
-			$key = $row[$key_idx];
-			if( !array_key_exists($key, $ret) )
-			{
-				$ret[$key] = array();
-			}
+			$record = array();
 
 			foreach( $row as $idx=>$column )
 			{
-				$descriptor = $descriptors[$idx];
-				$colalias = 3===count($descriptor)&&$descriptor[2] ? $descriptor[2] : $descriptor[1];
-				$tblalias = $descriptor[0];
+				$descriptor = $descriptors[ $idx ];
+				$colalias = zend_column_name( $descriptor );
+				$tblalias = zend_column_table( $descriptor );
 
-				if( !array_key_exists($tblalias, $ret[$key]) )
+				if( !array_key_exists( $tblalias, $record ) )
 				{
-					$ret[$key][$tblalias] = array();
+					$record[ $tblalias ] = array();
 				}
 
 				$is_joined = $tblalias !== $alias;
 				if( $is_joined )
 				{
-					if( array_key_exists($colalias, $ret[$key][$tblalias]) )
+					if( array_key_exists( $colalias, $record[ $tblalias ] ) )
 					{
-						$ret[$key][$tblalias][$colalias] []= $column;
+						$record[$tblalias][$colalias] []= $column;
 					}
 					else
 					{
-						$ret[$key][$tblalias][$colalias] = array($column);
+						$record[$tblalias][$colalias] = array($column);
 					}
 				}
 				else
 				{
-					$ret[$key][$tblalias][$colalias] = $column;
+					$record[$tblalias][$colalias] = $column;
 				}
+			}
+
+			if( $collection )
+			{
+				$ret []= $record;
+			}
+			else
+			{
+				$key = $row[ $key_idx ];
+				$ret[ $key ] = $record;
 			}
 		}
 		return $ret;

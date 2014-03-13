@@ -49,3 +49,40 @@ function ifr_add_class(&$target, $class)
 		}
 	}
 }
+
+/**
+ * Returns comparator for zend column $tableAlias AND $columnName
+ * @param string|null $tableAlias
+ * @param string|null $columnName
+ * @return callable $zendColumnExpression => $isMatching
+ */
+function zend_column_eq_dg($tableAlias, $columnName)
+{
+	return function($descriptor)use($columnName,$tableAlias)
+	{
+		$colname = null !== $descriptor[2] ? $descriptor[2] : $descriptor[1];
+		$tblalias = $descriptor[0];
+		return $tblalias === $tableAlias && $colname === $columnName;
+	};
+}
+
+/**
+ * @param array $column column descriptor
+ * @return string table name
+ * @see Lib_Model_Db_Mysql::getColumns
+ */
+function zend_column_table($column)
+{
+	return $column[0];
+}
+
+/**
+ * @param array $column column descriptor
+ * @return string column name
+ * @see Lib_Model_Db_Mysql::getColumns
+ */
+function zend_column_name( $column )
+{
+	$colname = null!==$column[2] ? $column[2] : $column[1];
+	return $colname;
+}
