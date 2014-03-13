@@ -823,6 +823,17 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
+	 * @param array $row
+	 * @return Lib_Model
+	 */
+	public static function modelFactory_s($row)
+	{
+		/** @var Lib_Model $model */
+		$model = new static();
+		return $model->modelFactory($row);
+	}
+
+	/**
 	 * @param array $array
 	 * @param bool $strict Populate only existing data array
 	 * @return $this
