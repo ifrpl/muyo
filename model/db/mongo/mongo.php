@@ -79,6 +79,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			$this->_onInsert();
 		}
 
+		$this->_onSave();
 		$this->changedColumnsReset();
 
 		return $this;

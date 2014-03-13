@@ -47,6 +47,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$this->_onInsert();
 		}
 
+		$this->_onSave();
+
 		$this->changedColumnsReset();
 
 		return $this;
