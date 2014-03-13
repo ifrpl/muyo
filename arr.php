@@ -138,8 +138,8 @@ function array_key_is_reference($arr, $key)
  * @param array $array
  * @param mixed $needle
  * @param bool  $strict
- *
  * @return bool
+ * @see array_some for iterator version
  */
 function array_contains($array, $needle, $strict = false)
 {
