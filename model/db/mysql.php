@@ -735,6 +735,49 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @return Lib_Model_Set
+	 * @throws Exception
+	 */
+	public function loadSet()
+	{
+		$q = $this->getSelect();
+
+		$pkey = $this->getPrimaryKey();
+
+		if( count($q->getPart('columns')) == 0 )
+		{
+			$q->columns(array('*'));
+		}
+		elseif( !__($this->getColumns())->any(function($arr)use($pkey){ return $arr[2]===$pkey; }) )
+		{
+			$this->setColumns($pkey);
+		}
+
+		$db = $this->getDb();
+		$this->preLoad();
+		try
+		{
+			$result = $db->fetchAll($q);
+		}
+		catch( Exception $e )
+		{
+			throw new Exception('Error while loading: '.$e->getMessage().' | SQL: '.$q->assemble());
+		}
+		$this->postLoad();
+
+		$set = new Lib_Model_Set;
+		$set->setResultSet($result);
+		$set->setModel($this);
+
+		if( getCurrentEnv() != 'development' )
+		{
+			$this->clearAfterLoad();
+		}
+
+		return $set;
+	}
+
+	/**
 	 * @return null|string
 	 */
 	public function getSQL()

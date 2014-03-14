@@ -36,6 +36,11 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	abstract public function loadArray( $q=null, $collection=false );
 
+	/**
+	 * @return Lib_Model_Set
+	 */
+	abstract public function loadSet();
+
 	protected function _onSave(){}
 	protected function _onUpdate(){}
 	protected function _onInsert(){}

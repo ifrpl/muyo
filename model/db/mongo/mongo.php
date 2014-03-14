@@ -367,6 +367,22 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
+	 * @return Lib_Model_Set
+	 */
+	public function loadSet()
+	{
+		$alias = $this->getAlias();
+		$array = $this->loadArray( );
+		$t = $this;
+
+		$set = new Lib_Model_Set;
+		$set->setResultSet($array[$alias]);
+		$set->setModel($this);
+
+		return $set;
+	}
+
+	/**
 	 * @param array|string $order
 	 *
 	 * @return $this
