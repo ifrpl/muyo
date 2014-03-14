@@ -30,6 +30,11 @@ class Logger
 	{
 		return logger_log($message, LOG_ERR);
 	}
+
+	public static function notice($message)
+	{
+		return logger_log($message, LOG_NOTICE);
+	}
 }
 
 /**

@@ -28,6 +28,19 @@ function str_startswith($haystack,$needle)
 }
 
 /**
+ * @param string $needle
+ *
+ * @return callable
+ */
+function str_startswith_dg($needle)
+{
+	return function( $haystack )use($needle)
+	{
+		return str_startswith( $haystack, $needle );
+	};
+}
+
+/**
  * @param string $haystack
  * @param string $needle
  *
