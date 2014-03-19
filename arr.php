@@ -595,7 +595,7 @@ function array_key_exists_dg($key=null)
  */
 function array_first($array,$count = 1)
 {
-	return array_slice($array,0,$count,null,is_array_assoc($array));
+	return array_slice($array,0,$count,is_array_assoc($array));
 }
 
 /**
