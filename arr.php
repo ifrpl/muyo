@@ -508,10 +508,10 @@ function array_unset_val(&$array, $val, $strict = true)
  * @param string $key
  * @return mixed
  */
-function array_get_unset(&$array,$key)
+function array_get_unset(&$array, $key, $default = null)
 {
 	debug_enforce( is_array($array), "array_get_unset expects first parameter to be array, ".gettype($array)." given" );
-	$ret = array_key_exists($key,$array) ? $array[$key] : null;
+	$ret = array_key_exists($key, $array) ? $array[$key] : $default;
 	unset($array[$key]);
 	return $ret;
 }
