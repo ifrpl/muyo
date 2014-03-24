@@ -87,4 +87,12 @@ class Lib_Model_Set implements Iterator
 	{
 		reset($this->_resultSet);
 	}
+
+	/**
+	 * @return int
+	 */
+	public function count()
+	{
+		return count($this->_resultSet);
+	}
 }
