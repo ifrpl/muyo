@@ -266,7 +266,7 @@ function str_splitter($string, $by, $before=false)
  *
  * @param string $string
  * @param callable $iterator
- * @return array
+ * @return string
  */
 function str_map($string,$iterator)
 {
