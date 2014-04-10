@@ -819,3 +819,15 @@ function array_debug_dg()
 		return $val;
 	};
 }
+
+/**
+ * @param $array0
+ * @param $array1
+ */
+function array_merge_alt(&$array0, $array1)
+{
+	foreach($array1 as $key => $value)
+	{
+		$array0[$key] = $value;
+	}
+}
