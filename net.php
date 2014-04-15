@@ -540,3 +540,66 @@ function rest_send($packet)
 	}
 	return $ret;
 }
+
+/**
+ * @param string $string
+ * @return array
+ */
+function http_accept_language_decode( $string )
+{
+	return array_chain(
+		explode( ',', $string ),
+		array_map_val_dg( str_explode_dg(';') ),
+		array_map_val_dg( function( $pair )
+		{
+			if( 1===count( $pair ) )
+			{
+				$pair[]=1.0;
+			}
+			else
+			{
+				debug_enforce( str_startswith( $pair[ 1 ], 'q=' ) );
+				$pair[ 1 ]=floatval( str_find_after( $pair[ 1 ], 'q=' ) );
+			}
+			return $pair;
+		})
+	);
+}
+
+/**
+ * @param array $pairs
+ * @return array
+ */
+function http_accept_language_sort( $pairs )
+{
+	usort( $pairs, function($a,$b)
+	{
+		$firstA=-1;
+		$firstB=1;
+		$undefined=0;
+		if( 1==count($a) )
+		{
+			return $firstA;
+		}
+		if( 1==count($b) )
+		{
+			return $firstB;
+		}
+		debug_assert( count($a)==2 && count($b)==2 );
+		if( $a[1]==$b[1] )
+		{
+			return $undefined;
+		}
+		if( $a[1]<$b[1] )
+		{
+			return $firstB;
+		}
+		if( $a[1]>$b[1] )
+		{
+			return $firstA;
+		}
+		debug_enforce( false );
+		return $undefined;
+	});
+	return $pairs;
+}

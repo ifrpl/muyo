@@ -490,3 +490,15 @@ function str_to_uint( $str )
 	debug_enforce_gte( $ret, 0 );
 	return $ret;
 }
+
+/**
+ * @param string $separator
+ * @return callable
+ */
+function str_explode_dg( $separator )
+{
+	return function ( $string ) use ( $separator )
+	{
+		return explode( $separator, $string );
+	};
+}

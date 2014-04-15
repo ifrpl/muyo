@@ -86,6 +86,9 @@ function config_to_array_recursive($config) {
 	if( is_object($config) && 'stdClass' === get_class($config) )
 	{
 		$config = (array) $config;
+	}
+	if( is_array($config) )
+	{
 		foreach( $config as $k => $v )
 		{
 			$config[$k] = config_to_array_recursive($v);
