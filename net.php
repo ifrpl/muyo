@@ -545,7 +545,7 @@ function rest_send($packet)
  * @param string $string
  * @return array
  */
-function http_accept_language_decode( $string )
+function http_accept_decode( $string )
 {
 	return array_chain(
 		explode( ',', $string ),
@@ -570,7 +570,7 @@ function http_accept_language_decode( $string )
  * @param array $pairs
  * @return array
  */
-function http_accept_language_sort( $pairs )
+function http_accept_sort( $pairs )
 {
 	usort( $pairs, function($a,$b)
 	{
@@ -602,4 +602,40 @@ function http_accept_language_sort( $pairs )
 		return $undefined;
 	});
 	return $pairs;
+}
+
+/**
+ * @param string $string
+ * @return array
+ */
+function http_accept_language_decode( $string )
+{
+	return http_accept_decode( $string );
+}
+
+/**
+ * @param array $pairs
+ * @return array
+ */
+function http_accept_language_sort( $pairs )
+{
+	return http_accept_sort( $pairs );
+}
+
+/**
+ * @param string $string
+ * @return array
+ */
+function http_accept_charset_decode( $string )
+{
+	return http_accept_decode( $string );
+}
+
+/**
+ * @param array $pairs
+ * @return array
+ */
+function http_accept_charset_sort( $pairs )
+{
+	return http_accept_sort( $pairs );
 }
