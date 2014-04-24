@@ -170,7 +170,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * Inserts to table from different query.
 	 * Warning: silently discards remote aliases if not existing as local column.
 	 * @param App_Model_Db_Mysql $model
-	 * @return int
+	 * @return App_Model_Db_Mysql
 	 */
 	public function insertFrom($model)
 	{
@@ -180,7 +180,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$columns = '('.implode( ',', array_map_val( array_intersect( $theirCols, $myCols ), $this->quoteColumnDg() ) ).')';
 		$table = $this->quoteTable();
 		$db->exec('INSERT INTO '.$table.' '.$columns.' '.$model->getSQL());
-		return $this->getLastInsertId();
+		$this->id = $this->getLastInsertId();
+		return $this->loadOne();
 	}
 
 	/**
