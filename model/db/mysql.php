@@ -183,7 +183,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$this->id = $this->getLastInsertId();
 		if( $this->recordExists() )
 		{
-			return $this->loadOne();
+			return $this->filterById($this->id)->loadOne();
 		}
 		else
 		{
