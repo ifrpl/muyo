@@ -506,6 +506,7 @@ function array_unset_val(&$array, $val, $strict = true)
 /**
  * @param array $array
  * @param string $key
+ * @param mixed $default
  * @return mixed
  */
 function array_get_unset(&$array, $key, $default = null)
@@ -830,4 +831,17 @@ function array_merge_alt(&$array0, $array1)
 	{
 		$array0[$key] = $value;
 	}
+}
+
+/**
+ * @param callable $callable
+ * @param mixed    $userdata
+ * @return callable
+ */
+function array_walk_dg( $callable, $userdata=null )
+{
+	return function( $array )use( $callable, $userdata )
+	{
+		array_walk( $array, $callable, $userdata );
+	};
 }

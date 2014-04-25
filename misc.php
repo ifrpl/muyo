@@ -152,15 +152,25 @@ function tuple_get($n,$apply=null)
 /**
  * Prepare a delegate that returns results with comparison of $key parameter to $eq.
  *
- * @param int|string $eq
+ * @param int|string|array $eq
  * @return callable
  */
 function key_eq_dg($eq)
 {
-	return function($val,$key)use($eq)
+	if( is_array($eq) )
 	{
-		return $key === $eq;
-	};
+		return function($val,$key)use($eq)
+		{
+			return array_contains( $eq, $key );
+		};
+	}
+	else
+	{
+		return function($val,$key)use($eq)
+		{
+			return $key === $eq;
+		};
+	}
 }
 
 /**
