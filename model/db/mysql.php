@@ -181,7 +181,14 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$table = $this->quoteTable();
 		$db->exec('INSERT INTO '.$table.' '.$columns.' '.$model->getSQL());
 		$this->id = $this->getLastInsertId();
-		return $this->loadOne();
+		if( $this->recordExists() )
+		{
+			return $this->loadOne();
+		}
+		else
+		{
+			return $this;
+		}
 	}
 
 	/**
