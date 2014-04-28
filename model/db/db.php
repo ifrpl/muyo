@@ -514,7 +514,7 @@ abstract class Lib_Model_Db extends Lib_Model
 		}
 		else
 		{
-			return array_shift($ret);
+			return current($ret);
 		}
 	}
 
