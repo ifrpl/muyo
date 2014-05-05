@@ -147,7 +147,7 @@ function array_contains($array, $needle, $strict = false)
 
 	if( is_array($needle) )
 	{
-		return array_some( $needle, function($val,$key) use ($array,$strict)
+		return array_some( $needle, function($val) use ($array,$strict)
 		{
 			return in_array($val,$array,$strict);
 		} );
@@ -834,14 +834,28 @@ function array_merge_alt(&$array0, $array1)
 }
 
 /**
- * @param callable $callable
- * @param mixed    $userdata
- * @return callable
+ * @param null $sortFlags
+ * @return callable function($array)
  */
-function array_walk_dg( $callable, $userdata=null )
+function array_ksort_dg( $sortFlags=null )
 {
-	return function( $array )use( $callable, $userdata )
+	return function($array)use($sortFlags)
 	{
-		array_walk( $array, $callable, $userdata );
+		ksort($array,$sortFlags);
+		return $array;
+	};
+}
+
+/**
+ * @param callable $callable
+ * @param mixed $userData
+ * @return callable function($array)
+ */
+function array_walk_dg( $callable, $userData=null )
+{
+	return function( $array )use( $callable, $userData )
+	{
+		debug_enforce( array_walk( $array, $callable, $userData ), 'array_walk failure' );
+		return $array;
 	};
 }
