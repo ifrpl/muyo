@@ -859,3 +859,28 @@ function array_walk_dg( $callable, $userData=null )
 		return $array;
 	};
 }
+
+/**
+ * @param string $separator
+ * @return callable
+ */
+function array_implode_dg( $separator )
+{
+	return function( $array )use($separator)
+	{
+		return implode( $separator, $array );
+	};
+}
+
+/**
+ * @param callable $callable
+ * @param null|mixed $keyspace
+ * @return callable
+ */
+function array_group_dg( $callable, $keyspace=null )
+{
+	return function( $array )use($callable,$keyspace)
+	{
+		return array_group( $array, $callable, $keyspace );
+	};
+}

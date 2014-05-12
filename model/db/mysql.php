@@ -140,6 +140,18 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @param string $expr
+	 * @param string $bindAs
+	 * @return $this
+	 */
+	public function setCount( $expr='1', $bindAs='count' )
+	{
+		return $this->setColumns(array(
+			$bindAs => new Zend_Db_Expr("COUNT($expr)"),
+		));
+	}
+
+	/**
 	 * @return int
 	 */
 	public function count()
@@ -783,6 +795,22 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		}
 
 		return $set;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function loadInt()
+	{
+		$alias = $this->getAlias();
+		$array = $this->loadArray( null,true );
+		debug_enforce_count_gte( $array, 1 );
+		debug_assert_count_eq( $array, 1 );
+		$record = array_shift( $array );
+		debug_enforce_count_gte( $record[ $alias ], 1 );
+		debug_assert_count_eq( $record[ $alias ], 1 );
+		$ret=array_shift( $record[ $alias ] );
+		return intval($ret);
 	}
 
 	/**
