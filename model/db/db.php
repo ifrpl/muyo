@@ -171,12 +171,15 @@ abstract class Lib_Model_Db extends Lib_Model
 	protected function isColumnSetLocally($name)
 	{
 		$columns = $this->getColumns();
-		return __($columns)->contains(function($descriptor) use ($name)
-		{
-			$alias = $descriptor[2];
-			$column = $descriptor[1];
-			return $name === (null === $alias ? $column : $alias);
-		});
+		return array_contains(
+			$columns,
+			function($descriptor) use ($name)
+			{
+				$alias = $descriptor[2];
+				$column = $descriptor[1];
+				return $name === (null === $alias ? $column : $alias);
+			}
+		);
 	}
 
 	/**
@@ -276,11 +279,14 @@ abstract class Lib_Model_Db extends Lib_Model
 			$this->filterBy($condition);
 		}
 		$matched = $this->load();
-		__($matched)->each(function($model)
-		{ /** @var Lib_Model_Db $model */
-			$model->delete();
-		});
-		return count($matched) > 0;
+		array_each(
+			$matched,
+			function($model)
+			{ /** @var Lib_Model_Db $model */
+				$model->delete();
+			}
+		);
+		return !empty($matched);
 	}
 
 	/**
@@ -561,7 +567,10 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public function each($iterator)
 	{
-		__($this->load())->each($iterator);
+		array_each(
+			$this->load(),
+			$iterator
+		);
 	}
 
 	/**

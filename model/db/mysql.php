@@ -98,7 +98,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		{
 			$q->columns(array('*'));
 		}
-		elseif( !__($this->getColumns())->any(function($arr)use($pkey){ return $arr[2]===$pkey; }) )
+		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $arr[2]===$pkey; } ) )
 		{
 			$this->setColumns($pkey);
 		}
@@ -752,7 +752,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		{
 			$q->columns(array('*'));
 		}
-		elseif( !__($this->getColumns())->any(function($arr)use($pkey){ return $arr[2]===$pkey; }) )
+		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $arr[2]===$pkey; } ) )
 		{
 			$this->setColumns($pkey);
 		}

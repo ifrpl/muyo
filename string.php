@@ -572,3 +572,17 @@ function str_glob2regexp( $expression, $extended=false )
 	}
 	return "/^{$ret}$/";
 }
+
+
+
+/**
+ * @param string $separator
+ * @return callable
+ */
+function string_explode_dg( $separator )
+{
+	return function( $string )use($separator)
+	{
+		return explode( $separator, $string );
+	};
+}

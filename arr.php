@@ -259,6 +259,18 @@ function array_all($array, $iterator)
 }
 
 /**
+ * @param callable $iterator
+ * @return callable
+ */
+function array_all_dg( $iterator )
+{
+	return function( $array )use($iterator)
+	{
+		return array_all( $array, $iterator );
+	};
+}
+
+/**
  * @param array $array
  * @param callable $iterator
  * @param array|null $keyspace
@@ -408,16 +420,35 @@ function array_map_key_dg($iterator)
  * Warning: Opposed to {@see list_uniq} it preserves original keys
  *
  * @param array $array
- * @param callable $iterator function($val,$key) returning uniqueness key
+ * @param null|callable $iterator function($val,$key) returning uniqueness key
  *
  * @return array
  */
-function array_uniq($array, $iterator)                     //function($val,$key){ return $val===1||$val===2; }
+function array_uniq($array, $iterator=null)                //function($val,$key){ return $val===1||$val===2; }
 {                                                          //[1=>1,2=>2,3=>3]
+	if( null===$iterator )
+	{
+		$iterator = function( $val )
+		{
+			return $val;
+		};
+	}
 	$map = array_map_val($array,$iterator);                //[1=>true,2=>true,3=>false]
 	$umap = array_unique($map);                            //[1=>true,3=>false]
 	$ukeys = array_keys($umap);                            //[1=>1,2=>3]
 	return array_intersect_key($array,array_flip($ukeys)); //[1=>1,3=>3]
+}
+
+/**
+ * @param callable|null $iterator
+ * @return callable
+ */
+function array_uniq_dg($iterator=null)
+{
+	return function ( $array ) use ( $iterator )
+	{
+		return array_uniq( $array, $iterator );
+	};
 }
 
 /**
@@ -434,14 +465,20 @@ function list_uniq($list, $iterator)
 }
 
 /**
- * @param array $array
+ * @param array|object $array
  * @param string|int $key
  *
  * @return array
  */
 function array_pluck($array, $key)
 {
-	return array_map_val($array, function($collection)use($key){ return is_object($collection) ? $collection->$key : $collection[$key]; });
+	return array_map_val(
+		$array,
+		function ( $collection ) use ( $key )
+		{
+			return is_object( $collection ) ? $collection->$key : $collection[ $key ];
+		}
+	);
 }
 
 /**
@@ -847,6 +884,27 @@ function array_ksort_dg( $sortFlags=null )
 }
 
 /**
+ * @param array $array
+ * @param callable $callable
+ */
+function array_each( $array, $callable )
+{
+	array_walk( $array, $callable );
+}
+
+/**
+ * @param $callable
+ * @return callable
+ */
+function array_each_dg( $callable )
+{
+	return function( $array )use($callable)
+	{
+		array_each( $array, $callable );
+	};
+}
+
+/**
  * @param callable $callable
  * @param mixed $userData
  * @return callable function($array)
@@ -893,5 +951,85 @@ function array_keys_dg()
 	return function( $array )
 	{
 		return array_keys( $array );
+	};
+}
+
+/**
+ * @param array $array
+ * @param callable $callable mixed function($item1Val,$item2Val,$item2Key)
+ * @param mixed $startValue
+ * @return mixed
+ */
+function array_reduce_val( $array, $callable, $startValue=null )
+{
+	// PHP array_reduce is list_reduce in our terminology
+	foreach( $array as $key=>$val )
+	{
+		$startValue = $callable( $startValue, $val, $key );
+	}
+	return $startValue;
+}
+
+/**
+ * @param $callable
+ * @param mixed $startValue
+ * @return callable
+ */
+function array_reduce_val_dg( $callable, $startValue=null )
+{
+	return function ( $array ) use ( $callable, $startValue )
+	{
+		return array_reduce_val( $array, $callable, $startValue );
+	};
+}
+
+/**
+ * @param array $array1
+ * @param array $array2
+ * @return array
+ */
+function array_union( $array1, $array2 )
+{
+	$union = $array1+$array2;
+	return array_uniq( $union );
+}
+
+/**
+ * @param array $array2
+ * @return callable
+ */
+function array_union_dg( $array2 )
+{
+	return function ( $array1 ) use ( $array2 )
+	{
+		return array_union( $array1, $array2 );
+	};
+}
+
+/**
+ * @param $array
+ * @param $callable
+ * @return array
+ */
+function array_sort( $array, $callable )
+{
+	$mapped = array_map_val( $array, $callable );
+	sort( $mapped );
+	$ret = array_map_val( $mapped, function($sortKey,$key)use($array)
+	{
+		return $array[ $key ];
+	} );
+	return $ret;
+}
+
+/**
+ * @param $callable
+ * @return callable
+ */
+function array_sort_dg( $callable )
+{
+	return function( $array )use( $callable )
+	{
+		return array_sort( $array, $callable );
 	};
 }
