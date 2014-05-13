@@ -197,3 +197,16 @@ function empty_dg()
 		return empty($arg);
 	};
 }
+
+/**
+ * @param array $array
+ * @param bool $strict
+ * @return callable
+ */
+function val_in_dg($array,$strict=false)
+{
+	return function($val)use($array,$strict)
+	{
+		return array_contains( $array, $val, $strict );
+	};
+}

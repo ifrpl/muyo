@@ -884,3 +884,14 @@ function array_group_dg( $callable, $keyspace=null )
 		return array_group( $array, $callable, $keyspace );
 	};
 }
+
+/**
+ * @return callable
+ */
+function array_keys_dg()
+{
+	return function( $array )
+	{
+		return array_keys( $array );
+	};
+}

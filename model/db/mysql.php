@@ -722,23 +722,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 				{
 					$record[ $tblalias ] = array();
 				}
-
-				$is_joined = $tblalias !== $alias;
-				if( $is_joined )
-				{
-					if( array_key_exists( $colalias, $record[ $tblalias ] ) )
-					{
-						$record[$tblalias][$colalias] []= $column;
-					}
-					else
-					{
-						$record[$tblalias][$colalias] = array($column);
-					}
-				}
-				else
-				{
-					$record[$tblalias][$colalias] = $column;
-				}
+				$record[$tblalias][$colalias] = $column;
 			}
 
 			if( $collection )
@@ -839,6 +823,72 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		return $column;
 	}
 
+	/**
+	 * @param $callable
+	 */
+	private function mapPartWhere( $callable )
+	{
+		$select = $this->getSelect();
+		$where=$select->getPart( Zend_Db_Select::WHERE );
+		$select->reset( Zend_Db_Select::WHERE );
+		foreach( $where as $string )
+		{
+			if(
+				debug_assert(
+					preg_match( '/^(OR|AND|) ?\((.*)\)$/', $string, $matches ),
+					"Not recognized where expression `$string"
+				)
+			)
+			{
+				$prefix=$matches[ 1 ];
+				$condition=$matches[ 2 ];
+				$mapped = $callable( $condition, $prefix );
+				if( is_array($mapped) )
+				{
+					list($condition,$prefix) = $mapped;
+				}
+				else
+				{
+					$condition = $mapped;
+				}
+				$select->where( $condition, null, null, $prefix==='OR'?false:true );
+			}
+		}
+	}
+
+	/**
+	 * @return callable
+	 */
+	private function addAliasToConditionDg()
+	{
+		$thisColumns = array_keys( $this->schemaColumnsGet() );
+		$thisAlias = $this->getAlias();
+		return function( $condition )use($thisColumns,$thisAlias)
+		{
+			if( preg_match( '/^[`]?([a-zA-Z0-9_]+)[`]\.[`]?([a-zA-Z0-9_]+)[`]/', $condition, $matches ) )
+			{ // table.alias
+				$ret = $condition;
+			}
+			elseif( preg_match( '/^[`]?([a-zA-Z0-9_]+)[`]?([^.].*)$/', $condition, $matches ) )
+			{ // table
+				$columnName=$matches[ 1 ];
+				$else = $matches[ 2 ];
+				if( array_contains( $thisColumns, $columnName ) )
+				{ // assume column that needs to be prefixed
+					$ret = "`$thisAlias`.`$columnName`{$else}";
+				}
+				else
+				{ // assume not a column name
+					$ret = $condition;
+				}
+			}
+			else
+			{ // assume has alias
+				$ret = $condition;
+			}
+			return $ret;
+		};
+	}
 
 	/**
 	 * WARNING: Only columns copying supported.
@@ -858,8 +908,12 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$conditions = str_replace('{that}',$model->getAlias(),$conditions);
 		$conditions = str_replace('{this}',$this->getAlias(),$conditions);
 
+		$this->mapPartWhere( $this->addAliasToConditionDg() );
+		$model->mapPartWhere( $model->addAliasToConditionDg() );
+
 		$this->setJoinLeft($model, "{$thisKeyCol}={$thatKeyCol} ".$conditions, '');
 		$model->settingsJoin($this);
+
 		foreach( $model->getColumns() as $descriptor )
 		{
 			$table = $descriptor[0];
@@ -881,7 +935,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 	/**
 	 * WARNING: Only columns copying supported.
-	 * @param Lib_Model_db $model
+	 * @param Lib_Model_Db_Mysql $model
 	 * @param string|null $thisKeyCol may contain table prefix or not
 	 * @param string|null $thatKeyCol may contain table prefix or not
 	 * @param string $conditions
@@ -897,7 +951,11 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$conditions = str_replace('{that}',$model->getAlias(),$conditions);
 		$conditions = str_replace('{this}',$this->getAlias(),$conditions);
 
+		$this->mapPartWhere( $this->addAliasToConditionDg() );
+		$model->mapPartWhere( $model->addAliasToConditionDg() );
+
 		$this->setJoinLeft($model, "{$thisKeyCol}={$thatKeyCol} ".$conditions, '');
+
 		foreach( $model->getColumns() as $descriptor )
 		{
 			$table = $descriptor[0];

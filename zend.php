@@ -51,22 +51,6 @@ function ifr_add_class(&$target, $class)
 }
 
 /**
- * Returns comparator for zend column $tableAlias AND $columnName
- * @param string|null $tableAlias
- * @param string|null $columnName
- * @return callable $zendColumnExpression => $isMatching
- */
-function zend_column_eq_dg($tableAlias, $columnName)
-{
-	return function($descriptor)use($columnName,$tableAlias)
-	{
-		$colname = null !== $descriptor[2] ? $descriptor[2] : $descriptor[1];
-		$tblalias = $descriptor[0];
-		return $tblalias === $tableAlias && $colname === $columnName;
-	};
-}
-
-/**
  * @param array $column column descriptor
  * @return string table name
  * @see Lib_Model_Db_Mysql::getColumns
@@ -85,4 +69,55 @@ function zend_column_name( $column )
 {
 	$colname = null!==$column[2] ? $column[2] : $column[1];
 	return $colname;
+}
+
+/**
+ * @return callable
+ * @see Lib_Model_Db_Mysql::getColumns
+ */
+function zend_column_name_dg()
+{
+	return function( $column )
+	{
+		return zend_column_name( $column );
+	};
+}
+
+/**
+ * @param array $column
+ * @return string|Zend_Db_Expr
+ * @see Lib_Model_Db_Mysql::getColumns
+ */
+function zend_column_value( $column )
+{
+	$ret = $column[ 1 ];
+	return $ret;
+}
+
+/**
+ * @return callable
+ * @see Lib_Model_Db_Mysql::getColumns
+ */
+function zend_column_value_dg()
+{
+	return function( $column )
+	{
+		return zend_column_value( $column );
+	};
+}
+
+/**
+ * Returns comparator for zend column $tableAlias AND $columnName
+ * @param string|null $tableAlias
+ * @param string|null $columnName
+ * @return callable $zendColumnExpression => $isMatching
+ */
+function zend_column_eq_dg($tableAlias, $columnName)
+{
+	return function($descriptor)use($columnName,$tableAlias)
+	{
+		$colname = zend_column_name( $descriptor );
+		$tblalias = zend_column_table( $descriptor );
+		return $tblalias === $tableAlias && $colname === $columnName;
+	};
 }
