@@ -325,7 +325,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	}
 
 	/**
-	 * @param int|MongoID $id
+	 * @param int|array|MongoID $id
 	 *
 	 * @return static
 	 */
