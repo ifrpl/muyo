@@ -847,3 +847,16 @@ function debug_assert_type($var,$type)
 	debug_assert( $t === $type, "Parameter of type $type expected, but $t passed" );
 	return $var;
 }
+
+/**
+ * @param mixed $a
+ * @param mixed $b
+ * @param bool $strong typing
+ * @return mixed
+ */
+function debug_enforce_eq( $a, $b, $strong=false )
+{
+	return debug_enforce( $strong ? ($a===$b) : ($a==$b),
+		var_dump_human_compact( $a )." doesn't equals to ".var_dump_human_compact( $b )
+	);
+}

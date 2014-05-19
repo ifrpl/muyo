@@ -298,7 +298,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	public function loadArray( $q=null, $collection=false )
 	{
 		$pkey = $this->getPrimaryKey();
-		if( !__($this->getColumns())->any(function($arr)use($pkey){ return $arr[2]===$pkey; }) )
+		if( !array_some( $this->getColumns(), function($arr)use($pkey){ return $arr[2]===$pkey; } ) )
 		{
 			$this->setColumns($pkey);
 		}

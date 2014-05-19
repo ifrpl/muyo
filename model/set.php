@@ -95,4 +95,18 @@ class Lib_Model_Set implements Iterator
 	{
 		return count($this->_resultSet);
 	}
+
+	/**
+	 * @param string $property
+	 * @return array
+	 */
+	public function pluck( $property )
+	{
+		$ret = array();
+		foreach( $this as $model )
+		{
+			$ret []= $model->{$property};
+		}
+		return $ret;
+	}
 }

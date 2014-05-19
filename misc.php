@@ -152,15 +152,25 @@ function tuple_get($n,$apply=null)
 /**
  * Prepare a delegate that returns results with comparison of $key parameter to $eq.
  *
- * @param int|string $eq
+ * @param int|string|array $eq
  * @return callable
  */
 function key_eq_dg($eq)
 {
-	return function($val,$key)use($eq)
+	if( is_array($eq) )
 	{
-		return $key === $eq;
-	};
+		return function($val,$key)use($eq)
+		{
+			return array_contains( $eq, $key );
+		};
+	}
+	else
+	{
+		return function($val,$key)use($eq)
+		{
+			return $key === $eq;
+		};
+	}
 }
 
 /**
@@ -185,5 +195,18 @@ function empty_dg()
 	{
 		$arg = func_get_arg(0);
 		return empty($arg);
+	};
+}
+
+/**
+ * @param array $array
+ * @param bool $strict
+ * @return callable
+ */
+function val_in_dg($array,$strict=false)
+{
+	return function($val)use($array,$strict)
+	{
+		return array_contains( $array, $val, $strict );
 	};
 }

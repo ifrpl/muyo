@@ -502,3 +502,87 @@ function str_explode_dg( $separator )
 		return explode( $separator, $string );
 	};
 }
+
+/**
+ * @param string $expression
+ * @param bool $extended
+ * @return string
+ */
+function str_glob2regexp( $expression, $extended=false )
+{
+	$length = strlen( $expression );
+	$ret = "";
+	for ($i = 0; $i < $length; $i++)
+	{
+		$c = $expression[ $i ];
+		switch( $c )
+		{
+			case '\\':
+			case '/':
+			case '$':
+			case '^':
+			case '+':
+			case '.':
+			case '(':
+			case ')':
+			case '=':
+			case '!':
+			case '|':
+				$ret .= "\\{$c}";
+			break;
+			case '?':
+				if( $extended )
+				{
+					$ret .= ".";
+				}
+			break;
+			case '[':
+			case ']':
+				if( $extended )
+				{
+					$ret .= $c;
+				}
+			break;
+			case '{':
+				if( $extended )
+				{
+					$ret .= '(';
+				}
+			break;
+			case '}':
+				if( $extended )
+				{
+					$ret .= ')';
+				}
+			break;
+			case ',':
+				if( $extended )
+				{
+					$ret .= '|';
+				}
+				$ret .= "\\{$c}";
+			break;
+			case '*':
+				$ret .= '(.*)';
+			break;
+			default:
+				$ret .= $c;
+			break;
+		}
+	}
+	return "/^{$ret}$/";
+}
+
+
+
+/**
+ * @param string $separator
+ * @return callable
+ */
+function string_explode_dg( $separator )
+{
+	return function( $string )use($separator)
+	{
+		return explode( $separator, $string );
+	};
+}
