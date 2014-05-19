@@ -36,11 +36,18 @@ function ifr_add_class(&$target, $class)
 		$attrib = array_key_exists('class',$target) ? $target['class'] : '';
 		$classes = is_array($attrib) ? $attrib : explode(' ',$attrib);
 	}
+
+	$classes = array_filter($classes);
+
 	if( !array_contains($classes,$class) )
 	{
 		if( !is_array($target) )
 		{
-			$target->setAttrib('class', $attrib . ' ' . $class);
+			if(!empty($attrib))
+			{
+				$attrib .= ' ';
+			}
+			$target->setAttrib('class', $attrib . $class);
 		}
 		else
 		{
@@ -49,7 +56,6 @@ function ifr_add_class(&$target, $class)
 		}
 	}
 }
-
 /**
  * @param array $column column descriptor
  * @return string table name
