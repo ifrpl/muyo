@@ -1014,7 +1014,7 @@ function array_union_dg( $array2 )
 function array_sort( $array, $callable )
 {
 	$mapped = array_map_val( $array, $callable );
-	sort( $mapped );
+	asort( $mapped );
 	$ret = array_map_val( $mapped, function($sortKey,$key)use($array)
 	{
 		return $array[ $key ];

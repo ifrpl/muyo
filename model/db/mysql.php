@@ -335,6 +335,11 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		return $this;
 	}
 
+	/**
+	 * @param array|string $cols
+	 * @param string|null   $correlationName
+	 * @return $this
+	 */
 	public function setColumns($cols = '*', $correlationName = null)
 	{
 		$this->getSelect()->columns($cols, $correlationName);
