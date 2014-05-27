@@ -109,4 +109,18 @@ class Lib_Model_Set implements Iterator
 		}
 		return $ret;
 	}
+
+	/**
+	 * @param callable $callable
+	 * @return array
+	 */
+	public function map( $callable )
+	{
+		$ret = array();
+		foreach( $this as $id => $model )
+		{
+			$ret []= $callable( $model, $id );
+		}
+		return $ret;
+	}
 }
