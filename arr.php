@@ -529,6 +529,30 @@ function array_filter_key_dg($iterator)
 
 /**
  * @param array $array
+ * @param callable $callable
+ * @return array
+ */
+function array_filter_key_recursive($array, $callable)
+{
+	return array_chain(
+		$array,
+		array_filter_key_dg( $callable ),
+		array_map_val_dg(function( $val )use( $callable )
+		{
+			if( is_array($val) )
+			{
+				return array_filter_key_recursive( $val, $callable );
+			}
+			else
+			{
+				return $val;
+			}
+		} )
+	);
+}
+
+/**
+ * @param array $array
  * @param mixed $val
  * @param bool $strict
  */

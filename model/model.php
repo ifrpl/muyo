@@ -20,7 +20,8 @@ abstract class Lib_Model implements Iterator
 		'bool','boolean',
 		'currency','monetary',
 		'string','text','email','host',
-		'country'
+		'country',
+		'object'
 	);
 
 	/**
