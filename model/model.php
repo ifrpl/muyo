@@ -852,6 +852,7 @@ abstract class Lib_Model implements Iterator
 				$this->recordColumnSet($key,$value);
 			}
 		}
+		$this->changedColumnsReset();
 		return $this;
 	}
 
