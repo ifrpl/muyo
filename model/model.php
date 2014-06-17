@@ -7,6 +7,7 @@
  */
 abstract class Lib_Model implements Iterator
 {
+	const SETTING_TYPE='type';
 
 	/**
 	 * @var array field type identifiers
