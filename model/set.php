@@ -102,10 +102,11 @@ class Lib_Model_Set implements Iterator
 	 */
 	public function pluck( $property )
 	{
+		$primaryKey = $this->_modelObject->getPrimaryKey();
 		$ret = array();
 		foreach( $this as $model )
 		{
-			$ret []= $model->{$property};
+			$ret [ $model->{$primaryKey} ]= $model->{$property};
 		}
 		return $ret;
 	}
@@ -116,10 +117,11 @@ class Lib_Model_Set implements Iterator
 	 */
 	public function map( $callable )
 	{
+		$primaryKey = $this->_modelObject->getPrimaryKey();
 		$ret = array();
 		foreach( $this as $id => $model )
 		{
-			$ret []= $callable( $model, $id );
+			$ret [ $model->{$primaryKey} ]= $callable( $model, $id );
 		}
 		return $ret;
 	}
