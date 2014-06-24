@@ -111,6 +111,17 @@ function arrayize(&$var)
 }
 
 /**
+ * @return callable
+ */
+function arrayize_dg()
+{
+	return function($value)
+	{
+		return arrayize( $value );
+	};
+}
+
+/**
  * @param array      $arr
  * @param string|int $key
  *

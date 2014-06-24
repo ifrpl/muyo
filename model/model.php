@@ -756,8 +756,15 @@ abstract class Lib_Model implements Iterator
 	private function _changedColumnAccess($column)
 	{
 		return
-			debug_assert(is_string($column) && !empty($column),'Invalid changed column name') &&
-			debug_assert(array_key_exists($column,$this->changeRecordData),'Trying to retrieve original record value but no stored change exists.')
+			debug_assert(
+				is_string($column) && !empty($column)
+				,'Invalid changed column name'
+			)
+			&&
+			debug_assert(
+				array_key_exists($column,$this->changeRecordData),
+				'Trying to retrieve original record value but no stored change exists.'
+			)
 		;
 	}
 
@@ -778,7 +785,11 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function changedColumnIs($column)
 	{
-		if( $this->_recordAccess($column) && $this->_changedColumnAccess($column) )
+		if( !$this->recordExists() )
+		{
+			return true;
+		}
+		elseif( $this->_recordAccess($column) && $this->_changedColumnAccess($column) )
 		{
 			return $this->recordColumnGet($column) != $this->changeRecordData[$column];
 		}
@@ -796,9 +807,13 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function changedColumnGet($column)
 	{
-		if( $this->_changedColumnAccess($column) )
+		if( $this->recordExists() && $this->_changedColumnAccess($column) )
 		{
 			return $this->changeRecordData[$column];
+		}
+		else
+		{
+			return null;
 		}
 	}
 
@@ -853,7 +868,7 @@ abstract class Lib_Model implements Iterator
 				$this->recordColumnSet($key,$value);
 			}
 		}
-		$this->changedColumnsReset();
+//		$this->changedColumnsReset();
 		return $this;
 	}
 

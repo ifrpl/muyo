@@ -210,3 +210,16 @@ function val_in_dg($array,$strict=false)
 		return array_contains( $array, $val, $strict );
 	};
 }
+
+/**
+ * @param array $array
+ * @param bool $strict
+ * @return callable
+ */
+function key_in_dg($array,$strict=false)
+{
+	return function($val,$key)use($array,$strict)
+	{
+		return array_contains( $array, $key, $strict );
+	};
+}

@@ -262,6 +262,19 @@ function str_splitter($string, $by, $before=false)
 }
 
 /**
+ * @param callable $by
+ * @param bool $before
+ * @return callable
+ */
+function str_splitter_dg( $by, $before=false )
+{
+	return function( $string )use($by,$before)
+	{
+		return str_splitter( $string, $by, $before );
+	};
+}
+
+/**
  * Map individual characters in string with $iterator
  *
  * @param string $string
