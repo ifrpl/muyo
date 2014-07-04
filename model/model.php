@@ -90,9 +90,12 @@ abstract class Lib_Model implements Iterator
 	/**
 	 * @param array|int|null $options
 	 */
-	public function __construct($options = null)
+	public function __construct($options = null, $init = true)
 	{
-		$this->init();
+		if($init)
+		{
+			$this->init();
+		}
 
 		if ( is_array($options) )
 		{

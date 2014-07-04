@@ -76,14 +76,14 @@ abstract class Lib_Model_Db extends Lib_Model
 	/**
 	 * @param array|int|null $options
 	 */
-	public function __construct($options = null)
+	public function __construct($options = null, $init = true)
 	{
 		if( empty($this->_alias) )
 		{
 			$this->_alias = strtolower(str_replace('_', '', get_class($this)));
 		}
 
-		parent::__construct($options);
+		parent::__construct($options, $init);
 
 		$this->normalizeColumns();
 	}

@@ -425,7 +425,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 		if( is_string($name) && class_exists($name) )
 		{
-			$name = new $name;
+			$name = new $name(null, false);
 		}
 
 		if( $name instanceOf Lib_Model_Db )
