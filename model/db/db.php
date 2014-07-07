@@ -587,4 +587,22 @@ abstract class Lib_Model_Db extends Lib_Model
 		} );
 	}
 
+	/**
+	 * @param int $target
+	 * @return $this
+	 */
+	public function readId( &$target )
+	{
+		return $this->read( $this->getPrimaryKey(), $target );
+	}
+
+	/**
+	 * @param int $value
+	 * @return $this
+	 */
+	public function storeId( $value )
+	{
+		return $this->store( $this->getPrimaryKey(), $value );
+	}
+
 }
