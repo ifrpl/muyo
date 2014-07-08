@@ -1362,6 +1362,11 @@ abstract class Lib_Model implements Iterator
 				{
 					$value = null;
 				}
+
+				if(is_null($value) && isset($setting['default']))
+				{
+					$value = $setting['default'];
+				}
 			}
 
 			$data[$key] = $value;
