@@ -744,7 +744,7 @@ abstract class Lib_Model implements Iterator
 	public static function find($resetSettings = false)
 	{
 		/** @var Lib_Model $ret */
-		$ret = new static();
+		$ret = new static(null, !$resetSettings);
 		if( $resetSettings )
 		{
 			$ret->setSettings(array());
