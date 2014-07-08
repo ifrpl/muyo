@@ -22,7 +22,8 @@ abstract class Lib_Model implements Iterator
 		'currency','monetary',
 		'string','text','email','host',
 		'country',
-		'object'
+		'object',
+		'array'
 	);
 
 	/**
