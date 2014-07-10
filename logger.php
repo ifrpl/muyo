@@ -11,6 +11,11 @@ $logger = null;
 
 class Logger
 {
+	static public function dump($obj, $message = '[DUMP]')
+	{
+		return logger_dump($obj, $message);
+	}
+
 	static public function debug($message)
 	{
 		return logger_log($message, LOG_DEBUG);
@@ -43,6 +48,40 @@ class Logger
  */
 function logger_dump($obj, $message = '[DUMP]')
 {
+	if(is_array($obj))
+	{
+		$collection = array_reduce_val(
+			$obj,
+			function($startValue, $val, $key){
+				return $startValue || ($val instanceof Lib_Model);
+			},
+			false
+		);
+
+		if($collection)
+		{
+			$message .= ' [collection]';
+
+			array_each(
+				$obj,
+				function($value, $key) use($message){
+					logger_dump($value, $message . "[$key]");
+				}
+			);
+
+			return;
+		}
+
+	}
+
+	if($obj instanceof Lib_Model)
+	{
+		$message .= sprintf(' %s->toArray()', get_class($obj));
+
+		/* @var Lib_Model $obj */
+		$obj = $obj->toArray();
+	}
+
 	logger_log($message . ': ' . var_export($obj, true), LOG_DEBUG);
 }
 
