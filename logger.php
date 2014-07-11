@@ -11,7 +11,7 @@ $logger = null;
 
 class Logger
 {
-	static public function dump($obj, $message = '[DUMP]')
+	static public function dump($obj, $message = '[DUMP]', $logLevel = LOG_DEBUG)
 	{
 		return logger_dump($obj, $message);
 	}
@@ -46,7 +46,7 @@ class Logger
  * @param        $obj
  * @param string $message
  */
-function logger_dump($obj, $message = '[DUMP]')
+function logger_dump($obj, $message = '[DUMP]', $logLevel = LOG_DEBUG)
 {
 	if(is_array($obj))
 	{
@@ -82,7 +82,7 @@ function logger_dump($obj, $message = '[DUMP]')
 		$obj = $obj->toArray();
 	}
 
-	logger_log($message . ': ' . var_export($obj, true), LOG_DEBUG);
+	logger_log($message . ': ' . var_export($obj, true), $logLevel);
 }
 
 /**
