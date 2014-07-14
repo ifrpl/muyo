@@ -599,3 +599,75 @@ function string_explode_dg( $separator )
 		return explode( $separator, $string );
 	};
 }
+
+/**
+ * @param string $string
+ * @param string $delimiter
+ * @param string $enclosure
+ * @param string $escape
+ * @throws Exception
+ * @return array
+ */
+function str_to_csv_assoc( $string, $delimiter=',', $enclosure='"', $escape='\\' )
+{
+	$resource = str_to_res( $string );
+	$finally = function()use( $resource )
+	{
+		fclose( $resource );
+	};
+	try
+	{
+		$ret = res_to_csv_assoc( $resource, $delimiter, $enclosure, $escape );
+	}
+	catch( Exception $e )
+	{
+		$finally();
+		throw $e;
+	}
+	$finally();
+	return $ret;
+}
+
+/**
+ * @param string $string
+ * @return resource
+ */
+function str_to_res( $string )
+{
+	$stream = fopen( 'php://memory', 'w+' );
+	fwrite( $stream, $string );
+	rewind( $stream );
+	return $stream;
+}
+
+/**
+ * @param resource $resource
+ * @param string $delimiter
+ * @param string $enclosure
+ * @param string $escape
+ * @return array
+ */
+function res_to_csv_assoc( $resource, $delimiter=',', $enclosure='"', $escape='\\' )
+{
+	$ret = array();
+	$header = fgetcsv( $resource, 0, $delimiter, $enclosure, $escape );
+	if( debug_assert( $header !== false ) )
+	{
+		while( true )
+		{
+			$row = fgetcsv( $resource, 0, $delimiter, $enclosure, $escape );
+			if( $row === false )
+			{
+				break;
+			}
+			else
+			{
+				$ret []= array_map_key( $row, function( $value, $key )use( $header )
+				{
+					return $header[ $key ];
+				});
+			}
+		}
+	}
+	return $ret;
+}
