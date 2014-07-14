@@ -250,4 +250,20 @@ class IFR_Main_Time
 			echo '</table></center><br />';
 		}
 	}
+
+	/**
+	 * Function to deal with the microseconds 'u' format parameter which does not work with DataTime::format()
+	 *
+	 * @param string $format
+	 *
+	 * @return bool|string
+	 */
+	static public function udate($format)
+	{
+		$utimestamp = microtime(true);
+
+		$usec = round(1000 * 1000 * ($utimestamp - floor($utimestamp)));
+
+		return date(str_replace('u', $usec, $format), $utimestamp);
+	}
 }

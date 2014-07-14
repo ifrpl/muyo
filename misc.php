@@ -223,3 +223,32 @@ function key_in_dg($array,$strict=false)
 		return array_contains( $array, $key, $strict );
 	};
 }
+
+/** Builds an ID from call location
+ *
+ * @param int $callstackDepth
+ * @param boolean $appendLineNumber
+ *
+ * @return string
+ */
+function buildIdFromCallstack($callstackDepth = 0, $appendLineNumber = true)
+{
+	$callstackDepth += 2;
+
+	$backtrace = debug_backtrace (DEBUG_BACKTRACE_IGNORE_ARGS, $callstackDepth);
+
+	$id = array(str_replace(
+		array(ATRIUM_PATH . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, '.php'),
+		array('', '_', ''),
+		$backtrace[$callstackDepth - 2]['file']
+	));
+
+	$id[] = $backtrace[$callstackDepth - 1]['function'];
+
+	if($appendLineNumber)
+	{
+		$id[] = $backtrace[$callstackDepth - 2]['line'];
+	}
+
+	return implode($id, '_');
+}

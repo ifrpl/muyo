@@ -16,6 +16,32 @@ class Logger
 		return logger_dump($obj, $message);
 	}
 
+	static public function dumpToFile($obj, $fileName = null, $message = '[DUMP]')
+	{
+		$id = buildIdFromCallstack(1);
+
+		$outputDirPath = ROOT_PATH . DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
+		if(!file_exists($outputDirPath))
+		{
+			mkdir($outputDirPath, App_Constants::FILE_MODE, true);
+		}
+
+		if(null == $fileName)
+		{
+			$fileName = IFR_Main_Time::udate('Ymd-His-u') . '.txt';
+		}
+
+		$dumpFilePath = $outputDirPath. DIRECTORY_SEPARATOR . $fileName;
+
+		$outputFile = fopen($dumpFilePath, 'wt');
+		logger_dump($obj, $message, -1, $outputFile);
+		fclose($outputFile);
+
+		logger_log("Data dumped to file $dumpFilePath");
+
+		return $dumpFilePath;
+	}
+
 	static public function debug($message)
 	{
 		return logger_log($message, LOG_DEBUG);
@@ -46,7 +72,7 @@ class Logger
  * @param        $obj
  * @param string $message
  */
-function logger_dump($obj, $message = '[DUMP]', $logLevel = LOG_DEBUG)
+function logger_dump($obj, $message = '[DUMP]', $logLevel = LOG_DEBUG, $outputFile = null)
 {
 	if(is_array($obj))
 	{
@@ -82,7 +108,15 @@ function logger_dump($obj, $message = '[DUMP]', $logLevel = LOG_DEBUG)
 		$obj = $obj->toArray();
 	}
 
-	logger_log($message . ': ' . var_export($obj, true), $logLevel);
+	$dump = var_export($obj, true);
+	if(null != $outputFile)
+	{
+		fwrite($outputFile, $dump);
+	}
+	else
+	{
+		logger_log($message . ': ' . $dump, $logLevel);
+	}
 }
 
 /**
