@@ -770,7 +770,14 @@ function debug_enforce_count_gte($var,$count)
  */
 function debug_enforce_key_exists($key,$arr)
 {
-	debug_enforce( array_key_exists($key,$arr), "Expected key '$key' does not exists." );
+	arrayize($key);
+	debug_enforce(
+		array_all( $key, function( $key )use( $arr )
+		{
+			return array_key_exists( $key, $arr );
+		}),
+		"Expected key(s) '".implode(',',$key)."' does not exists."
+	);
 }
 
 /**
