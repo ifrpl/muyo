@@ -156,17 +156,7 @@ function array_contains($array, $needle, $strict = false)
 {
 	debug_enforce( is_array($array), "Expected array" );
 
-	if( is_array($needle) )
-	{
-		return array_some( $needle, function($val) use ($array,$strict)
-		{
-			return in_array($val,$array,$strict);
-		} );
-	}
-	else
-	{
-		return in_array($needle,$array,$strict);
-	}
+	return in_array($needle,$array,$strict);
 }
 /**
  * @param mixed $needle
