@@ -968,14 +968,12 @@ abstract class Lib_Model implements Iterator
 							{
 								$settingColumn['options']['decorators'] = $form->elementDecorators;
 							}
-							$settingColumn['type'] = 'checkbox';
 							break;
 						case "array":
 							if(!isset($settingColumn['options']['decorators']))
 							{
 								$settingColumn['options']['decorators'] = $form->elementDecorators;
 							}
-							$settingColumn['type'] = 'multiCheckbox';
 							break;
 						case "date":
 							if(!isset($settingColumn['options']['validators']['date']))
@@ -986,7 +984,6 @@ abstract class Lib_Model implements Iterator
 							{
 								$settingColumn['options']['decorators'] = $form->elementDecorators;
 							}
-							$settingColumn['type'] = 'date';
 							break;
 						case "datetime":
 							if(!isset($settingColumn['options']['validators']['date']))
@@ -997,7 +994,6 @@ abstract class Lib_Model implements Iterator
 							{
 								$settingColumn['options']['decorators'] = $form->elementDecorators;
 							}
-							$settingColumn['type'] = 'datetime';
 							break;
 						case "time":
 							if(!isset($settingColumn['options']['validators']['date']))
@@ -1008,7 +1004,6 @@ abstract class Lib_Model implements Iterator
 							{
 								$settingColumn['options']['decorators'] = $form->elementDecorators;
 							}
-							$settingColumn['type'] = 'time';
 							break;
 						case "uint":
 						case "int":
@@ -1017,14 +1012,12 @@ abstract class Lib_Model implements Iterator
 							{
 								$settingColumn['options']['decorators'] = $form->elementDecorators;
 							}
-							$settingColumn['type'] = 'int';
 							break;
 						case "float":
 							if(!isset($settingColumn['options']['decorators']))
 							{
 								$settingColumn['options']['decorators'] = $form->elementDecorators;
 							}
-							$settingColumn['type'] = 'float';
 							break;
 						case "email":
 							@$settingColumn['options']['validators'][] = 'EmailAddress';
@@ -1032,7 +1025,6 @@ abstract class Lib_Model implements Iterator
 							{
 								$settingColumn['options']['decorators'] = $form->elementDecorators;
 							}
-							$settingColumn['type'] = 'email';
 							break;
 						case "host":
 							@$settingColumn['options']['validators'][] = 'Hostname';
@@ -1040,7 +1032,6 @@ abstract class Lib_Model implements Iterator
 							{
 								$settingColumn['options']['decorators'] = $form->elementDecorators;
 							}
-							$settingColumn['type'] = 'host';
 							break;
 						case "text":
 							if(!isset($settingColumn['options']['decorators']))
@@ -1049,10 +1040,12 @@ abstract class Lib_Model implements Iterator
 							}
 							break;
 						case "currency":
-							$settingColumn['type'] = 'currency';
 						break;
 						case "country":
 							$settingColumn['type'] = 'country';
+						break;
+						case "hidden":
+							$settingColumn['type'] = 'hidden';
 						break;
 						default:
 							debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
@@ -1062,6 +1055,10 @@ abstract class Lib_Model implements Iterator
 					if(isset($setting['formType']))
 					{
 						$settingColumn['type'] = $setting['formType'];
+					}
+					else
+					{
+						$settingColumn['type'] = $this->getFormType($type);
 					}
 					if(isset($setting['unique']) && $setting['unique'] == true)
 					{
@@ -1113,6 +1110,60 @@ abstract class Lib_Model implements Iterator
 		$form->setDisableLoadDefaultDecorators(true);
 
 		return $form;
+	}
+
+	protected function getFormType($type)
+	{
+		$formType = 'text';
+		switch($type)
+		{
+			case "boolean":
+			case "bool":
+				$formType = 'checkbox';
+				break;
+			case "array":
+				$formType = 'multiCheckbox';
+				break;
+			case "date":
+				$formType = 'date';
+				break;
+			case "datetime":
+				$formType = 'datetime';
+				break;
+			case "time":
+				$formType = 'time';
+				break;
+			case "uint":
+			case "int":
+				$formType = 'int';
+				break;
+			case "float":
+				$formType = 'float';
+				break;
+			case "email":
+				$formType = 'email';
+				break;
+			case "host":
+				$formType = 'host';
+				break;
+			case "text":
+				$formType = 'text';
+				break;
+			case "currency":
+				$formType = 'currency';
+				break;
+			case "country":
+				$formType = 'country';
+				break;
+			case "hidden":
+				$formType = 'hidden';
+			break;
+			default:
+				debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
+			break;
+		}
+
+		return $formType;
 	}
 
 	/**
