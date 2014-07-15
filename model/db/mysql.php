@@ -803,6 +803,22 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @return string
+	 */
+	public function loadString()
+	{
+		$alias = $this->getAlias();
+		$array = $this->loadArray( null,true );
+		debug_enforce_count_gte( $array, 1 );
+		debug_assert_count_eq( $array, 1 );
+		$record = array_shift( $array );
+		debug_enforce_count_gte( $record[ $alias ], 1 );
+		debug_assert_count_eq( $record[ $alias ], 1 );
+		$ret=array_shift( $record[ $alias ] );
+		return $ret;
+	}
+
+	/**
 	 * @return null|string
 	 */
 	public function getSQL()
