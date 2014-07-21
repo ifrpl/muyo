@@ -712,7 +712,7 @@ function array_first_dg($count = 1)
  */
 function array_initial($array,$idx = 1)
 {
-	return array_slice($array,0,-$idx,null,is_array_assoc($array));
+	return array_slice($array,0,-$idx,is_array_assoc($array));
 }
 
 /**
@@ -1082,5 +1082,18 @@ function array_sort_dg( $callable )
 	return function( $array )use( $callable )
 	{
 		return array_sort( $array, $callable );
+	};
+}
+
+/**
+ * @param callable $comparator
+ * @return callable
+ */
+function uasort_dg( $comparator )
+{
+	return function( $array )use( $comparator )
+	{
+		uasort( $array, $comparator );
+		return $array;
 	};
 }

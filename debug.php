@@ -856,6 +856,16 @@ function debug_assert_type($var,$type)
 }
 
 /**
+ * @param array $array
+ * @param mixed $value
+ * @return bool
+ */
+function debug_assert_array_contains( $array, $value )
+{
+	return debug_assert( array_contains( $array, $value ), "Parameter {$value} is not one of ".implode( ',', $array) );
+}
+
+/**
  * @param mixed $a
  * @param mixed $b
  * @param bool $strong typing
