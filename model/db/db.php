@@ -331,7 +331,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public static function findById($id)
 	{
-		return self::find()->filterById($id);
+		return static::find()->filterById($id);
 	}
 
 	/**
