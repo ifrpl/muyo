@@ -32,6 +32,32 @@ function array_insert_before(&$target,$target_key,$to_insert)
 }
 
 /**
+ * @param array $target
+ * @param string|int|float $target_key
+ * @param array $to_insert
+ */
+function array_insert_after(&$target,$target_key,$to_insert)
+{
+	$tmp = array();
+	foreach($target as $k=>$v)
+	{
+		$tmp[$k] = $v;
+		unset($target[$k]);
+	}
+	foreach($tmp as $k=>$v)
+	{
+		$target[$k] = $v;
+		if( $k === $target_key )
+		{
+			foreach( $to_insert as $ik=>$iv )
+			{
+				$target[$ik] = $iv;
+			}
+		}
+	}
+}
+
+/**
  * @param     $array
  * @param int $column
  * @param int $order
