@@ -98,7 +98,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		{
 			$q->columns(array('*'));
 		}
-		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $arr[2]===$pkey; } ) )
+		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
 		{
 			$this->setColumns($pkey);
 		}
@@ -129,11 +129,6 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			{
 				$data[] = $obj;
 			}
-		}
-
-		if( getCurrentEnv() != 'development' )
-		{
-			$this->clearAfterLoad();
 		}
 
 		return $data;
@@ -413,7 +408,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * @param string|array|Lib_Model $name
 	 * @return array|mixed
 	 */
-	protected function prepareTableForJoin($name)
+	private function prepareTableForJoin($name)
 	{
 		$alias = null;
 
@@ -757,7 +752,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		{
 			$q->columns(array('*'));
 		}
-		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $arr[2]===$pkey; } ) )
+		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
 		{
 			$this->setColumns($pkey);
 		}
@@ -777,11 +772,6 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$set = new Lib_Model_Set;
 		$set->setResultSet($result);
 		$set->setModel($this);
-
-		if( getCurrentEnv() != 'development' )
-		{
-			$this->clearAfterLoad();
-		}
 
 		return $set;
 	}
@@ -946,15 +936,15 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * @param string $conditions
 	 * @return $this
 	 */
-	public function joinFrom($model,$thisKeyCol,$thatKeyCol=null,$conditions='')
+	public function joinFrom($model, $thisKeyCol, $thatKeyCol=null, $conditions='')
 	{
 		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
 
 		$thatKeyCol = self::prefixColumn($model, $thatKeyCol);
 		$thisKeyCol = self::prefixColumn($this, $thisKeyCol);
 
-		$conditions = str_replace('{that}',$model->getAlias(),$conditions);
-		$conditions = str_replace('{this}',$this->getAlias(),$conditions);
+		$conditions = str_replace('{that}', $model->getAlias(), $conditions);
+		$conditions = str_replace('{this}', $this->getAlias(), $conditions);
 
 		$this->mapPartWhere( $this->addAliasToConditionDg() );
 		$model->mapPartWhere( $model->addAliasToConditionDg() );
@@ -963,28 +953,20 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 		foreach( $model->getColumns() as $descriptor )
 		{
-			$table = $descriptor[0];
 			$column = $descriptor[1];
 			$alias = 3===count($descriptor) ? $descriptor[2] : null;
 			if( null !== $alias )
 			{
-				$this->setColumns(array($alias=>$column),$table);
+				$this->setColumns(array($alias=>$column), $model->getAlias());
 			}
 			else
 			{
-				$this->setColumns($column,$table);
+				$this->setColumns($column, $model->getAlias());
 			}
 		};
+
 		$this->settingsJoin($model);
-//		if( $this instanceof Model_Event_Invoice_Accommodation && $model instanceof Model_Reference)
-//		{
-//			$map = function($desc){ return (count($desc)===3&&$desc[2]) ? $desc[2]: $desc[1]; };
-//			debug(array_map_val(array(
-//				$this->_settings,$this->_settingsJoined, array_map_key($this->getColumns(), $map),
-//				$model->_settings,$model->_settingsJoined, array_map_key($model->getColumns(), $map)
-//			),function($val){ return array_keys($val); }));
-//		}
-//		$select = $model->getSelect();
+
 		return $this;
 	}
 

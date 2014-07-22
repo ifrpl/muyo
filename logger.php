@@ -11,19 +11,24 @@ $logger = null;
 
 class Logger
 {
-	static public function dump($obj, $message = '[DUMP]', $logLevel = LOG_DEBUG)
+	static public function dump($obj, $message = null, $logLevel = LOG_DEBUG)
 	{
-		return logger_dump($obj, $message);
+		if(null == $message)
+		{
+			$message = buildIdFromCallstack(1);
+		}
+
+		return self::_dump($obj, $message, $logLevel);
 	}
 
-	static public function dumpToFile($obj, $fileName = null, $message = '[DUMP]')
+	static public function dumpToFile($obj, $fileName = null)
 	{
 		$id = buildIdFromCallstack(1);
 
 		$outputDirPath = ROOT_PATH . DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
 		if(!file_exists($outputDirPath))
 		{
-			mkdir($outputDirPath, App_Constants::FILE_MODE, true);
+			mkdir($outputDirPath, 0777, true);
 		}
 
 		if(null == $fileName)
@@ -34,10 +39,8 @@ class Logger
 		$dumpFilePath = $outputDirPath. DIRECTORY_SEPARATOR . $fileName;
 
 		$outputFile = fopen($dumpFilePath, 'wt');
-		logger_dump($obj, $message, -1, $outputFile);
+		self::_dump($obj, 'NS', -1, $outputFile);
 		fclose($outputFile);
-
-		logger_log("Data dumped to file $dumpFilePath");
 
 		return $dumpFilePath;
 	}
@@ -66,58 +69,56 @@ class Logger
 	{
 		return logger_log($message, LOG_NOTICE);
 	}
-}
 
-/**
- * @param        $obj
- * @param string $message
- */
-function logger_dump($obj, $message = '[DUMP]', $logLevel = LOG_DEBUG, $outputFile = null)
-{
-	if(is_array($obj))
+	private static function _dump($obj, $message = null, $logLevel = LOG_DEBUG, $outputFile = null)
 	{
-		$collection = array_reduce_val(
-			$obj,
-			function($startValue, $val, $key){
-				return $startValue || ($val instanceof Lib_Model);
-			},
-			false
-		);
-
-		if($collection)
+		if(is_array($obj))
 		{
-			$message .= ' [collection]';
-
-			array_each(
+			$collection = array_reduce_val(
 				$obj,
-				function($value, $key) use($message){
-					logger_dump($value, $message . "[$key]");
-				}
+				function($startValue, $val, $key){
+					return $startValue || ($val instanceof Lib_Model);
+				},
+				false
 			);
 
-			return;
+			if($collection)
+			{
+				$message .= ' [collection]';
+
+				array_each(
+					$obj,
+					function($value, $key) use($message, $logLevel, $outputFile){
+						self::_dump($value, $message . "[$key]", $logLevel, $outputFile);
+					}
+				);
+
+				return;
+			}
+
 		}
 
-	}
+		if($obj instanceof Lib_Model)
+		{
+			$message .= sprintf(' %s->toArray()', get_class($obj));
 
-	if($obj instanceof Lib_Model)
-	{
-		$message .= sprintf(' %s->toArray()', get_class($obj));
+			/* @var Lib_Model $obj */
+			$obj = $obj->toArray();
+		}
 
-		/* @var Lib_Model $obj */
-		$obj = $obj->toArray();
-	}
-
-	$dump = var_export($obj, true);
-	if(null != $outputFile)
-	{
-		fwrite($outputFile, $dump);
-	}
-	else
-	{
-		logger_log($message . ': ' . $dump, $logLevel);
+		$dump = var_export($obj, true);
+		if(null != $outputFile)
+		{
+			fwrite($outputFile, $dump);
+		}
+		else
+		{
+			logger_log($message . ': ' . $dump, $logLevel);
+		}
 	}
 }
+
+
 
 /**
  * @param string|\Exception $message
