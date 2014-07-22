@@ -770,7 +770,14 @@ function debug_enforce_count_gte($var,$count)
  */
 function debug_enforce_key_exists($key,$arr)
 {
-	debug_enforce( array_key_exists($key,$arr), "Expected key '$key' does not exists." );
+	arrayize($key);
+	debug_enforce(
+		array_all( $key, function( $key )use( $arr )
+		{
+			return array_key_exists( $key, $arr );
+		}),
+		"Expected key(s) '".implode(',',$key)."' does not exists."
+	);
 }
 
 /**
@@ -846,6 +853,16 @@ function debug_assert_type($var,$type)
 	$t = gettype($var);
 	debug_assert( $t === $type, "Parameter of type $type expected, but $t passed" );
 	return $var;
+}
+
+/**
+ * @param array $array
+ * @param mixed $value
+ * @return bool
+ */
+function debug_assert_array_contains( $array, $value )
+{
+	return debug_assert( array_contains( $array, $value ), "Parameter {$value} is not one of ".implode( ',', $array) );
 }
 
 /**

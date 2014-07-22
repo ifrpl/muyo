@@ -187,6 +187,40 @@ function not_dg( $callable )
 }
 
 /**
+ * @param callable,.. $callable
+ * @return callable
+ */
+function or_dg( $callable )
+{
+	$functions = func_get_args();
+	return function() use ( $functions )
+	{
+		$args = func_get_args();
+		return array_some( $functions, function( $function )use( $args )
+		{
+			return call_user_func_array( $function, $args );
+		} );
+	};
+}
+
+/**
+ * @param callable,.. $callable
+ * @return callable
+ */
+function and_dg( $callable )
+{
+	$functions = func_get_args();
+	return function() use ( $functions )
+	{
+		$args = func_get_args();
+		return array_all( $functions, function( $function )use( $args )
+		{
+			return call_user_func_array( $function, $args );
+		} );
+	};
+}
+
+/**
  * @return callable
  */
 function empty_dg()

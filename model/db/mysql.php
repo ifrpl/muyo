@@ -793,6 +793,22 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @return string
+	 */
+	public function loadString()
+	{
+		$array = $this->loadArray( null,true );
+		debug_enforce_count_gte( $array, 1 );
+		debug_assert_count_eq( $array, 1 );
+		$record = array_shift( $array );
+		$columns = array_flatten( $record );
+		debug_enforce_count_gte( $columns, 1 );
+		debug_assert_count_eq( $columns, 1 );
+		$ret=array_shift( $columns );
+		return $ret;
+	}
+
+	/**
 	 * @return null|string
 	 */
 	public function getSQL()

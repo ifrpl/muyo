@@ -120,8 +120,6 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 */
 	public function delete()
 	{
-		Space_Model_Log::changeLog(Space_Model_Log::TYPE_DELETE, $this);
-
 		$pkey = $this->getPrimaryKey();
 		$pkval = $this->{$pkey};
 		if(is_null($pkval))

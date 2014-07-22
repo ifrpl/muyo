@@ -671,3 +671,36 @@ function res_to_csv_assoc( $resource, $delimiter=',', $enclosure='"', $escape='\
 	}
 	return $ret;
 }
+
+/**
+ * @return callable
+ */
+function strcasecmp_dg()
+{
+	return function( $arg1, $arg2 )
+	{
+		return strcasecmp( $arg1, $arg2 );
+	};
+}
+
+/**
+ * @return callable
+ */
+function str_lcfirst_dg()
+{
+	return function( $val )
+	{
+		return lcfirst( $val );
+	};
+}
+
+/**
+ * @return callable
+ */
+function strtoupper_dg()
+{
+	return function( $val )
+	{
+		return strtoupper( $val );
+	};
+}

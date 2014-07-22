@@ -32,6 +32,32 @@ function array_insert_before(&$target,$target_key,$to_insert)
 }
 
 /**
+ * @param array $target
+ * @param string|int|float $target_key
+ * @param array $to_insert
+ */
+function array_insert_after(&$target,$target_key,$to_insert)
+{
+	$tmp = array();
+	foreach($target as $k=>$v)
+	{
+		$tmp[$k] = $v;
+		unset($target[$k]);
+	}
+	foreach($tmp as $k=>$v)
+	{
+		$target[$k] = $v;
+		if( $k === $target_key )
+		{
+			foreach( $to_insert as $ik=>$iv )
+			{
+				$target[$ik] = $iv;
+			}
+		}
+	}
+}
+
+/**
  * @param     $array
  * @param int $column
  * @param int $order
@@ -156,17 +182,7 @@ function array_contains($array, $needle, $strict = false)
 {
 	debug_enforce( is_array($array), "Expected array" );
 
-	if( is_array($needle) )
-	{
-		return array_some( $needle, function($val) use ($array,$strict)
-		{
-			return in_array($val,$array,$strict);
-		} );
-	}
-	else
-	{
-		return in_array($needle,$array,$strict);
-	}
+	return in_array($needle,$array,$strict);
 }
 /**
  * @param mixed $needle
@@ -696,7 +712,7 @@ function array_first_dg($count = 1)
  */
 function array_initial($array,$idx = 1)
 {
-	return array_slice($array,0,-$idx,null,is_array_assoc($array));
+	return array_slice($array,0,-$idx,is_array_assoc($array));
 }
 
 /**
@@ -1066,5 +1082,18 @@ function array_sort_dg( $callable )
 	return function( $array )use( $callable )
 	{
 		return array_sort( $array, $callable );
+	};
+}
+
+/**
+ * @param callable $comparator
+ * @return callable
+ */
+function uasort_dg( $comparator )
+{
+	return function( $array )use( $comparator )
+	{
+		uasort( $array, $comparator );
+		return $array;
 	};
 }
