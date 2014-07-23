@@ -1005,6 +1005,8 @@ abstract class Lib_Model implements Iterator
 								$settingColumn['options']['decorators'] = $form->elementDecorators;
 							}
 							break;
+						case 'id':
+							$setting['hidden'] = true;
 						case "uint":
 						case "int":
 							@$settingColumn['options']['validators'][] = 'Int';
