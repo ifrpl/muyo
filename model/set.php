@@ -18,7 +18,10 @@ class Lib_Model_Set implements Iterator
 	 */
 	protected $_modelObject = null;
 
-
+	public function getResultSet()
+	{
+		return $this->_resultSet;
+	}
 
 	public function setResultSet(array $set)
 	{
