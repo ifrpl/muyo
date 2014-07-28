@@ -252,3 +252,27 @@ function glob_match($pattern, $flags=0)
 		return $matches;
 	} );
 }
+
+/**
+ * @param string $backupFile
+ * @param string $path
+ * @return bool
+ */
+function tar_contains( $backupFile, $path )
+{
+	$output = tar_ls( $backupFile );
+	return array_some( $output, function( $line )use( $path )
+	{
+		return str_startswith( $line, $path );
+	});
+}
+
+/**
+ * @param string $backupFile
+ * @return array
+ */
+function tar_ls( $backupFile )
+{
+	proc_exec( "tar -ztvf {$backupFile} | awk '{print $6}'", $output );
+	return $output;
+}
