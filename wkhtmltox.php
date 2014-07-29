@@ -126,7 +126,12 @@ function wk_conv_file_to_pdf_str($source,$options)
 	$target = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('ifr_wkhtmltox') . '.pdf';
 	wk_conv_file_to_pdf_file($source,$target,$options);
 	$ret = file_get_contents($target);
-	debug_enforce(unlink($target),"Cannot delete temporary file '{$target}'");
+
+	if(!App_Application::isDevEnv())
+	{
+		debug_enforce(unlink($target),"Cannot delete temporary file '{$target}'");
+	}
+
 	return $ret;
 }
 
@@ -156,7 +161,12 @@ function wk_conv_str_to_pdf_str($html,$options)
 	$source = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('ifr_wkhtmltox') . '.html';
 	file_put_contents($source,$html);
 	$ret = wk_conv_file_to_pdf_str($source,$options);
-	debug_enforce(unlink($source),"Cannot delete temporary file '{$source}'");
+
+	if(!App_Application::isDevEnv())
+	{
+		debug_enforce(unlink($source),"Cannot delete temporary file '{$source}'");
+	}
+
 	return $ret;
 }
 
