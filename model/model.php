@@ -1114,7 +1114,7 @@ abstract class Lib_Model implements Iterator
 		return $form;
 	}
 
-	protected function getFormType($type)
+	private function getFormType($type)
 	{
 		$formType = 'text';
 		switch($type)
