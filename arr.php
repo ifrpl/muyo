@@ -353,6 +353,25 @@ function array_chain($array, $iterator)
 }
 
 /**
+ * @param array|callable $array_getter
+ * @param callable $iterators_getter WARNING: it's just a callable to chain on
+ * @return callable
+ */
+function array_chain_dg($array_getter, $iterators_getter)
+{
+	$args = func_get_args();
+	$array_getter = callablize( array_shift( $args ) );
+	$iterators_getters = $args;
+	return function()use( $array_getter, $iterators_getters )
+	{
+		$args = func_get_args();
+		$array = call_user_func_array( $array_getter, $args );
+		$ret = call_user_func_array( 'array_chain', array_merge( array($array), $iterators_getters ) );
+		return $ret;
+	};
+}
+
+/**
  * @param array $array
  * @param callable $iterator function($val,$key)
  *

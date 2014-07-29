@@ -45,3 +45,43 @@ function proc_exec($command, &$output=array(), &$retval=null)
 	$ol = count($output);
 	return $ol > 0 ? $output[$ol-1] : '';
 }
+
+/**
+ * @param string|callable $command_getter
+ * @param array|callable $output_setter
+ * @param array|callable $retval_setter
+ * @return callable
+ */
+function proc_exec_dg($command_getter, &$output_setter=array(), &$retval_setter=null )
+{
+	return function()use( $command_getter, &$output_setter, &$retval_setter )
+	{
+		$args = func_get_args();
+		if( is_callable($command_getter) )
+		{
+			$command = call_user_func_array( $command_getter, $args );
+		}
+		else
+		{
+			$command = $command_getter;
+		}
+		$ret = proc_exec( $command, $output, $retval );
+		if( is_callable($output_setter) )
+		{
+			$output_setter( $output );
+		}
+		else
+		{
+			$output_setter = $output;
+		}
+		if( is_callable($retval_setter) )
+		{
+			$retval_setter( $retval );
+		}
+		else
+		{
+			$retval_setter = $retval;
+		}
+		return $ret;
+	};
+}

@@ -139,13 +139,47 @@ function to_hash($val)
  * @param callable|null $apply
  * @return callable
  */
-function tuple_get($n,$apply=null)
+function tuple_get($n=0,$apply=null)
 {
 	return function()use($n,$apply)
 	{
 		$args = func_get_args();
 		$arg = $args[$n];
 		return $apply ? $apply($arg) : $arg;
+	};
+}
+
+/**
+ * @param mixed $return
+ * @param callable|null $apply
+ * @return callable
+ */
+function return_dg( $return, $apply=null )
+{
+	if( null!==$apply && debug_assert_type( $return, 'array' ) )
+	{
+		return function()use( $apply, $return )
+		{
+			call_user_func_array( $apply, $return );
+		};
+	}
+	else
+	{
+		return function()use( $return )
+		{
+			return $return;
+		};
+	}
+}
+
+/**
+ * @return callable
+ */
+function identity_dg()
+{
+	return function()
+	{
+		return func_get_args();
 	};
 }
 
@@ -285,4 +319,128 @@ function buildIdFromCallstack($callstackDepth = 0, $appendLineNumber = true)
 	}
 
 	return implode($id, '_');
+}
+
+/**
+ * @param callable $callable
+ * @return mixed
+ */
+function call_chain( $callable )
+{
+	$args = func_get_args();
+	array_unshift( $args, array() );
+	return call_user_func_array( 'array_chain', $args );
+}
+
+/**
+ * @param callable $callable
+ * @return callable
+ */
+function call_chain_dg( $callable )
+{
+	$args = func_get_args();
+	return function()use( $args )
+	{
+		return call_user_func_array( 'call_chain', $args );
+	};
+}
+
+/**
+ * @param mixed $value
+ * @return callable
+ */
+function callablize( $value )
+{
+	if( !is_callable($value) )
+	{
+		$value = return_dg( $value );
+	}
+	return $value;
+}
+
+/**
+ * @param mixed $value
+ * @return callable
+ */
+function callablize_dg( $value )
+{
+	return function()use( $value )
+	{
+		return callablize( $value );
+	};
+}
+
+/**
+ * @param bool|callable $if
+ * @param callable $callable
+ * @return callable
+ */
+function call_if( $if, $callable )
+{
+	if( is_callable($if) )
+	{
+		return function($array)use( $if, $callable )
+		{
+			if( $if( $array ) )
+			{
+				$callable( $array );
+			}
+			return $array;
+		};
+	}
+	else
+	{
+		if( $if )
+		{
+			return function($array)use( $callable )
+			{
+				$callable( $array );
+				return $array;
+			};
+		}
+		else
+		{
+			return identity_dg();
+		}
+	}
+}
+
+/**
+ * @param callable $pre
+ * @param callable $content
+ * @param callable $post
+ * @return mixed
+ * @throws Exception
+ */
+function call_safe( $pre, $content, $post )
+{
+	debug_enforce( is_callable($pre), var_dump_human_compact($pre) );
+	debug_enforce( is_callable($content), var_dump_human_compact($content) );
+	debug_enforce( is_callable($post), var_dump_human_compact($post) );
+	$init = $pre();
+	try
+	{
+		$ret = $content( $init );
+	}
+	catch( Exception $e )
+	{
+		$post( $init );
+		throw $e;
+	}
+	$post( $init );
+	return $ret;
+}
+
+/**
+ * @param callable $pre
+ * @param callable $content
+ * @param callable $post
+ * @return callable
+ */
+function call_safe_dg( $pre, $content, $post )
+{
+	return function()use( $pre, $content, $post )
+	{
+		return call_safe( $pre, $content, $post );
+	};
 }

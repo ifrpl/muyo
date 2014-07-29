@@ -235,6 +235,27 @@ function ensure_dir_exists($path)
 	}
 }
 
+function ensure_dir_exists_dg( $path_getter )
+{
+	$path_getter = callablize( $path_getter );
+	if( is_callable($path_getter) )
+	{
+		return function()use( $path_getter )
+		{
+			$args = func_get_args();
+			$path = call_user_func_array( $path_getter, $args );
+			ensure_dir_exists( $path );
+		};
+	}
+	else
+	{
+		return function()use( $path_getter )
+		{
+			ensure_dir_exists( $path_getter );
+		};
+	}
+}
+
 /**
  * @param     $pattern
  * @param int $flags
@@ -251,6 +272,97 @@ function glob_match($pattern, $flags=0)
 		);
 		return $matches;
 	} );
+}
+
+/**
+ * @param string|callable $filename_getter
+ * @param mixed|callable $data_getter
+ * @param int|callable $flags_getter
+ * @param resource|callable|null $context_getter
+ * @return callable
+ */
+function file_put_contents_dg( $filename_getter, $data_getter, $flags_getter=0, $context_getter=null )
+{
+	$filename_getter = callablize( $filename_getter );
+	$data_getter = callablize( $data_getter );
+	$flags_getter = callablize( $flags_getter );
+	if( $context_getter!==null )
+	{
+		$resource_getter = callablize( $context_getter );
+		return function()use( $filename_getter, $data_getter, $flags_getter, $resource_getter )
+		{
+			$args = func_get_args();
+			return file_put_contents(
+				call_user_func_array( $filename_getter, $args ),
+				call_user_func_array( $data_getter, $args ),
+				call_user_func_array( $flags_getter, $args ),
+				call_user_func_array( $resource_getter, $args )
+			);
+		};
+	}
+	else
+	{
+		return function()use( $filename_getter, $data_getter, $flags_getter )
+		{
+			$args = func_get_args();
+			return file_put_contents(
+				call_user_func_array( $filename_getter, $args ),
+				call_user_func_array( $data_getter, $args ),
+				call_user_func_array( $flags_getter, $args )
+			);
+		};
+	}
+}
+
+/**
+ * @param string|callable|null $filename_getter
+ * @param resource|callable|null $context_getter
+ * @return callable
+ */
+function unlink_dg( $filename_getter, $context_getter=null )
+{
+	$filename_getter = callablize( $filename_getter );
+	if( $context_getter!==null )
+	{
+		$context_getter = callablize( $context_getter );
+		return function()use( $filename_getter, $context_getter )
+		{
+			$args = func_get_args();
+			$filename = call_user_func_array( $filename_getter, $args );
+			$context = call_user_func_array( $context_getter, $args );
+			debug_enforce(
+				unlink( $filename, $context ),
+				"Could not unlink '{$filename}'"
+			);
+		};
+	}
+	else
+	{
+		return function()use( $filename_getter )
+		{
+			$args = func_get_args();
+			$filename = call_user_func_array( $filename_getter, $args );
+			debug_enforce(
+				unlink( $filename ),
+				"Could not unlink '{$filename}'"
+			);
+		};
+	}
+}
+
+/**
+ * @param string|callable $directory_getter
+ * @return callable
+ */
+function chdir_dg( $directory_getter )
+{
+	$directory_getter = callablize( $directory_getter );
+	return function()use( $directory_getter )
+	{
+		$args = func_get_args();
+		$directory = call_user_func_array( $directory_getter, $args );
+		debug_enforce( chdir($directory), "Could not change working directory to '{$directory}'" );
+	};
 }
 
 /**

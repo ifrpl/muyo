@@ -55,3 +55,56 @@ function mysql_tables_list($database=null)
 		return $tables;
 	}
 }
+
+/**
+ * @param string|null $server
+ * @param string|null $username
+ * @param string|null $password
+ * @param bool $new_link
+ * @param int  $client_flags
+ * @return callable
+ */
+function mysql_connect_dg( $server=null, $username=null, $password=null, $new_link=false, $client_flags=0 )
+{
+	return function()use( $server, $username, $password, $new_link, $client_flags )
+	{
+		if( null===$server )
+		{
+			$server = ini_get( "mysql.default_host" );
+		}
+		if( null===$username )
+		{
+			$username = ini_get( "mysql.default_user" );
+		}
+		if( null===$password )
+		{
+			$password = ini_get( "mysql.default_password" );
+		}
+		$ret = mysql_connect( $server, $username, $password, $new_link, $client_flags );
+		return $ret;
+	};
+}
+
+/**
+ * @param resource|callable $conn_getter
+ * @return callable
+ */
+function mysql_close_dg( $conn_getter )
+{
+	if( is_callable($conn_getter) )
+	{
+		return function()use( $conn_getter )
+		{
+			$args = func_get_args();
+			$conn = call_user_func_array( $conn_getter, $args );
+			return mysql_close( $conn );
+		};
+	}
+	else
+	{
+		return function()use( $conn_getter )
+		{
+			return mysql_close( $conn_getter );
+		};
+	}
+}
