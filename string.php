@@ -703,3 +703,27 @@ function strtoupper_dg()
 		return strtoupper( $val );
 	};
 }
+
+/**
+ * @param string $what
+ * @return callable
+ */
+function str_prepend_dg( $what )
+{
+	return function( $string )use( $what )
+	{
+		return $what.$string;
+	};
+}
+
+/**
+ * @param string $what
+ * @return callable
+ */
+function str_append_dg( $what )
+{
+	return function( $string )use( $what )
+	{
+		return $string.$what;
+	};
+}
