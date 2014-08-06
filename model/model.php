@@ -137,6 +137,11 @@ abstract class Lib_Model implements Iterator
 	{
 		if( debug_assert(is_string($name) && is_array($settings),'Invalid parameters') )
 		{
+			if(is_null($defaultValue) && array_key_exists('default', $settings))
+			{
+				$defaultValue = array_get_unset($settings,'default');
+			}
+
 			$this->schemaColumnApplyDefault($name,$settings,$defaultValue);
 
 			$this->_data[$name] = $defaultValue;
