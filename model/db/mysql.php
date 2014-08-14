@@ -282,6 +282,38 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		return $this->getSelect()->getPart('columns');
 	}
 
+
+
+	/**
+	 * Return settings only for set columns
+	 * @return array
+	 */
+	public function getColumnSettings($columns = null)
+	{
+		if(null == $columns)
+		{
+			$columns = array_map(function($descriptor)
+				{
+					return zend_column_name($descriptor);
+				},
+				$this->getColumns()
+			);
+		}
+
+		$k = array_find_key($columns, function($v, $k){
+				return $v == $this->getPrimaryKey();
+			}
+		);
+
+		if(null !== $k)
+		{
+			unset($columns[$k]);
+		}
+
+		return  array_join($columns, $this->_settings, false);
+
+	}
+
 	/**
 	 * @param bool $clear
 	 * @param string $cols

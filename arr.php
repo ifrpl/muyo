@@ -1116,3 +1116,32 @@ function uasort_dg( $comparator )
 		return $array;
 	};
 }
+
+/**
+ *
+*@param $array0
+ * @param $array1
+ *
+ * @return array
+ */
+function array_join($array0, $array1, $preserveKey = true)
+{
+	$ret = array();
+
+	foreach($array0 as $key0 => $value0)
+	{
+		if(!isset($array1[$value0]))
+		{
+			continue;
+		}
+
+		if(!$preserveKey)
+		{
+			$key0 = $value0;
+		}
+
+		$ret[$key0] = $array1[$value0] ;
+	}
+
+	return $ret;
+}

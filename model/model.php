@@ -493,6 +493,11 @@ abstract class Lib_Model implements Iterator
 		return $this->_settings;
 	}
 
+	public function getSettingsJoined()
+	{
+		return $this->_settingsJoined;
+	}
+
 	/**
 	 * @return array
 	 */
@@ -1261,7 +1266,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	protected function settingJoin($name, $value)
 	{
-		if( debug_assert(!array_key_exists($name,$this->_settingsJoined),"Tried to join setting `{$name}` it already exists.") )
+		if( debug_assert(!array_key_exists($name,$this->_settingsJoined),"Tried to join setting `{$name}` which already exists.") )
 		{
 			$this->_settingsJoined[$name] = $value;
 		}
