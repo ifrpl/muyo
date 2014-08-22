@@ -105,7 +105,7 @@ function html_tag( $name, $attr, $content )
 	}
 	$attrChain []= array_map_key_dg(function( $val, $key )
 	{
-		return preg_replace( '/([^\t\n\f \/>"\'=]+)/', '', $key );
+		return preg_replace( '/([\t\n\f \/>"\'=]+)/', '', $key );
 	});
 	$flags = htmlspecialchars_flags();
 	$attrChain []= array_map_val_dg(function( $val, $key )use( $flags )
@@ -114,7 +114,7 @@ function html_tag( $name, $attr, $content )
 		return " {$key}={$val}";
 	});
 	$attrChain []= array_implode_dg('');
-	$attr = call_user_func_array( 'array_chain', array($attr)+$attrChain );
+	$attr = call_user_func_array( 'array_chain', array_merge( array($attr), $attrChain ) );
 	if( empty($content) )
 	{
 		if( Doctype::isXhtml() )
