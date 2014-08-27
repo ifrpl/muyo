@@ -853,7 +853,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * @param string|null $column
 	 * @return string
 	 */
-	private static function prefixColumn($model, $column = null)
+	private function prefixColumn($model, $column = null)
 	{
 		if( is_null($column) )
 		{
@@ -945,8 +945,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	{
 		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
 
-		$thatKeyCol = self::prefixColumn($model, $thatKeyCol);
-		$thisKeyCol = self::prefixColumn($this, $thisKeyCol);
+		$thatKeyCol = $this->prefixColumn($model, $thatKeyCol);
+		$thisKeyCol = $this->prefixColumn($this, $thisKeyCol);
 
 		$conditions = str_replace('{that}',$model->getAlias(),$conditions);
 		$conditions = str_replace('{this}',$this->getAlias(),$conditions);
@@ -988,8 +988,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	{
 		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
 
-		$thatKeyCol = self::prefixColumn($model, $thatKeyCol);
-		$thisKeyCol = self::prefixColumn($this, $thisKeyCol);
+		$thatKeyCol = $this->prefixColumn($model, $thatKeyCol);
+		$thisKeyCol = $this->prefixColumn($this, $thisKeyCol);
 
 		$conditions = str_replace('{that}', $model->getAlias(), $conditions);
 		$conditions = str_replace('{this}', $this->getAlias(), $conditions);
