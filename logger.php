@@ -39,7 +39,7 @@ class Logger
 		$dumpFilePath = $outputDirPath. DIRECTORY_SEPARATOR . $fileName;
 
 		$outputFile = fopen($dumpFilePath, 'wt');
-		self::_dump($obj, 'NS', -1, $outputFile);
+		self::_dump($obj, '', -1, $outputFile);
 		fclose($outputFile);
 
 		return $dumpFilePath;
@@ -105,11 +105,15 @@ class Logger
 			/* @var Lib_Model $obj */
 			$obj = $obj->toArray();
 		}
+		else
+		{
+			$message .= get_class($obj);
+		}
 
 		$dump = var_export($obj, true);
 		if(null != $outputFile)
 		{
-			fwrite($outputFile, $dump);
+			fwrite($outputFile, $message . ': ' . $dump);
 		}
 		else
 		{
