@@ -727,3 +727,17 @@ function str_append_dg( $what )
 		return $string.$what;
 	};
 }
+
+
+/**
+ * @param string $string
+ * @return string
+ */
+function decamelize( $string )
+{
+    return preg_replace(
+        '/(^|[a-z])([A-Z])/e',
+        'strtolower(strlen("\\1") ? "\\1_\\2" : "\\2")',
+        $string
+    );
+}

@@ -10,5 +10,21 @@
  */
 function hw_core_get()
 {
-	return intval(exec("cat /proc/cpuinfo | grep processor | wc -l"));
+    $nb = 0;
+
+    $output = file_get_contents('/proc/cpuinfo');
+    $lines = explode("\n", $output);
+
+    foreach($lines as $line)
+    {
+        $tab = array_map(function($value){return trim($value);}, explode(':', $line));
+        if(2 != count($tab) || 'processor' != $tab[0])
+        {
+            continue;
+        }
+
+        $nb++;
+    }
+
+	return $nb;
 }
