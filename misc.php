@@ -315,7 +315,7 @@ function buildIdFromCallstack($callstackDepth = 0, $appendLineNumber = true)
 
 	if($appendLineNumber)
 	{
-		$id[] = $backtrace[$callstackDepth - 2]['line'];
+		$id[] = sprintf('%03d', $backtrace[$callstackDepth - 2]['line']);
 	}
 
 	return implode($id, '_');

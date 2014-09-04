@@ -701,7 +701,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * @throws Exception
 	 * @fixme $q and $collection
 	 */
-	public function loadArray( $q=null,$collection=false )
+	public function loadArray( $q=null,$collection=false, $nested = true )
 	{
 		$alias = $this->getAlias();
 
@@ -748,13 +748,22 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			{
 				$descriptor = $descriptors[ $idx ];
 				$colalias = zend_column_name( $descriptor );
-				$tblalias = zend_column_table( $descriptor );
 
-				if( !array_key_exists( $tblalias, $record ) )
+
+				if($nested)
 				{
-					$record[ $tblalias ] = array();
+					$tblalias = zend_column_table( $descriptor );
+					if( !array_key_exists( $tblalias, $record ) )
+					{
+						$record[ $tblalias ] = array();
+					}
+
+					$record[$tblalias][$colalias] = $column;
 				}
-				$record[$tblalias][$colalias] = $column;
+				else
+				{
+					$record[$colalias] = $column;
+				}
 			}
 
 			if( $collection )
