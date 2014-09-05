@@ -105,10 +105,6 @@ class Logger
 			/* @var Lib_Model $obj */
 			$obj = $obj->toArray();
 		}
-		else
-		{
-			$message .= get_class($obj);
-		}
 
 		$dump = var_export($obj, true);
 		if(null != $outputFile)
