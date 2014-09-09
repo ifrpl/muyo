@@ -1627,8 +1627,6 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function getDataTable($export = 'JqGrid', $source = null)
 	{
-		set_time_limit(0);
-
 		if(is_null($source))
 		{
 			$source = new Lib_Grid_Source_Model($this);
