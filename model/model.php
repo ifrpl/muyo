@@ -1620,6 +1620,24 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
+	 * @param string $key
+	 * @return null
+	 */
+	public function settingTableGet( $key )
+	{
+		$settings = $this->settingsTableGet();
+		if( debug_assert( array_key_exists($key,$settings), "Setting doesn't exists: ".var_dump_human_full(array($settings,$key)) ) )
+		{
+			$ret = $settings[ $key ];
+		}
+		else
+		{
+			$ret = null;
+		}
+		return $ret;
+	}
+
+	/**
 	 * @param string $export Name of deploy
 	 * @param null|mixed $source
 	 * @return Bvb_Grid
