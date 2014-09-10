@@ -109,6 +109,7 @@ class Lib_Model_Set implements Iterator
 		$ret = array();
 		foreach( $this as $model )
 		{
+			//BUG: get rid of this primaryKey thing
 			$ret [ $model->{$primaryKey} ]= $model->{$property};
 		}
 		return $ret;
@@ -124,9 +125,28 @@ class Lib_Model_Set implements Iterator
 		$ret = array();
 		foreach( $this as $id => $model )
 		{
+			//BUG: get rid of this primaryKey thing
 			$ret [ $model->{$primaryKey} ]= $callable( $model, $id );
 		}
 		return $ret;
+	}
+
+	/**
+	 * @param callable $callable
+	 * @return $this
+	 */
+	public function filter( $callable )
+	{
+		$ret = array();
+		foreach( $this as $id => $model )
+		{
+			if( $callable( $model, $id ) )
+			{
+			//BUG: get rid of this primaryKey thing
+				$ret[ key($this->_resultSet) ] = current($this->_resultSet);
+			}
+		}
+		return $this->setResultSet( $ret );
 	}
 
 	/**

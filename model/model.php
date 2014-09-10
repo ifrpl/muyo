@@ -114,6 +114,16 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
+	 * @param callable $interceptor
+	 * @return $this
+	 */
+	public function tap( $interceptor )
+	{
+		$interceptor($this);
+		return $this;
+	}
+
+	/**
 	 * @param string $name
 	 * @param array $setting
 	 * @param mixed $defaultValue
