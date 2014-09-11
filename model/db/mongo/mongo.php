@@ -222,6 +222,18 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
+	 * @return $this
+	 */
+	public function filterFalse()
+	{
+		return $this->filterBy(array(
+			self::getPrimaryKey() => array(
+				'$exists' => 0
+			),
+		));
+	}
+
+	/**
 	 * @param        $item
 	 * @param        $key
 	 * @param string $prefix

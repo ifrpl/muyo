@@ -610,6 +610,14 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @return $this
+	 */
+	public function filterFalse()
+	{
+		return $this->setWhere('1=0');
+	}
+
+	/**
 	 * @param string|array $cond condition (if one param) or column name if more than one params
 	 *
 	 * @return $this
@@ -831,6 +839,22 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		debug_assert_count_eq( $record[ $alias ], 1 );
 		$ret=array_shift( $record[ $alias ] );
 		return intval($ret);
+	}
+
+	/**
+	 * @return float
+	 */
+	public function loadFloat()
+	{
+		$alias = $this->getAlias();
+		$array = $this->loadArray( null,true );
+		debug_enforce_count_gte( $array, 1 );
+		debug_assert_count_eq( $array, 1 );
+		$record = array_shift( $array );
+		debug_enforce_count_gte( $record[ $alias ], 1 );
+		debug_assert_count_eq( $record[ $alias ], 1 );
+		$ret=array_shift( $record[ $alias ] );
+		return floatval($ret);
 	}
 
 	/**

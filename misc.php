@@ -444,3 +444,25 @@ function call_safe_dg( $pre, $content, $post )
 		return call_safe( $pre, $content, $post );
 	};
 }
+
+/**
+ * @param callable|null $obj_getter
+ * @return callable
+ */
+function get_class_dg( $obj_getter=null )
+{
+	if( $obj_getter===null )
+	{
+		return function( $obj )
+		{
+			return get_class( $obj );
+		};
+	}
+	else
+	{
+		return function()use($obj_getter)
+		{
+			return get_class( $obj_getter(func_get_args()) );
+		};
+	}
+}

@@ -60,6 +60,11 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	abstract public function filterBy($cond);
 
+	/**
+	 * @return $this
+	 */
+	abstract public function filterFalse();
+
 	/** @return int */
 	abstract public function count();
 	/** @return string */
@@ -507,7 +512,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 * @param Zend_Db_Select|null $q
 	 * @param bool $collection
 	 *
-	 * @return Lib_Model_Db
+	 * @return $this
 	 */
 	public function loadOne($q = null, $collection = false)
 	{
