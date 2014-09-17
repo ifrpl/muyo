@@ -243,7 +243,15 @@ abstract class Lib_Model implements Iterator
 	 */
 	protected function recordColumnsGet()
 	{
-		return $this->_data;
+		$data = array();
+		foreach($this->_data as $name => $value)
+		{
+			if( !$this->recordColumnProtected($name) )
+			{
+				$data[$name] = $value;
+			}
+		}
+		return $data;
 	}
 
 	/**
