@@ -603,14 +603,7 @@ function debug_handler($handler = null)
 		};
 		$error_to_common = function($number, $message, $script, $line) use($handler)
 		{
-			if( error_reporting() === 0 )
-			{
-				return false;
-			}
-			else
-			{
-				return $handler( $message, $script, $line, array(), 'php_error', array( 'php_error' => $number ) );
-			}
+			return $handler( $message, $script, $line, array(), 'php_error', array( 'php_error' => $number ) );
 		};
 		$assertion_to_common = function($script, $line, $message) use ($handler)
 		{
@@ -654,10 +647,6 @@ function debug_handler_error_default_dg()
 {
 	return function ($errno, $errstr, $errfile, $errline, $errcontext)
 	{
-		if( error_reporting()===0 )
-		{
-			return false;
-		}
 		$e = new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
 		throw $e;
 	};
