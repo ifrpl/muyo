@@ -365,7 +365,6 @@ abstract class Lib_Model implements Iterator
 		{
 			return $this->recordColumnGet($name);
 		}
-		debug_assert( false, 'Unknown getter '.$name.' @'.get_called_class() );
 		return null;
 	}
 
