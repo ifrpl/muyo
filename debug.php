@@ -647,6 +647,7 @@ function debug_handler_error_default_dg()
 {
 	return function ($errno, $errstr, $errfile, $errline, $errcontext)
 	{
+		$e = new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
 		switch( $errno )
 		{
 			case E_ERROR:
@@ -655,19 +656,19 @@ function debug_handler_error_default_dg()
 			case E_COMPILE_ERROR:
 			case E_USER_ERROR:
 			case E_RECOVERABLE_ERROR:
-				throw new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
+				throw $e;
 			break;
 			case E_WARNING:
 			case E_CORE_WARNING:
 			case E_COMPILE_WARNING:
 			case E_USER_WARNING:
-				logger_log( $errstr, LOG_WARNING );
+				logger_log( $e, LOG_WARNING );
 			break;
 			case E_NOTICE:
 			case E_USER_NOTICE:
 			case E_DEPRECATED:
 			case E_USER_DEPRECATED:
-				logger_log( $errstr, LOG_NOTICE );
+				logger_log( $e, LOG_NOTICE );
 			break;
 			default:
 				debug_assert(false,"Unknown value");
