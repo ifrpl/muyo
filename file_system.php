@@ -225,14 +225,24 @@ function tempfile_str($suffix = '',$prefix = '',$dir = null,$tries = 5)
  */
 function ensure_dir_exists($path)
 {
-	if( !@mkdir($path) )
-	{
-		$error = error_get_last();
-		if( $error['type'] !== 2 )
+	$handler = debug_handler_error();
+
+	debug_handler_error(
+		function ($errno, $errstr, $errfile, $errline, $errcontext)use($handler,$path)
 		{
-			throw new ErrorException($error['message'],$error['type'],1,$error['file'],$error['line']);
+			if( $errno===2 && is_dir($path) )
+			{
+				$ret = true;
+			}
+			else
+			{
+				$ret = $handler($errno, $errstr, $errfile, $errline, $errcontext);
+			}
+			return $ret;
 		}
-	}
+	);
+	mkdir($path);
+	debug_handler_error( $handler );
 }
 
 function ensure_dir_exists_dg( $path_getter )
