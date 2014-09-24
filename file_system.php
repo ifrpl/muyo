@@ -398,3 +398,33 @@ function tar_ls( $backupFile )
 	proc_exec( "tar -ztvf {$backupFile} | awk '{print $6}'", $output );
 	return $output;
 }
+
+/**
+ * @param $outputFilePath
+ * @param $inputFilePaths
+ *
+ * @return bool
+ */
+function zip($outputFilePath, $inputFilePaths)
+{
+	$dirPath = dirname($outputFilePath);
+	if(!file_exists($dirPath))
+	{
+		mkdir($dirPath, App_Constants::FILE_MODE, true);
+	}
+
+	$zip = new ZipArchive();
+	if(!$zip->open($outputFilePath, ZIPARCHIVE::CREATE))
+	{
+		return false;
+	}
+
+	foreach($inputFilePaths as $inputFilePath)
+	{
+		$zip->addFile($inputFilePath, basename($inputFilePath));
+	}
+
+	$zip->close();
+
+	return file_exists($outputFilePath);
+}
