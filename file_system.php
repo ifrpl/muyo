@@ -421,7 +421,8 @@ function zip($outputFilePath, $inputFilePaths)
 
 	foreach($inputFilePaths as $inputFilePath)
 	{
-		$zip->addFile($inputFilePath, basename($inputFilePath));
+		$fileName = iconv('UTF-8', 'ASCII//TRANSLIT', basename($inputFilePath));
+		$zip->addFile($inputFilePath, $fileName);
 	}
 
 	$zip->close();
