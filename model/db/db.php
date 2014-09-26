@@ -10,7 +10,7 @@ if( !class_exists( 'Lib_Model' ) )
  *
  * @method static Lib_Model_Db getByColumn($value) returns loaded row, that has "column" matching $value
  * @method static array getListByColumn($value) returns all rows, that has "column" matching $value
- * @method static array getListById(int $id)
+ * @method static array getListById($id)
  */
 abstract class Lib_Model_Db extends Lib_Model
 {
