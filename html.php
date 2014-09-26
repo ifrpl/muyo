@@ -139,7 +139,15 @@ function html_tag( $name, $attr, $content )
  */
 function html_from_string( $string )
 {
-	return htmlspecialchars( $string, htmlspecialchars_flags() );
+	if( debug_assert( is_string($string), var_dump_human_compact( $string ) ) )
+	{
+		$ret = htmlspecialchars( $string, htmlspecialchars_flags() );
+	}
+	else
+	{
+		$ret = '';
+	}
+	return $ret;
 }
 
 /**
