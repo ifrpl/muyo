@@ -1689,17 +1689,11 @@ abstract class Lib_Model implements Iterator
 		{
 			Lib_Grid::prepareDeploy($grid, $config, $source);
 		}
-		else {
-			if($export == 'Pdf')
-			{
-				$config->export->pdf   = 'Pdf';
-				$config->disableExport = false;
-				Lib_Grid::prepareDeploy($grid, $config, $source);
-			}
-			else
-			{
-
-			}
+		elseif($export == 'Pdf')
+		{
+			$config->export->pdf   = 'Pdf';
+			$config->disableExport = false;
+			Lib_Grid::prepareDeploy($grid, $config, $source);
 		}
 
 		return $grid;
