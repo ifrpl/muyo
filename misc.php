@@ -184,6 +184,22 @@ function identity_dg()
 }
 
 /**
+ * @param callable|null $getter
+ * @return callable
+ */
+function intval_dg($getter=null)
+{
+	if( $getter===null )
+	{
+		$getter = tuple_get();
+	}
+	return function()use($getter)
+	{
+		return intval( call_user_func_array( $getter, func_get_args() ) );
+	};
+}
+
+/**
  * Prepare a delegate that returns results with comparison of $key parameter to $eq.
  *
  * @param int|string|array $eq
