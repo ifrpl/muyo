@@ -13,6 +13,10 @@ if( !class_exists('Lib_Model_Db') )
  */
 abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 {
+	const LOAD_ARRAY_MODE_NESTED_TABLE  = 0;
+	const LOAD_ARRAY_MODE_NESTED_COLUMN = 1;
+	const LOAD_ARRAY_MODE_RAW           = 2;
+
 	/**
 	 * @var Zend_Db_Select
 	 */
@@ -705,11 +709,12 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * Load model from SQL query to an array with joined columns as arrays
 	 * @param mixed $q
 	 * @param bool $collection
+	 * @param $mode defines how results should be structured
 	 * @return array
 	 * @throws Exception
 	 * @fixme $q and $collection
 	 */
-	public function loadArray( $q=null,$collection=false, $nested = true )
+	public function loadArray( $q=null,$collection=false, $mode = self::LOAD_ARRAY_MODE_NESTED_TABLE )
 	{
 		$alias = $this->getAlias();
 
@@ -747,6 +752,11 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			throw new Exception('Error while loading: '.$e->getMessage().' | SQL: '.$this->getSQL());
 		}
 
+		if(self::LOAD_ARRAY_MODE_RAW == $mode)
+		{
+			return $rows;
+		}
+
 		$ret = array();
 		foreach( $rows as $row )
 		{
@@ -758,7 +768,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 				$colalias = zend_column_name( $descriptor );
 
 
-				if($nested)
+				if(self::LOAD_ARRAY_MODE_NESTED_TABLE == $mode)
 				{
 					$tblalias = zend_column_table( $descriptor );
 					if( !array_key_exists( $tblalias, $record ) )

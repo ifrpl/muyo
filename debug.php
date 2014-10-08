@@ -891,3 +891,9 @@ function debug_enforce_eq( $a, $b, $strong=false )
 		var_dump_human_compact( $a )." doesn't equals to ".var_dump_human_compact( $b )
 	);
 }
+
+function debug_print_backtrace_alt($callstackDepth = 0)
+{
+	Logger::dump(debug_backtrace (DEBUG_BACKTRACE_IGNORE_ARGS, $callstackDepth));
+}
+
