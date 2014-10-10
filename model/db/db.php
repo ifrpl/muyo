@@ -100,7 +100,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 * @param string|null $alias
 	 * @return $this
 	 */
-	protected function columnSet($name,&$alias=null)
+	public function columnSet($name,&$alias=null)
 	{
 		if( is_null($alias) )
 		{

@@ -249,6 +249,18 @@ function array_find_val($array, $iterator)
 }
 
 /**
+ * @param callable $iterator
+ * @return callable
+ */
+function array_find_val_dg( $iterator )
+{
+	return function( $array )use( $iterator )
+	{
+		return array_find_val( $array, $iterator );
+	};
+}
+
+/**
  * Finds first key matching the $iterator from the $array
  *
  * @param array $array

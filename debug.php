@@ -376,6 +376,14 @@ function debug($tab)
 	exit();
 }
 
+/**
+ * @param ... $args
+ */
+function debug_compact()
+{
+	debug(var_dump_human_compact(func_get_args()));
+}
+
 if(!function_exists('get_call_stack'))
 {
 	/**

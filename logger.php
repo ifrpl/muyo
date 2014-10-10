@@ -279,3 +279,23 @@ function log_level_str($level)
 	}
 	return $level;
 }
+
+/**
+ * @param mixed $var
+ * @param int $level
+ * @return null
+ */
+function logger_log_compact($var,$level=LOG_DEBUG)
+{
+	return logger_log( var_dump_human_compact($var), $level );
+}
+
+/**
+ * @param mixed $var
+ * @param int $level
+ * @return null
+ */
+function logger_log_full( $var, $level=LOG_DEBUG )
+{
+	return logger_log( var_dump_human_full($var), $level );
+}
