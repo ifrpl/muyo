@@ -21,7 +21,7 @@ class Logger
 		return self::_dump($obj, $message, $logLevel);
 	}
 
-	static public function dumpToFile($obj, $fileName = null)
+	static public function dumpToFile($obj, $fileName = '')
 	{
 		$id = buildIdFromCallstack(1);
 
@@ -31,10 +31,12 @@ class Logger
 			mkdir($outputDirPath, 0777, true);
 		}
 
-		if(null == $fileName)
+		if(!empty($fileName))
 		{
-			$fileName = IFR_Main_Time::udate('Ymd-His-u') . '.txt';
+			$fileName .= '-';
 		}
+
+		$fileName .= IFR_Main_Time::udate('Ymd-His-u') . '.txt';
 
 		$dumpFilePath = $outputDirPath. DIRECTORY_SEPARATOR . $fileName;
 
