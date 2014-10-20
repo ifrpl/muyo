@@ -1037,6 +1037,17 @@ function array_keys_dg()
 }
 
 /**
+ * @return callable
+ */
+function array_values_dg()
+{
+	return function( $array )
+	{
+		return array_values( $array );
+	};
+}
+
+/**
  * @param array $array
  * @param callable $callable mixed function($item1Val,$item2Val,$item2Key)
  * @param mixed $startValue

@@ -224,6 +224,30 @@ function key_eq_dg($eq)
 }
 
 /**
+ * Prepare a delegate that returns results with comparison of $val parameter to $eq.
+ *
+ * @param int|string|array $eq
+ * @return callable
+ */
+function val_eq_dg($eq)
+{
+	if( is_array($eq) )
+	{
+		return function($val)use($eq)
+		{
+			return array_contains( $eq, $val );
+		};
+	}
+	else
+	{
+		return function($val)use($eq)
+		{
+			return $eq === $val;
+		};
+	}
+}
+
+/**
  * @param callable $callable
  * @return callable
  */
