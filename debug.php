@@ -872,7 +872,14 @@ function debug_assert_count_eq( $countable, $integer )
  */
 function debug_assert_type($var,$type)
 {
-	$t = gettype($var);
+	if( is_callable($var) )
+	{
+		$t = 'callable';
+	}
+	else
+	{
+		$t = gettype($var);
+	}
 	debug_assert( $t === $type, "Parameter of type $type expected, but $t passed" );
 	return $var;
 }

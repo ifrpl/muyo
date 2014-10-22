@@ -96,3 +96,40 @@ function config_to_array_recursive($config) {
 	}
 	return $config;
 }
+
+/**
+ * @param object $object
+ * @param string $what
+ * @return mixed
+ */
+function object_get( $object, $what )
+{
+	return $object->{$what};
+}
+
+/**
+ * @param callable $object
+ * @param string|callable $what
+ * @return callable
+ */
+function object_get_dg( $object, $what )
+{
+	if( is_string($what) )
+	{
+		$what = return_dg( $what );
+	}
+	if( debug_assert_callable( $object ) && debug_assert_callable( $what ) )
+	{
+		return function()use( $object, $what )
+		{
+			return object_get( $object(), $what() );
+		};
+	}
+	else
+	{
+		return function()
+		{
+			return null;
+		};
+	}
+}
