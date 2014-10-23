@@ -9,26 +9,44 @@
  * @param array $target
  * @param string|int|float $target_key
  * @param array $to_insert
+ * @param boolean $after
  */
-function array_insert_before(&$target,$target_key,$to_insert)
+function array_insert_(&$target,$target_key,$to_insert, $after)
 {
-	$tmp = array();
+	$tmp = [];
+
 	foreach($target as $k=>$v)
 	{
-		$tmp[$k] = $v;
-		unset($target[$k]);
-	}
-	foreach($tmp as $k=>$v)
-	{
+		if($after)
+		{
+			$tmp[$k] = $v;
+		}
+
 		if( $k === $target_key )
 		{
 			foreach( $to_insert as $ik=>$iv )
 			{
-				$target[$ik] = $iv;
+				$tmp[$ik] = $iv;
 			}
 		}
-		$target[$k] = $v;
+
+		if(!$after)
+		{
+			$tmp[$k] = $v;
+		}
 	}
+
+	$target = $tmp;
+}
+
+/**
+ * @param array $target
+ * @param string|int|float $target_key
+ * @param array $to_insert
+ */
+function array_insert_before(&$target,$target_key,$to_insert)
+{
+	array_insert_($target,$target_key,$to_insert, false);
 }
 
 /**
@@ -38,23 +56,7 @@ function array_insert_before(&$target,$target_key,$to_insert)
  */
 function array_insert_after(&$target,$target_key,$to_insert)
 {
-	$tmp = array();
-	foreach($target as $k=>$v)
-	{
-		$tmp[$k] = $v;
-		unset($target[$k]);
-	}
-	foreach($tmp as $k=>$v)
-	{
-		$target[$k] = $v;
-		if( $k === $target_key )
-		{
-			foreach( $to_insert as $ik=>$iv )
-			{
-				$target[$ik] = $iv;
-			}
-		}
-	}
+	array_insert_($target,$target_key,$to_insert, true);
 }
 
 /**
