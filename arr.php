@@ -626,6 +626,44 @@ function array_unset_val(&$array, $val, $strict = true)
 
 /**
  * @param array $array
+ * @param string|int $key
+ * @return mixed
+ */
+function array_get($array,$key)
+{
+	return $array[ $key ];
+}
+
+/**
+ * @param callable $key
+ * @param callable|null $array
+ * @return callable
+ */
+function array_get_dg($key,$array=null)
+{
+	if( is_null($array) )
+	{
+		$array = tuple_get(0);
+	}
+	elseif( !is_callable($array) )
+	{
+		$array = return_dg( $array );
+	}
+	if( !is_callable($key) )
+	{
+		$key = return_dg( $key );
+	}
+	return function()use($array,$key)
+	{
+		$args = func_get_args();
+		$array = call_user_func_array( $array, $args );
+		$key = call_user_func_array( $key, $args );
+		return array_get( $array, $key );
+	};
+}
+
+/**
+ * @param array $array
  * @param string $key
  * @param mixed $default
  * @return mixed
