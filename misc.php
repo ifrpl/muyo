@@ -506,3 +506,33 @@ function get_class_dg( $obj_getter=null )
 		};
 	}
 }
+
+if(!function_exists('boolval'))
+{
+	/**
+	 * @param mixed $var
+	 *
+	 * @return bool
+	 */
+	function boolval($var)
+	{
+		return (bool)$var;
+	}
+}
+
+/**
+ * @param callable|null $getter
+ *
+ * @return callable
+ */
+function boolval_dg($getter=null)
+{
+	if( $getter===null )
+	{
+		$getter = tuple_get();
+	}
+	return function()use($getter)
+	{
+		return boolval( call_user_func_array( $getter, func_get_args() ) );
+	};
+}
