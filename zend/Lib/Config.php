@@ -39,8 +39,6 @@ class Lib_Config
 
 		$this->_config->env = $env;
 
-		$this->addRevision();
-
 		if(Zend_Registry::isRegistered('config'))
 		{
 			$c = Zend_Registry::get('config');
@@ -123,37 +121,12 @@ class Lib_Config
 		return $ret;
 	}
 
-	public function addRevision()
-	{
-		$revision = '';
-
-		$path = getcwd();
-
-		chdir(APPLICATION_PATH);
-
-		do
-		{
-			if(file_exists('.git/ORIG_HEAD'))
-		    {
-			    $gitFile = file('.git/ORIG_HEAD');
-			    if(isset($gitFile[0]))
-				{
-					$revision = $gitFile[0];
-				}
-				break;
-			}
-			chdir('..');
-		} while(getcwd()!='/');
-		chdir($path);
-		$this->_config->revision = $revision;
-	}
-
 	public function toArray()
 	{
 		return $this->_config->toArray();
 	}
 
-	public function merge(IFR_Config $config)
+	public function merge(Lib_Config $config)
 	{
 		$this->_config->merge($config->getConfig());
 		return $this;

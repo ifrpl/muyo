@@ -520,3 +520,33 @@ function eq_dg($a,$b)
 		return call_user_func_array($a,$args)==call_user_func_array($b,$args);
 	};
 }
+
+if(!function_exists('boolval'))
+{
+	/**
+	 * @param mixed $var
+	 *
+	 * @return bool
+	 */
+	function boolval($var)
+	{
+		return (bool)$var;
+	}
+}
+
+/**
+ * @param callable|null $getter
+ *
+ * @return callable
+ */
+function boolval_dg($getter=null)
+{
+	if( $getter===null )
+	{
+		$getter = tuple_get();
+	}
+	return function()use($getter)
+	{
+		return boolval( call_user_func_array( $getter, func_get_args() ) );
+	};
+}
