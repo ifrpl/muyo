@@ -741,3 +741,30 @@ function decamelize( $string )
         $string
     );
 }
+
+/**
+ * @param int  $length
+ * @param bool $special_chars
+ * @param bool $extra_special_chars
+ *
+ * @return string
+ */
+function str_random( $length = 12, $special_chars = true, $extra_special_chars = false )
+{
+	$chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+	if ( $special_chars )
+	{
+		$chars .= '!@#$%^&*()';
+	}
+	if ( $extra_special_chars )
+	{
+		$chars .= '-_ []{}<>~`+=,.;:/?|';
+	}
+
+	$string = '';
+	for ( $i = 0; $i < $length; $i++ ) {
+		$string .= substr($chars, rand(0, strlen($chars) - 1), 1);
+	}
+
+	return $string;
+}
