@@ -51,6 +51,44 @@ function str_contains($haystack,$needle)
 }
 
 /**
+ * @param callable|string $needle
+ * @param callable|string|null $haystack
+ * @return callable
+ */
+function str_contains_dg( $needle, $haystack=null )
+{
+	if( null===$haystack )
+	{
+		$haystack = tuple_get(0);
+	}
+	elseif( is_string($haystack) )
+	{
+		$haystack = return_dg( $haystack );
+	}
+	else
+	{
+		debug_assert_type( $haystack, 'callable' );
+	}
+	if( is_string($needle) )
+	{
+		$needle = return_dg( $needle );
+	}
+	else
+	{
+		debug_assert_type( $haystack, 'callable' );
+	}
+
+	return function()use($needle,$haystack)
+	{
+		$args = func_get_args();
+		return str_contains(
+			call_user_func_array( $haystack, $args ),
+			call_user_func_array( $needle, $args )
+		);
+	};
+}
+
+/**
  * @param        $string
  * @param int    $length
  * @param string $etc
@@ -214,6 +252,27 @@ function str_ascii7_prand($length = 1, $allowed = null)
 }
 
 /**
+ * @param int  $length
+ * @param bool $special_chars
+ * @param bool $extra_special_chars
+ *
+ * @return string
+ */
+function str_random( $length = 12, $special_chars = true, $extra_special_chars = false )
+{
+	$allowed = ctype_alnum_dg();
+	if( true === $special_chars )
+	{
+		$allowed = or_dg( $allowed, ctype_special_dg() );
+	}
+	if( true === $extra_special_chars )
+	{
+		$allowed = or_dg( $allowed, ctype_special_extra_dg() );
+	}
+	return str_ascii7_prand( $length, $allowed );
+}
+
+/**
  * Split $string by callable in 1-character chunks, appending matched chunk $before of part.
  *
  * @param string $string
@@ -297,6 +356,18 @@ function str_map_dg($iterator)
 	{
 		return str_map($string,$iterator);
 	};
+}
+
+/**
+ * @param string $string
+ * @param callable $iterator
+ *
+ * @return bool
+ */
+function str_all( $string, $iterator )
+{
+	debug_assert_type( $string, 'string' );
+	return array_all( str_split( $string ), $iterator );
 }
 
 /**
@@ -909,5 +980,50 @@ function strtolower_dg( $string=null )
 	return function()use($string)
 	{
 		return strtolower( call_user_func_array($string,func_get_args()) );
+	};
+}
+
+/**
+ * @param string $string
+ * @return mixed
+ */
+function ctype_special( $string )
+{
+	debug_assert_type( $string, 'string' );
+	return str_all( $string, str_contains_dg( tuple_get(), '!@#$%^&*()' ) );
+}
+
+/**
+ * @return callable
+ */
+function ctype_special_dg()
+{
+	return function($string)
+	{
+		return ctype_special( $string );
+	};
+}
+
+/**
+ * @param string $string
+ * @return callable
+ */
+function ctype_special_extra( $string )
+{
+	debug_assert_type( $string, 'string' );
+	return str_all(
+		$string,
+		str_contains_dg( tuple_get(), '-_ []{}<>~`+=,.;:/?|' )
+	);
+}
+
+/**
+ * @return callable
+ */
+function ctype_special_extra_dg()
+{
+	return function( $string )
+	{
+		return ctype_special_extra( $string );
 	};
 }
