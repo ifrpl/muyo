@@ -555,11 +555,19 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	public function filterBy($cond)
 	{
 		$select = $this->getSelect();
+		$db = $this->getDb();
+		$descriptors = $this->getColumns();
+		$alias = $this->getAlias();
 
 		if ( is_array($cond) )
 		{
 			foreach($cond as $col => $value)
 			{
+				if( array_find_key( $descriptors, zend_column_eq_dg( $alias, $col ) ) )
+				{
+					$col = "$alias.$col";
+				}
+				$col = $db->quoteIdentifier($col);
 				if( is_array($value) )
 				{
 					$valueChar = '?';

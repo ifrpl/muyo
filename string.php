@@ -322,6 +322,23 @@ function str_find_after($string, $substring)
 }
 
 /**
+ * @param string $substring
+ * @param callable|null $string
+ * @return callable
+ */
+function str_find_after_dg( $substring, $string=null )
+{
+	if( $string===null )
+	{
+		$string = tuple_get( 0 );
+	}
+	return function()use($string,$substring)
+	{
+		return str_find_after( call_user_func_array( $string, func_get_args() ), $substring );
+	};
+}
+
+/**
  * Return part of $string that precedes first occurrence of $substring
  *
  * @param string $string
@@ -342,6 +359,23 @@ function str_find_before($string, $substring)
 	{
 		return $before;
 	}
+}
+
+/**
+ * @param string $substring
+ * @param callable|null $string
+ * @return callable
+ */
+function str_find_before_dg( $substring, $string=null )
+{
+	if( $string===null )
+	{
+		$string = tuple_get( 0 );
+	}
+	return function()use($string,$substring)
+	{
+		return str_find_before( call_user_func_array( $string, func_get_args() ), $substring );
+	};
 }
 
 /**
@@ -717,14 +751,28 @@ function str_prepend_dg( $what )
 }
 
 /**
- * @param string $what
+ * @param callable|string $what
+ * @param callable|string|int null
  * @return callable
  */
-function str_append_dg( $what )
+function str_append_dg( $what, $string=null )
 {
-	return function( $string )use( $what )
+	if( !is_callable($what) )
 	{
-		return $string.$what;
+		$what = return_dg( $what );
+	}
+	if( is_null($string) )
+	{
+		$string = tuple_get(0);
+	}
+	elseif( !is_callable($string) )
+	{
+		$string = return_dg( $string );
+	}
+	return function( $string )use( $what,$string )
+	{
+		$args = func_get_args();
+		return call_user_func_array( $string,$args ).call_user_func_array( $what,$args );
 	};
 }
 
@@ -743,28 +791,123 @@ function decamelize( $string )
 }
 
 /**
- * @param int  $length
- * @param bool $special_chars
- * @param bool $extra_special_chars
- *
+ * @param callable|null $getter
+ * @return callable
+ */
+function ucfirst_dg( $getter=null )
+{
+	if( $getter===null )
+	{
+		$getter = tuple_get( 0 );
+	}
+	return function()use($getter)
+	{
+		return ucfirst( call_user_func_array( $getter, func_get_args() ) );
+	};
+}
+
+/**
+ * @param string $string
  * @return string
  */
-function str_random( $length = 12, $special_chars = true, $extra_special_chars = false )
+function str_reverse( $string )
 {
-	$chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-	if ( $special_chars )
-	{
-		$chars .= '!@#$%^&*()';
-	}
-	if ( $extra_special_chars )
-	{
-		$chars .= '-_ []{}<>~`+=,.;:/?|';
-	}
+	return strrev( $string );
+}
 
-	$string = '';
-	for ( $i = 0; $i < $length; $i++ ) {
-		$string .= substr($chars, rand(0, strlen($chars) - 1), 1);
+/**
+ * @param callback|null $string
+ * @return callable
+ */
+function str_reverse_dg( $string=null )
+{
+	if( $string===null )
+	{
+		$string = tuple_get( 0 );
 	}
+	return function()use($string)
+	{
+		return str_reverse( call_user_func_array( $string, func_get_args() ) );
+	};
+}
 
-	return $string;
+/**
+ * @param callable|string $search
+ * @param callable|string $replace
+ * @param callable|null $subject
+ *
+ * @return callable
+ */
+function str_replace_dg( $search, $replace, $subject=null )
+{
+	if( is_string($search) )
+	{
+		$search = return_dg( $search );
+	}
+	if( is_string($replace) )
+	{
+		$replace = return_dg( $replace );
+	}
+	if( is_null($subject) )
+	{
+		$subject = tuple_get(0);
+	}
+	return function()use($search,$replace,$subject)
+	{
+		$args = func_get_args();
+		return str_replace( call_user_func_array($search,$args), call_user_func_array($replace,$args), call_user_func_array($subject,$args) );
+	};
+}
+
+/**
+ * @return callable
+ */
+function ctype_lower_dg()
+{
+	return function($char)
+	{
+		return ctype_lower($char);
+	};
+}
+
+/**
+ * @return callable
+ */
+function ctype_xdigit_dg()
+{
+	return function($char)
+	{
+		return ctype_xdigit($char);
+	};
+}
+
+/**
+ * @return callable
+ */
+function ctype_alnum_dg()
+{
+	return function($char)
+	{
+		return ctype_alnum($char);
+	};
+}
+
+/**
+ * @param string|callable|null $string
+ * @return callable
+ */
+function strtolower_dg( $string=null )
+{
+	if( is_string($string) )
+	{
+		$string = return_dg( $string );
+	}
+	elseif( $string===null )
+	{
+		$string = tuple_get();
+	}
+	return function()use($string)
+	{
+		return strtolower( call_user_func_array($string,func_get_args()) );
+	};
 }

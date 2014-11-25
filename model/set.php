@@ -133,6 +133,62 @@ class Lib_Model_Set implements Iterator
 
 	/**
 	 * @param callable $callable
+	 * @return bool
+	 */
+	public function all($callable)
+	{
+		$ret = true;
+		foreach($this as $id => $model)
+		{
+			if( !$callable($model,$id) )
+			{
+				$ret = false;
+				break;
+			}
+		}
+		return $ret;
+	}
+
+	/**
+	 * @param callable $callable
+	 * @return bool
+	 */
+	public function any($callable)
+	{
+		$ret = false;
+		foreach($this as $id => $model)
+		{
+			if( $callable($model,$id) )
+			{
+				$ret = true;
+				break;
+			}
+		}
+		return $ret;
+	}
+
+	/**
+	 * @param callable $callable
+	 * @return bool
+	 */
+	public function reduce($callable)
+	{
+		$ret = true;
+		$carry = null;
+		foreach($this as $id => $model)
+		{
+			if( $carry !== null && !$callable($carry,$model) )
+			{
+				$ret = false;
+				break;
+			}
+			$carry = $model;
+		}
+		return $ret;
+	}
+
+	/**
+	 * @param callable $callable
 	 * @return $this
 	 */
 	public function filter( $callable )

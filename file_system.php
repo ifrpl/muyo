@@ -429,3 +429,21 @@ function zip($outputFilePath, $inputFilePaths)
 
 	return file_exists($outputFilePath);
 }
+
+/**
+ * @param callable $path
+ * @param callable|null $suffix
+ * @return callable
+ */
+function basename_dg( $path, $suffix=null )
+{
+	if( $suffix===null )
+	{
+		$suffix = null;
+	}
+	return function()use($path,$suffix)
+	{
+		$args = func_get_args();
+		return basename( call_user_func_array($path,$args), call_user_func_array($suffix,$args) );
+	};
+}
