@@ -872,7 +872,7 @@ function debug_assert_count_eq( $countable, $integer )
  */
 function debug_assert_type($var,$type)
 {
-	if( is_callable($var) )
+	if( is_callable($var) && $type === 'callable' )
 	{
 		$t = 'callable';
 	}
