@@ -664,6 +664,18 @@ function array_get_dg($key,$array=null)
 
 /**
  * @param array $array
+ * @param string|int $key
+ * @param mixed $value
+ * @return array
+ */
+function array_set($array,$key,$value)
+{
+	$array[ $key ] = $value;
+	return $array;
+}
+
+/**
+ * @param array $array
  * @param string $key
  * @param mixed $default
  * @return mixed
