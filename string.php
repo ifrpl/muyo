@@ -1027,3 +1027,22 @@ function ctype_special_extra_dg()
 		return ctype_special_extra( $string );
 	};
 }
+
+/**
+ * @param string $string
+ * @param string $substring
+ * @return int
+ */
+function str_count($string,$substring)
+{
+	$strlen = strlen( $string );
+	$count = 0;
+	for ($i = 0; $i < $strlen; $i++)
+	{
+		if( str_startswith( str_from( $string, $i ), $substring ) )
+		{
+			$count++;
+		}
+	}
+	return $count;
+}

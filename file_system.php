@@ -46,7 +46,7 @@ function ifr_path_rel($from, $to, $to_as_root = false)
 	$min_cnt = min($from_cnt,$to_cnt);
 
 	if ( $to_as_root )
-		debug_assert( $from_cnt > $to_cnt );
+		debug_assert( str_count( $from, DIRECTORY_SEPARATOR ) > str_count( $to, DIRECTORY_SEPARATOR ) );
 
 	// traverse through equal path
 	for( $i = 0; $i < $min_cnt; $i++)
