@@ -295,10 +295,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	public function count()
 	{
 		$select = $this->getSelect();
-		return $this->getCollection()->count($select->getConditions(), array(
-						'limit' => $select->getLimit(),
-						'skip' => $select->getSkip()
-					));
+		return $this->getCollection()->count($select->getConditions(), $select->getLimit(), $select->getSkip());
 	}
 
 	/**
