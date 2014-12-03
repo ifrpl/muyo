@@ -119,7 +119,14 @@ class Lib_Db_Mongo_Select
 	{
 		if(null !== $count)
 		{
-			$this->_limit = $count;
+			if($count == -1)
+			{
+				$this->_limit = null;
+			}
+			else
+			{
+				$this->_limit = $count;
+			}
 		}
 		if(null !== $offset)
 		{
