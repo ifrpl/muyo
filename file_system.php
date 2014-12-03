@@ -40,7 +40,7 @@ function ifr_dir_flatten($dir)
  *
  * @return string
  */
-function ifr_path_common($path1, $path2, &$path1_suffix, &$path2_suffix)
+function path_common($path1, $path2, &$path1_suffix, &$path2_suffix)
 {
 	$path1_len = strlen($path1);
 	$path2_len = strlen($path2);
@@ -110,7 +110,7 @@ function ifr_path_rel($from, $basedir, $basedir_as_root = false)
 function path_rel($from, $basedir, $basedir_as_root = false)
 {
 	$basedir = ensure( $basedir, str_endswith_dg(DIRECTORY_SEPARATOR), str_append_dg(DIRECTORY_SEPARATOR) );
-	ifr_path_common( $from, $basedir, $from_suffix, $basedir_suffix );
+	path_common( $from, $basedir, $from_suffix, $basedir_suffix );
 
 	if( true===$basedir_as_root )
 	{
