@@ -17,6 +17,40 @@ function str_endswith($haystack,$needle)
 }
 
 /**
+ * @param callable|string $needle
+ * @param callable|string|null $haystack
+ * @return callable
+ */
+function str_endswith_dg($needle,$haystack=null)
+{
+	if( null===$haystack )
+	{
+		$haystack = tuple_get(0);
+	}
+	elseif( is_string($haystack) )
+	{
+		$haystack = return_dg($haystack);
+	}
+	else
+	{
+		debug_enforce_type( $haystack, 'callable' );
+	}
+	if( is_string($needle) )
+	{
+		$needle = return_dg($needle);
+	}
+	else
+	{
+		debug_enforce_type( $needle, 'callable' );
+	}
+	return function()use($haystack,$needle)
+	{
+		$args = func_get_args();
+		return str_endswith( call_user_func_array($haystack,$args), call_user_func_array($needle,$args) );
+	};
+}
+
+/**
  * @param string $haystack
  * @param string $needle
  *
@@ -579,10 +613,49 @@ function str_from( $str, $n )
 	debug_enforce_type( $str, 'string' );
 	$length = strlen( $str );
 	$n = min( $n, $length );
-	return substr( $str, $n );
+	$ret = $length===$n ? '' : substr( $str, $n );
+	debug_assert( $ret !== false, var_dump_human_compact(func_get_args()) );
+	return $ret;
 }
 
 /**
+ * @param callable|int $n
+ * @param callable|string|null $str
+ *
+ * @return callable
+ */
+function str_from_dg( $n, $str=null )
+{
+	if( null===$str )
+	{
+		$str = tuple_get(0);
+	}
+	elseif( is_string($str) )
+	{
+		$str = return_dg( $str );
+	}
+	else
+	{
+		debug_assert_type( $str, 'callable' );
+	}
+	if( is_int($n) )
+	{
+		$n = return_dg( $n );
+	}
+	else
+	{
+		debug_assert_type( $n, 'callable' );
+	}
+	return function()use($str,$n)
+	{
+		$args = func_get_args();
+		return str_from( call_user_func_array($str,$args), call_user_func_array($n,$args) );
+	};
+}
+
+/**
+ * Return part of string[0..$-n]
+ *
  * @param string $str
  * @param int $n
  * @return string
@@ -593,6 +666,43 @@ function str_to( $str, $n )
 	$length = strlen( $str );
 	$n = min( $n, $length );
 	return substr( $str, 0, -$n );
+}
+
+/**
+ * Return part of string[0..$-n]
+ *
+ * @param callable|int $n
+ * @param callable|string|null $str
+ * @return callable
+ */
+function str_to_dg( $n, $str=null )
+{
+	if( null===$str )
+	{
+		$str = tuple_get(0);
+	}
+	elseif( is_string($str) )
+	{
+		$str = return_dg($str);
+	}
+	else
+	{
+		debug_enforce_type( $str, 'callable' );
+	}
+
+	if( is_int($n) )
+	{
+		$n = return_dg($n);
+	}
+	else
+	{
+		debug_enforce_type( $n, 'callable' );
+	}
+	return function()use($n,$str)
+	{
+		$args = func_get_args();
+		return str_to( call_user_func_array($str,$args), call_user_func_array($n,$args) );
+	};
 }
 
 /**

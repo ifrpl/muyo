@@ -403,7 +403,22 @@ if(!function_exists('get_call_stack'))
 	}
 }
 
-if( version_compare(PHP_VERSION, '5.4.8', '>=') )
+/**
+ * @param bool|null $value
+ * @return mixed
+ */
+function debug_assert_native( $value=null )
+{
+	static $debug_assert_native = false;
+	$ret = $debug_assert_native;
+	if( null !== $value )
+	{
+		$debug_assert_native = $value;
+	}
+	return $ret;
+}
+
+if( debug_assert_native() && version_compare(PHP_VERSION, '5.4.8', '>=') )
 {
 	/**
 	 * @param mixed $assertion
@@ -912,3 +927,43 @@ function debug_print_backtrace_alt($callstackDepth = 0)
 	Logger::dump(debug_backtrace (DEBUG_BACKTRACE_IGNORE_ARGS, $callstackDepth));
 }
 
+/**
+ * @param mixed $variable
+ * @return mixed
+ */
+function debug_assert_empty($variable)
+{
+	if( !empty($variable) )
+	{
+		debug_assert( false, "Assertion of empty `".var_dump_human_compact($variable)."` failed" );
+	}
+	return $variable;
+}
+
+/**
+ * @param mixed $subject
+ * @param callable $predicate
+ * @param callable|null $on_fail
+ * @return mixed
+ */
+function ensure( $subject, $predicate, $on_fail=null )
+{
+	if( null===$on_fail )
+	{
+		$on_fail = function($subject)
+		{
+			debug_assert( false, "Could not assure about variable: ".var_dump_human_compact($subject) );
+			return $subject;
+		};
+	}
+
+	if( call_user_func( $predicate, $subject ) )
+	{
+		$ret = $subject;
+	}
+	else
+	{
+		$ret = call_user_func( $on_fail, $subject );
+	}
+	return $ret;
+}

@@ -33,34 +33,32 @@ function ifr_dir_flatten($dir)
 }
 
 /**
- * @param string $from absolute path from
- * @param string $to absolute path to
- * @param bool $to_as_root
+ * @param string $path1
+ * @param string $path2
+ * @param string|null $path1_suffix
+ * @param string|null $path2_suffix
  *
  * @return string
  */
-function ifr_path_rel($from, $to, $to_as_root = false)
+function ifr_path_common($path1, $path2, &$path1_suffix, &$path2_suffix)
 {
-	$from_cnt = strlen($from);
-	$to_cnt = strlen($to);
-	$min_cnt = min($from_cnt,$to_cnt);
-
-	if ( $to_as_root )
-		debug_assert( str_count( $from, DIRECTORY_SEPARATOR ) > str_count( $to, DIRECTORY_SEPARATOR ) );
+	$path1_len = strlen($path1);
+	$path2_len = strlen($path2);
+	$min_cnt = min($path1_len,$path2_len);
 
 	// traverse through equal path
 	for( $i = 0; $i < $min_cnt; $i++)
 	{
-		if ( $from[$i] !== $to[$i] )
+		if ( $path1[$i] !== $path2[$i] )
 			break;
 	}
 
 	// make sure we're on last separator
 	while( $i > 0 )
 	{
-		if ( $from[$i] === DIRECTORY_SEPARATOR )
+		if ( $path1[$i] === DIRECTORY_SEPARATOR )
 		{
-			if ( !ifr_escaped(substr($from, 0, $i+1)) ) // i hope that optimizer will work there
+			if( !( $i>1 && $path1[$i-1]===DIRECTORY_SEPARATOR ) )
 			{
 				break;
 			}
@@ -68,42 +66,98 @@ function ifr_path_rel($from, $to, $to_as_root = false)
 		$i--;
 	}
 
-	$from = substr($from, $i);
-	$from_cnt = $from_cnt - $i;
-	$to = substr($to, $i);
-	$to_cnt = $to_cnt - $i;
-
-	for ( $i = 1; $i < $to_cnt; $i++ )
+	if( $path1_len > $i )
 	{
-		for ( $j = $i+2; $j < $to_cnt; $j++ )
+		$path1_suffix = str_from( $path1, $i+1 );
+	}
+	else
+	{
+		$path1_suffix = '';
+	}
+	if( $path2_len > $i )
+	{
+		$path2_suffix = str_from( $path2, $i+1 );
+	}
+	else
+	{
+		$path2_suffix = '';
+	}
+
+	$ret = str_first( $path1, $i );
+
+	return $ret;
+}
+
+/**
+ * @param string $from absolute path from
+ * @param string $basedir absolute path to
+ * @param bool $basedir_as_root
+ * @return string
+ * @deprecated
+ */
+function ifr_path_rel($from, $basedir, $basedir_as_root = false)
+{
+	debug_assert( false, 'ifr_path_rel is deprecated' );
+	return path_rel( $from, $basedir, $basedir_as_root );
+}
+
+/**
+ * @param string $from absolute path from
+ * @param string $basedir absolute path to
+ * @param bool $basedir_as_root
+ * @return string
+ */
+function path_rel($from, $basedir, $basedir_as_root = false)
+{
+	$basedir = ensure( $basedir, str_endswith_dg(DIRECTORY_SEPARATOR), str_append_dg(DIRECTORY_SEPARATOR) );
+	ifr_path_common( $from, $basedir, $from_suffix, $basedir_suffix );
+
+	if( true===$basedir_as_root )
+	{
+		if( in_array( $basedir_suffix, [$from_suffix,$from_suffix.DIRECTORY_SEPARATOR] ) )
 		{
-			if ( isset($to[$j]) && $to[$j] === DIRECTORY_SEPARATOR )
+			$ret = '';
+		}
+		else
+		{
+			debug_assert_empty( $basedir_suffix );
+			$ret = $from_suffix;
+		}
+		$ret = DIRECTORY_SEPARATOR.$ret;
+	}
+	else
+	{
+		$basedir_len = strlen( $basedir_suffix );
+
+		for ( $i = 0; $i < $basedir_len; $i++ )
+		{
+			for ( $j = $i+1; $j < $basedir_len; $j++ )
 			{
-				$to = substr($to, 0, $i-1).'..'.substr($to, $j, $to_cnt);
-				$to_cnt -= $j-$i+1;
-				$to_cnt +=2;
-				$i += 2;
-				break;
-			}
-			else if ( $j === $to_cnt-1 )
-			{
-				$to = substr($to, 0, $i-1);
+				if( $basedir_suffix[$j]===DIRECTORY_SEPARATOR )
+				{
+					// clean-up extra separators
+					if( $basedir_suffix[$j-1]===DIRECTORY_SEPARATOR )
+					{
+						continue;
+					}
+					else
+					{
+						$basedir_suffix = str_first($basedir_suffix, $i).'..'.str_from( $basedir_suffix, $j );
+						$basedir_len -= $j-$i;
+						$basedir_len += 2;
+						$i += 2;
+						break;
+					}
+				}
 			}
 		}
+
+		$ret = $basedir_suffix.$from_suffix;
+		if( $ret==='' )
+		{
+			$ret = '.';
+		}
 	}
-
-	if ( isset($to[$to_cnt-1]) && $to[$to_cnt-1] != DIRECTORY_SEPARATOR )
-	{
-		$to .= DIRECTORY_SEPARATOR;
-	}
-
-	if ( !$to_as_root )
-	{
-		$from = substr($from, 1);
-	}
-
-	$ret = $to.$from;
-
 	return $ret;
 }
 
