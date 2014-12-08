@@ -118,7 +118,7 @@ function object_get_dg( $object, $what )
 	{
 		$what = return_dg( $what );
 	}
-	if( debug_assert_callable( $object ) && debug_assert_callable( $what ) )
+	if( debug_assert_type( $object, 'callable' ) && debug_assert( $what, 'callable' ) )
 	{
 		return function()use( $object, $what )
 		{

@@ -368,7 +368,7 @@ function form_flatten($form,$prefix = '')
  */
 function mime_multipart_encode($parts,$headers = array())
 {
-	debug_enforce(is_array($parts) && is_array($headers));
+	debug_enforce(is_array($parts) && is_array($headers), var_dump_human_compact([$parts,$headers]));
 
 	$parts_contain = function($boundary)use($parts)
 	{
@@ -455,7 +455,10 @@ function http_assemble($packet)
 	$resource = array_key_exists('Path',$packet) ? array_get_unset($packet,'Path') : '/';
 	$content = array_get_unset($packet,'Content');
 
-	list($content,$packet) = mime_multipart_encode($content,$packet);
+	if( is_array($content) )
+	{
+		list($content,$packet) = mime_multipart_encode($content,$packet);
+	}
 
 	$packet = array_merge(array(
 		'Connection' => 'close',
@@ -470,10 +473,56 @@ function http_assemble($packet)
 }
 
 /**
+ * @param string $packet
+ * @return array
+ */
+function http_response_deassemble($packet)
+{
+	$pivot = strpos( $packet, "\r\n\r\n" );
+	$content = str_from( $packet, $pivot+4 );
+	$header = array_chain(
+		str_first( $packet, $pivot ),
+		str_explode_dg("\r\n")
+	);
+	$statusLine = array_shift($header);
+
+	$versionEndPos = strpos( $statusLine, " " );
+	$version = str_first( $statusLine, $versionEndPos );
+	$statusLine = str_from( $statusLine, $versionEndPos+1 );
+
+	$code = str_first( $statusLine, 3 );
+	$reason = str_from( $statusLine, 4 );
+
+	debug_enforce( str_first( $version, 5 )==='HTTP/' && $version[6]==='.', var_dump_human_compact($version) );
+	$statusLine = [
+		'Version' => [
+			'Major' => $version[5],
+			'Minor' => $version[7],
+		],
+		'Code' => $code,
+		'Reason' => $reason
+	];
+
+	$header = array_chain(
+		$header,
+		array_map_key_dg(str_find_before_dg(':')),
+		array_map_val_dg(str_find_after_dg(':'))
+	);
+	return array_merge(
+		[
+			'Status Line' => $statusLine,
+			'Content' => $content,
+		],
+		$header
+	);
+}
+
+/**
  * @param array $packet
+ * @param array $response
  * @return string
  */
-function rest_send($packet)
+function rest_send($packet, &$response=[])
 {
 	debug_enforce(is_array($packet));
 	if( array_key_exists('Url',$packet) )
@@ -533,6 +582,23 @@ function rest_send($packet)
 
 			$needle = "\r\n\r\n";
 			$ret = substr($ret,strpos($ret,$needle)+strlen($needle));
+		break;
+		case 'https':
+			$data = http_assemble($packet);
+
+			$socket = fsockopen( 'tls://'.$host, $port, $errno, $errstr );
+			debug_enforce( $socket !== false );
+			debug_enforce( strlen($data)===fwrite( $socket, $data ) );
+
+			while( !feof($socket) )
+			{
+				$ret .= fgets($socket );
+			}
+
+			fclose( $socket );
+			$response = http_response_deassemble( $ret );
+
+			$ret = array_get( $response, 'Content' );
 		break;
 		default:
 			debug_enforce(false,'Unknown scheme');
