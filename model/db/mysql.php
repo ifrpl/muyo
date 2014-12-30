@@ -1070,7 +1070,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			{
 				debug_enforce(
 					!array_key_exists( $alias, $thisFrom ),
-					var_dump_human_compact([$alias=>$descriptor])
+					"Alias `{$alias}` already used for table `{$descriptor['tableName']}`"
 				);
 				switch( $descriptor['joinType'] )
 				{
