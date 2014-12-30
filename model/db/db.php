@@ -105,11 +105,11 @@ abstract class Lib_Model_Db extends Lib_Model
 		if( is_null($alias) )
 		{
 			$alias = $name;
-			$this->setColumns($name);
+			$this->setColumns($name, $this->getAlias());
 		}
 		else
 		{
-			$this->setColumns(array($alias=>$name));
+			$this->setColumns(array($alias=>$name), $this->getAlias());
 		}
 		$this->addSetting($alias,self::settingDefaultGet($name));
 		return $this;

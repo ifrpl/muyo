@@ -1048,21 +1048,94 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$this->mapPartWhere( $this->addAliasToConditionDg() );
 		$model->mapPartWhere( $model->addAliasToConditionDg() );
 
-		$this->setJoinLeft($model, "{$thisKeyCol}={$thatKeyCol} ".$conditions, '');
-
-		foreach( $model->getColumns() as $descriptor )
-		{
-			$column = $descriptor[1];
-			$alias = 3===count($descriptor) ? $descriptor[2] : null;
-			if( null !== $alias )
+		$thisFrom = $this->_select->getPart(Zend_Db_Select::FROM);
+		$modelColumns = array_chain(
+			$model->_select->getPart(Zend_Db_Select::COLUMNS),
+			array_group_dg( array_get_dg(return_dg(0)) ),
+			array_map_val_dg(
+				array_map_val_dg(
+					function($descriptor)
+					{
+						return null===$descriptor[2]
+							? $descriptor[1]
+							: [ $descriptor[2] => $descriptor[1] ]
+						;
+					}
+				)
+			)
+		);
+		array_each(
+			$model->_select->getPart(Zend_Db_Select::FROM),
+			function( $descriptor, $alias )use($modelColumns,$thisFrom,$model,$thisKeyCol,$thatKeyCol,$conditions)
 			{
-				$this->setColumns(array($alias=>$column), $model->getAlias());
+				debug_enforce(
+					!array_key_exists( $alias, $thisFrom ),
+					var_dump_human_compact([$alias=>$descriptor])
+				);
+				switch( $descriptor['joinType'] )
+				{
+					case Zend_Db_Select::FROM:
+						$this->_select->joinLeft(
+							[$model->getAlias()=>$model->getTable()],
+							"{$thisKeyCol}={$thatKeyCol} ".$conditions,
+							$modelColumns[ $alias ],
+							$descriptor[ 'schema' ]
+						);
+					break;
+					case Zend_Db_Select::INNER_JOIN:
+						$this->_select->joinInner(
+							[$alias=>$descriptor['tableName']],
+							$descriptor['joinCondition'],
+							$modelColumns[ $alias ],
+							$descriptor['schema']
+						);
+					break;
+					case Zend_Db_Select::LEFT_JOIN:
+						$this->_select->joinLeft(
+							[$alias=>$descriptor['tableName']],
+							$descriptor['joinCondition'],
+							$modelColumns[ $alias ],
+							$descriptor['schema']
+						);
+					break;
+					case Zend_Db_Select::RIGHT_JOIN:
+						$this->_select->joinRight(
+							[$alias=>$descriptor['tableName']],
+							$descriptor['joinCondition'],
+							$modelColumns[ $alias ],
+							$descriptor['schema']
+						);
+					break;
+					case Zend_Db_Select::FULL_JOIN:
+						$this->_select->joinFull(
+							[$alias=>$descriptor['tableName']],
+							$descriptor['joinCondition'],
+							$modelColumns[ $alias ],
+							$descriptor['schema']
+						);
+					break;
+					case Zend_Db_Select::CROSS_JOIN:
+						$this->_select->joinCross(
+							[$alias=>$descriptor['tableName']],
+							$descriptor['joinCondition'],
+							$modelColumns[ $alias ],
+							$descriptor['schema']
+						);
+					break;
+					case Zend_Db_Select::NATURAL_JOIN:
+						$this->_select->joinNatural(
+							[$alias=>$descriptor['tableName']],
+							$descriptor['joinCondition'],
+							$modelColumns[ $alias ],
+							$descriptor['schema']
+						);
+					break;
+					default:
+						debug_assert( false, "Unknown join type ".var_dump_human_compact($descriptor['joinType']));
+					break;
+				}
 			}
-			else
-			{
-				$this->setColumns($column, $model->getAlias());
-			}
-		};
+		);
 
 		$this->settingsJoin($model);
 
