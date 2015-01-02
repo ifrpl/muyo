@@ -717,12 +717,12 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * Load model from SQL query to an array with joined columns as arrays
 	 * @param mixed $q
 	 * @param bool $collection
-	 * @param $mode defines how results should be structured
+	 * @param int $mode defines how results should be structured
 	 * @return array
 	 * @throws Exception
 	 * @fixme $q and $collection
 	 */
-	public function loadArray( $q=null,$collection=false, $mode = self::LOAD_ARRAY_MODE_NESTED_TABLE )
+	public function loadArray( $q=null, $collection=false, $mode=self::LOAD_ARRAY_MODE_NESTED_TABLE )
 	{
 		$alias = $this->getAlias();
 
@@ -1078,7 +1078,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 						$this->_select->joinLeft(
 							[$model->getAlias()=>$model->getTable()],
 							"{$thisKeyCol}={$thatKeyCol} ".$conditions,
-							$modelColumns[ $alias ],
+							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor[ 'schema' ]
 						);
 					break;
@@ -1086,7 +1086,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 						$this->_select->joinInner(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
-							$modelColumns[ $alias ],
+							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
 					break;
@@ -1094,7 +1094,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 						$this->_select->joinLeft(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
-							$modelColumns[ $alias ],
+							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
 					break;
@@ -1102,7 +1102,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 						$this->_select->joinRight(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
-							$modelColumns[ $alias ],
+							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
 					break;
@@ -1110,7 +1110,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 						$this->_select->joinFull(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
-							$modelColumns[ $alias ],
+							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
 					break;
@@ -1118,7 +1118,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 						$this->_select->joinCross(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
-							$modelColumns[ $alias ],
+							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
 					break;
@@ -1126,7 +1126,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 						$this->_select->joinNatural(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
-							$modelColumns[ $alias ],
+							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
 					break;
