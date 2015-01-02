@@ -1316,7 +1316,7 @@ abstract class Lib_Model implements Iterator
 					}
 					elseif( $from->settingExists($column) )
 					{
-						$this->settingJoin($column,$from->getSetting($column));
+						$this->settingJoin($alias,$from->getSetting($column));
 					}
 				}
 				elseif( $from->settingExists($column) )

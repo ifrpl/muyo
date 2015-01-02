@@ -1053,25 +1053,46 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$model->_select->getPart(Zend_Db_Select::COLUMNS),
 			array_group_dg( array_get_dg(return_dg(0)) ),
 			array_map_val_dg(
-				array_map_val_dg(
-					function($descriptor)
-					{
-						return null===$descriptor[2]
-							? $descriptor[1]
-							: [ $descriptor[2] => $descriptor[1] ]
-						;
+				array_chain_dg(
+					array_map_val_dg(
+						function($descriptor)
+						{
+							return null===$descriptor[2]
+								? $descriptor[1]
+								: [ $descriptor[2] => $descriptor[1] ]
+							;
+						}
+					),
+					function($columns){
+						$outArray = [];
+						array_map_val($columns, function($column)use(&$outArray){
+							if(is_array($column))
+							{
+								array_map_val($column, function($column, $alias)use(&$outArray){
+									$outArray[$alias] = $column;
+								});
+							}
+							else
+							{
+								$outArray[] = $column;
+							}
+						});
+						
+						return $outArray;
 					}
 				)
 			)
 		);
+
 		array_each(
 			$model->_select->getPart(Zend_Db_Select::FROM),
-			function( $descriptor, $alias )use($modelColumns,$thisFrom,$model,$thisKeyCol,$thatKeyCol,$conditions)
+			function( $descriptor, $alias )use($debug,$modelColumns,$thisFrom,$model,$thisKeyCol,$thatKeyCol,$conditions)
 			{
 				debug_enforce(
 					!array_key_exists( $alias, $thisFrom ),
 					"Alias `{$alias}` already used for table `{$descriptor['tableName']}`"
 				);
+
 				switch( $descriptor['joinType'] )
 				{
 					case Zend_Db_Select::FROM:
