@@ -1086,7 +1086,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 		array_each(
 			$model->_select->getPart(Zend_Db_Select::FROM),
-			function( $descriptor, $alias )use($debug,$modelColumns,$thisFrom,$model,$thisKeyCol,$thatKeyCol,$conditions)
+			function( $descriptor, $alias )use($modelColumns,$thisFrom,$model,$thisKeyCol,$thatKeyCol,$conditions)
 			{
 				debug_enforce(
 					!array_key_exists( $alias, $thisFrom ),
