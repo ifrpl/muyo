@@ -138,6 +138,8 @@ function logger_log($message, $level = LOG_INFO)
 	$eol = "\n";
 	$indent = "\t";
 
+	debug_assert(is_callable($logger), "Logger is not callable. Type: " . gettype($logger));
+	
 	if( $message instanceof \Exception )
 	{
 		$message = exception_str( $message, $eol );
@@ -166,7 +168,7 @@ function logger_log($message, $level = LOG_INFO)
 			;
 		}
 	}
-
+	
 	$logger( $message, $level );
 	return null;
 }
