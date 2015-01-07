@@ -635,7 +635,7 @@ function array_get($array,$key)
 }
 
 /**
- * @param callable $key
+ * @param callable|int|string $key
  * @param callable|null $array
  * @return callable
  */

@@ -578,16 +578,20 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function settingExists($name, $key=null)
 	{
-		$ret = array_key_exists($name,$this->_settings);
-
-		if( $ret && $key !== null )
+		if( is_string($name) )
 		{
-			return array_key_exists( $key, $this->_settings[ $name ] );
+			$ret = array_key_exists($name,$this->_settings);
+
+			if( $ret && $key !== null )
+			{
+				$ret = array_key_exists( $key, $this->_settings[ $name ] );
+			}
 		}
 		else
 		{
-			return $ret;
+			$ret = false;
 		}
+		return $ret;
 	}
 
 	/**

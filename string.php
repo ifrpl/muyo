@@ -316,7 +316,7 @@ function str_random( $length = 12, $special_chars = true, $extra_special_chars =
  */
 function str_splitter($string, $by, $before=false)
 {
-	$ret = array();
+	$ret = [];
 	$last = '';
 	$length = strlen($string);
 	for( $i=0; $i<$length; $i++ )
@@ -863,7 +863,7 @@ function str_to_res( $string )
  */
 function res_to_csv_assoc( $resource, $delimiter=',', $enclosure='"', $escape='\\' )
 {
-	$ret = array();
+	$ret = [];
 	$header = fgetcsv( $resource, 0, $delimiter, $enclosure, $escape );
 	if( debug_assert( $header !== false ) )
 	{
@@ -1155,4 +1155,15 @@ function str_count($string,$substring)
 		}
 	}
 	return $count;
+}
+
+/**
+ * @return callable
+ */
+function strval_dg()
+{
+	return function($value)
+	{
+		return strval($value);
+	};
 }

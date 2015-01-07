@@ -2,7 +2,7 @@
 
 if( !class_exists('Lib_Model_Db') )
 {
-	require_once( implode( DIRECTORY_SEPARATOR, array(__DIR__,'db.php') ) );
+	require_once( implode( DIRECTORY_SEPARATOR, [__DIR__,'db.php'] ) );
 }
 
 /**
@@ -32,7 +32,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		if(isset($data[$pkey]) && !empty($data[$pkey]))
 		{
 			$query = $this->getDb();
-			$where = array($pkey.' = ?' => $this->{$pkey});
+			$where = [$pkey.' = ?' => $this->{$pkey}];
 			$query->update($this->getTable(), $data, $where);
 
 			$this->_onUpdate();
@@ -69,7 +69,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			throw new Exception('Nothing to delete, id is empty');
 		}
 		$delete = $this->getDb();
-		$rows = $delete->delete($this->getTable(), array($this->_primaryKey.' = ?' => $this->{$this->_primaryKey}));
+		$rows = $delete->delete($this->getTable(), [$this->_primaryKey.' = ?' => $this->{$this->_primaryKey}]);
 
 		$this->_onDelete();
 
@@ -100,7 +100,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 		if( count($q->getPart('columns')) == 0 )
 		{
-			$q->columns(array('*'));
+			$q->columns(['*']);
 		}
 		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
 		{
@@ -119,7 +119,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		}
 		$this->postLoad();
 
-		$data = array();
+		$data = [];
 		foreach( $result as $row )
 		{
 			$obj = $this->modelFactory($row);
@@ -145,9 +145,9 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function setCount( $expr='1', $bindAs='count' )
 	{
-		return $this->setColumns(array(
+		return $this->setColumns([
 			$bindAs => new Zend_Db_Expr("COUNT($expr)"),
-		));
+		]);
 	}
 
 	/**
@@ -157,6 +157,100 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	{
 		$ret = $this->getDb()->fetchOne($this->getSelect()->reset('columns')->columns('count(1)'));
 		return intval($ret);
+	}
+
+	/**
+	 * WARNING: properly string/expression escaping is missing
+	 * @param array|Zend_Db_Expr|string $expr
+	 * @param string|null $alias
+	 * @param string|null $separator
+	 * @param bool|null $distinct
+	 * @param null|array|int|string|Zend_Db_Expr $order
+	 * @return $this
+	 */
+	public function groupConcatSet( $expr, $alias=null, $separator=null, $distinct=null, $order=null )
+	{
+		debug_assert(
+			is_string($expr) || is_array($expr) || (is_object($expr) && $expr instanceof Zend_Db_Expr),
+			"Invalid expression value `".var_dump_human_compact($expr)."`"
+		);
+		debug_assert(
+			is_null($alias) || is_string($alias),
+			"Invalid alias value `".var_dump_human_compact($alias)."`"
+		);
+		debug_assert(
+			is_null($separator) || is_string($separator),
+			"Invalid separator value `".var_dump_human_compact($separator)."`"
+		);
+		debug_assert(
+			is_null($distinct) || is_bool($distinct),
+			"Invalid distinct value `".var_dump_human_compact($distinct)."`"
+		);
+		debug_assert(
+			is_null($order) || is_array($order) || is_int($order) || is_string($order) || (is_object($order) && $order instanceof Zend_Db_Expr),
+			"Invalid order value `".var_dump_human_compact($order)."`"
+		);
+		$convertToString = function($expr)
+		{
+			if( is_object($expr) )
+			{
+				$expr = strval($expr);
+			}
+			else
+			{
+				if( array_key_exists( $expr, $this->schemaColumnsGet() ) )
+				{
+					$expr = str_wrap($this->getAlias(),'`').'.'.str_wrap( $expr, '`' );
+				}
+				elseif( is_string($expr) )
+				{
+					$expr = str_wrap( $expr, '\'' );
+				}
+			}
+			return $expr;
+		};
+		if( is_array($expr) )
+		{
+			$expr = array_chain(
+				$expr,
+				array_map_val_dg( tuple_get( 0, $convertToString ) ),
+				array_implode_dg(',')
+			);
+		}
+		else
+		{
+			$expr = $convertToString( strval($expr) );
+		}
+		if( $distinct!==null )
+		{
+			$expr = "DISTINCT {$expr}";
+		}
+		if( $order!==null )
+		{
+			if( is_array($order) )
+			{
+				$order = array_chain(
+					$expr,
+					array_map_val_dg( tuple_get( 0, $convertToString ) ),
+					array_implode_dg(',')
+				);
+			}
+			else
+			{
+				$order = $convertToString( strval($order) );
+			}
+			$expr = "{$expr} ORDER BY {$order}";
+		}
+		if( $separator!==null )
+		{
+			$expr = "{$expr} SEPARATOR '{$separator}'";
+		}
+		$expr = "GROUP_CONCAT({$expr})";
+		if( $alias!==null )
+		{
+			$expr = [$alias=>$expr];
+		}
+		return $this->setColumns( $expr, $this->getAlias() );
 	}
 
 	/**
@@ -332,7 +426,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 				$cols = array_keys($this->schemaColumnsGet());
 			}
 			$this->_select = $this->getDb()->select();
-			$this->_select->from(array($this->getAlias() => $this->getTable()), $cols);
+			$this->_select->from([$this->getAlias() => $this->getTable()], $cols);
 		}
 		return $this->_select;
 	}
@@ -466,11 +560,11 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 				$alias = $name->getAlias();
 			}
 
-			$name = array($alias => $name->getTable());
+			$name = [$alias => $name->getTable()];
 		}
 		elseif( $alias )
 		{
-			$name = array($alias => $name);
+			$name = [$alias => $name];
 		}
 		return $name;
 	}
@@ -699,7 +793,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	{
 		$alias = $this->getAlias();
 		$key = $this->getPrimaryKey();
-		return $this->filterNotBy(array("{$alias}.{$key}"=>$id));
+		return $this->filterNotBy(["{$alias}.{$key}"=>$id]);
 	}
 
 	/**
@@ -739,7 +833,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$key_idx = array_find_key( $descriptors, zend_column_eq_dg( $alias, $key_name ) );
 			if( !debug_assert( !is_null($key_idx), "Key '$key_name' needs to be set to load hash-set of '$alias'") )
 			{
-				$this->setColumns( array($key_name) );
+				$this->setColumns( [$key_name] );
 				$descriptors = $this->getColumns();
 				$key_idx = array_find_key( $descriptors, zend_column_eq_dg( $alias, $key_name ) );
 				debug_enforce( !is_null($key_idx) );
@@ -753,7 +847,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$db = $this->getDb();
 		try
 		{
-			$rows = $db->fetchAll( $this->getSQL(), array(), Zend_Db::FETCH_NUM );
+			$rows = $db->fetchAll( $this->getSQL(), [], Zend_Db::FETCH_NUM );
 		}
 		catch( Exception $e )
 		{
@@ -765,15 +859,15 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			return $rows;
 		}
 
-		$ret = array();
+		$ret = [];
 		foreach( $rows as $row )
 		{
-			$record = array();
+			$record = [];
 
 			foreach( $row as $idx=>$column )
 			{
 				$descriptor = $descriptors[ $idx ];
-				$colalias = zend_column_name( $descriptor );
+				$colalias = strval( zend_column_name( $descriptor ) );
 
 
 				if(self::LOAD_ARRAY_MODE_NESTED_TABLE == $mode)
@@ -781,7 +875,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 					$tblalias = zend_column_table( $descriptor );
 					if( !array_key_exists( $tblalias, $record ) )
 					{
-						$record[ $tblalias ] = array();
+						$record[ $tblalias ] = [];
 					}
 
 					$record[$tblalias][$colalias] = $column;
@@ -817,7 +911,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 		if( count($q->getPart('columns')) == 0 )
 		{
-			$q->columns(array('*'));
+			$q->columns(['*']);
 		}
 		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
 		{
@@ -1016,7 +1110,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 			if( null !== $alias )
 			{
-				$this->setColumns(array($alias=>$column),$table);
+				$this->setColumns([$alias=>$column],$table);
 			}
 			else
 			{
@@ -1246,7 +1340,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$pkey = $this->getPrimaryKey();
 		if( null !== $pkey )
 		{
-			$row = $this->findOneBy(array($pkey => $this->{$pkey}));
+			$row = $this->findOneBy([$pkey => $this->{$pkey}]);
 			return $row;
 		}
 		return null;
