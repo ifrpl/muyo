@@ -2,7 +2,7 @@
 
 if( !class_exists('Lib_Model') )
 {
-	require_once( implode(DIRECTORY_SEPARATOR, array(__DIR__,"..","model.php") ) );
+	require_once( implode(DIRECTORY_SEPARATOR, [__DIR__,"..","model.php"] ) );
 }
 
 /**
@@ -19,15 +19,15 @@ class Lib_Model_Array extends Lib_Model
 	 */
 	public function getRow()
 	{
-		return array();
+		return [];
 	}
 
 	public function serialize()
 	{
-		return array(
+		return [
 			'model' => get_class($this),
 			'data' => $this->serializeContent()
-		);
+		];
 	}
 
 	public function serializeContent()
@@ -50,4 +50,15 @@ class Lib_Model_Array extends Lib_Model
 		return $this;
 	}
 
+}
+
+/**
+* @return callable
+ */
+function count_dg()
+{
+	return function($array)
+	{
+		return count($array);
+	};
 }
