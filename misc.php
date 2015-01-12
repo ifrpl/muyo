@@ -514,7 +514,20 @@ function get_class_dg( $obj_getter=null )
 function tuple_min( $values )
 {
 	$args = array_filter_key( func_get_args(), not_dg( eq_dg( tuple_get(), return_dg(null) ) ) );
-	return count($args)>1 ? call_user_func_array( 'min', $args ) : array_shift($args);
+	$argsCount = count($args);
+	if( $argsCount<1 )
+	{
+		$ret =  null;
+	}
+	elseif( $argsCount === 1 )
+	{
+		$ret = array_shift($args);
+	}
+	else
+	{
+		$ret = call_user_func_array( 'min', $args );
+	}
+	return $ret;
 }
 
 /**
@@ -558,7 +571,20 @@ function tuple_min_dg( $getters )
 function tuple_max( $values )
 {
 	$args = array_filter_key( func_get_args(), not_dg( eq_dg( tuple_get(), return_dg(null) ) ) );
-	return count($args)>1 ? call_user_func_array( 'max', $args ) : array_shift($args);
+	$argsCount = count($args);
+	if( $argsCount<1 )
+	{
+		$ret =  null;
+	}
+	elseif( $argsCount === 1 )
+	{
+		$ret = array_shift($args);
+	}
+	else
+	{
+		$ret = call_user_func_array( 'max', $args );
+	}
+	return $ret;
 }
 
 /**
