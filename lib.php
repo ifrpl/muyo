@@ -10,7 +10,6 @@
 
 ini_set('include_path',ini_get('include_path').PATH_SEPARATOR.dirname(__FILE__));
 
-require_once "pred.php";
 require_once "arr.php";
 require_once "cli.php";
 require_once "database.php";
@@ -27,6 +26,7 @@ require_once "object.php";
 require_once "shell.php";
 require_once "string.php";
 require_once "html.php";
+require_once "bool.php";
 
 require_once "model".DIRECTORY_SEPARATOR."_.php";
 require_once "zend.php";

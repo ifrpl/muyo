@@ -979,6 +979,7 @@ function array_search_by_key_recursive($haystack, $needle)
 }
 
 /**
+ * TODO: removal of debug.php dependency
  * @return callable
  */
 function array_debug_dg()
@@ -1116,7 +1117,7 @@ function array_reduce_val( $array, $callable, $startValue=null )
 }
 
 /**
- * @param $callable
+ * @param $callable mixed function($item1Val,$item2Val,$item2Key)
  * @param mixed $startValue
  * @return callable
  */
@@ -1194,7 +1195,7 @@ function uasort_dg( $comparator )
 
 /**
  *
-*@param $array0
+ * @param $array0
  * @param $array1
  *
  * @return array

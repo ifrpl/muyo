@@ -345,11 +345,11 @@ function buildIdFromCallstack($callstackDepth = 0, $appendLineNumber = true)
 
 	$backtrace = debug_backtrace (DEBUG_BACKTRACE_IGNORE_ARGS, $callstackDepth);
 
-	$id = array(str_replace(
-		array(ATRIUM_PATH . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, '.php'),
-		array('', '_', ''),
+	$id = [str_replace(
+		[ATRIUM_PATH . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, '.php'],
+		['', '_', ''],
 		$backtrace[$callstackDepth - 2]['file']
-	));
+	)];
 
 	$id[] = $backtrace[$callstackDepth - 1]['function'];
 
@@ -368,7 +368,7 @@ function buildIdFromCallstack($callstackDepth = 0, $appendLineNumber = true)
 function call_chain( $callable )
 {
 	$args = func_get_args();
-	array_unshift( $args, array() );
+	array_unshift( $args, [] );
 	return call_user_func_array( 'array_chain', $args );
 }
 
@@ -508,45 +508,89 @@ function get_class_dg( $obj_getter=null )
 }
 
 /**
- * @param callable $a
- * @param callable $b
- * @return callable
+ * @param ... $values
+ * @return mixed
  */
-function eq_dg($a,$b)
+function tuple_min( $values )
 {
-	return function()use($a,$b)
-	{
-		$args = func_get_args();
-		return call_user_func_array($a,$args)==call_user_func_array($b,$args);
-	};
-}
-
-if(!function_exists('boolval'))
-{
-	/**
-	 * @param mixed $var
-	 *
-	 * @return bool
-	 */
-	function boolval($var)
-	{
-		return (bool)$var;
-	}
+	$args = array_filter_key( func_get_args(), not_dg( eq_dg( tuple_get(), return_dg(null) ) ) );
+	return count($args)>1 ? call_user_func_array( 'min', $args ) : array_shift($args);
 }
 
 /**
- * @param callable|null $getter
- *
+ * @param ... $getters
  * @return callable
  */
-function boolval_dg($getter=null)
+function tuple_min_dg( $getters )
 {
-	if( $getter===null )
+	$predicates = func_get_args();
+	return function()use($predicates)
 	{
-		$getter = tuple_get();
-	}
-	return function()use($getter)
+		$args2 = func_get_args();
+		return call_user_func_array(
+			'tuple_min',
+			array_map_val(
+				$predicates,
+				function( $arg, $n )use($args2)
+				{
+					if( is_callable($arg) )
+					{
+						return call_user_func_array( $arg, $args2 );
+					}
+					elseif( is_null($arg) )
+					{
+						return $args2[ $n ];
+					}
+					else
+					{
+						return $arg;
+					}
+				}
+			)
+		);
+	};
+}
+
+/**
+ * @param ... $values
+ * @return mixed
+ */
+function tuple_max( $values )
+{
+	$args = array_filter_key( func_get_args(), not_dg( eq_dg( tuple_get(), return_dg(null) ) ) );
+	return count($args)>1 ? call_user_func_array( 'max', $args ) : array_shift($args);
+}
+
+/**
+ * @param ... $getters
+ * @return callable
+ */
+function tuple_max_dg( $getters )
+{
+	$predicates = func_get_args();
+	return function()use($predicates)
 	{
-		return boolval( call_user_func_array( $getter, func_get_args() ) );
+		$args2 = func_get_args();
+		return call_user_func_array(
+			'tuple_max',
+			array_map_val(
+				$predicates,
+				function( $arg, $n )use($args2)
+				{
+					if( is_callable($arg) )
+					{
+						return call_user_func_array( $arg, $args2 );
+					}
+					elseif( is_null($arg) )
+					{
+						return $args2[ $n ];
+					}
+					else
+					{
+						return $arg;
+					}
+				}
+			)
+		);
 	};
 }
