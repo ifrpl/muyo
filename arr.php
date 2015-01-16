@@ -188,13 +188,34 @@ function array_contains($array, $needle, $strict = false)
 }
 /**
  * @param mixed $needle
+ * @param array $array
  * @return callable
  */
-function array_contains_dg($needle)
+function array_contains_dg($needle, $array=null)
 {
-	return function($array)use($needle)
+	if( null===$array )
 	{
-		return array_contains($array,$needle);
+		$array = tuple_get();
+	}
+	elseif( is_array($array) )
+	{
+		$array = return_dg($array);
+	}
+	else
+	{
+		debug_enforce_type( $array, 'callable' );
+	}
+	if( !is_callable($needle) )
+	{
+		$needle = return_dg($needle);
+	}
+	return function()use($array,$needle)
+	{
+		$args = func_get_args();
+		return array_contains(
+			call_user_func_array( $array, $args ),
+			call_user_func_array( $needle, $args )
+		);
 	};
 }
 
@@ -221,6 +242,7 @@ function array_not_contains_dg($needle)
  */
 function array_some($array, $iterator)
 {
+	debug_enforce_type( $iterator, 'callable' );
 	foreach($array as $k => $v)
 	{
 		if( $iterator($v,$k) )

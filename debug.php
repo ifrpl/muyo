@@ -758,9 +758,16 @@ function debug_handler_assertion($handler = null)
  * @param string $type
  * @return mixed
  */
-function debug_enforce_type($var,$type)
+function debug_enforce_type( $var, $type )
 {
-	$t = gettype($var);
+	if( is_callable($var) && $type === 'callable' )
+	{
+		$t = 'callable';
+	}
+	else
+	{
+		$t = gettype($var);
+	}
 	debug_enforce( $t === $type, "Parameter of type $type expected, but $t passed" );
 	return $var;
 }
