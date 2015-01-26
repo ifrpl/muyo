@@ -29,5 +29,6 @@ require_once "html.php";
 require_once "bool.php";
 
 require_once "model".DIRECTORY_SEPARATOR."_.php";
+require_once "object".DIRECTORY_SEPARATOR."_.php";
 require_once "zend.php";
 require_once "wkhtmltox.php";
