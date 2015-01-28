@@ -1076,11 +1076,15 @@ function array_walk_dg( $callable, $userData=null )
 }
 
 /**
- * @param string $separator
+ * @param string|null $separator
  * @return callable
  */
-function array_implode_dg( $separator )
+function array_implode_dg( $separator=null )
 {
+	if( null==$separator )
+	{
+		$separator = PHP_EOL;
+	}
 	return function( $array )use($separator)
 	{
 		return implode( $separator, $array );
