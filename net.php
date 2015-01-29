@@ -479,7 +479,7 @@ function http_assemble($packet)
 function http_response_deassemble($packet)
 {
 	$pivot = strpos( $packet, "\r\n\r\n" );
-	$content = str_from( $packet, $pivot+4 );
+	// header
 	$header = array_chain(
 		str_first( $packet, $pivot ),
 		str_explode_dg("\r\n")
@@ -506,8 +506,25 @@ function http_response_deassemble($packet)
 	$header = array_chain(
 		$header,
 		array_map_key_dg(str_find_before_dg(':')),
-		array_map_val_dg(str_find_after_dg(':'))
+		array_map_val_dg(str_find_after_dg(':')),
+		array_map_val_dg(trim_dg())
 	);
+	//content
+	$content = str_from( $packet, $pivot+4 );
+	if( array_key_exists( 'Transfer-Encoding', $header ) && $header[ 'Transfer-Encoding' ]==='chunked' )
+	{
+		$chunks = '';
+		while( !empty($content) )
+		{
+			$pivot = strpos( $content, "\r\n" );
+			$length = intval( str_first( $content, $pivot ), 16 );
+			$chunks .= str_first( str_from( $content, $pivot+2 ), $length );
+			$content = str_from( $content, $pivot+2+$length );
+			debug_enforce(str_startswith($content,"\r\n"));
+			$content = str_from( $content, 2 );
+		}
+		$content = $chunks;
+	}
 	return array_merge(
 		[
 			'Status Line' => $statusLine,

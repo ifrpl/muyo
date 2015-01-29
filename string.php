@@ -1167,3 +1167,47 @@ function strval_dg()
 		return strval($value);
 	};
 }
+
+function trim_dg($charlist=null,$string=null)
+{
+	$getters = [];
+	if( null===$string )
+	{
+		$string = tuple_get(0);
+	}
+	elseif( is_string($string) )
+	{
+		$string = return_dg($string);
+	}
+	else
+	{
+		debug_enforce_type( $string, 'callable' );
+	}
+	$getters []= $string;
+	if( null!==$charlist )
+	{
+		if( is_string($charlist) )
+		{
+			$charlist = return_dg($charlist);
+		}
+		else
+		{
+			debug_enforce_type( $charlist, 'callable' );
+		}
+		$getters []= $charlist;
+	}
+	return function()use($getters)
+	{
+		$args = func_get_args();
+		return call_user_func_array(
+			'trim',
+			array_map_val(
+				$getters,
+				function($getter)use($args)
+				{
+					return call_user_func_array( $getter, $args );
+				}
+			)
+		);
+	};
+}
