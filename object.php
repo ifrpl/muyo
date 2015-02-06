@@ -80,7 +80,7 @@ function config_merge_recursive_overwrite($config, $arr)
 /**
  * @param stdClass $config
  *
- * @return stdClass
+ * @return array
  */
 function config_to_array_recursive($config) {
 	if( is_object($config) && 'stdClass' === get_class($config) )

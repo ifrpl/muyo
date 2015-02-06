@@ -731,7 +731,22 @@ function array_set_default(&$array,$key,$value)
  */
 function is_array_assoc($val)
 {
-	return is_array($val) && array_some($val,tuple_get(1,'is_string'));
+	if( !is_array($val) )
+	{
+		$ret = false;
+	}
+	else
+	{
+		if( empty($val) )
+		{
+			$ret = true; // WARNING: common for both type of arrays
+		}
+		else
+		{
+			$ret = array_some($val,tuple_get(1,'is_string'));
+		}
+	}
+	return $ret;
 }
 
 /**
@@ -740,7 +755,22 @@ function is_array_assoc($val)
  */
 function is_array_list($val)
 {
-	return is_array($val) && array_some($val,tuple_get(1,'is_int'));
+	if( !is_array($val) )
+	{
+		$ret = false;
+	}
+	else
+	{
+		if( empty($val) )
+		{
+			$ret = true; // WARNING: common for both type of arrays
+		}
+		else
+		{
+			$ret = array_some($val,tuple_get(1,'is_int'));
+		}
+	}
+	return $ret;
 }
 
 /**

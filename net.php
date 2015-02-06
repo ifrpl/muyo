@@ -604,7 +604,7 @@ function rest_send($packet, &$response=[])
 			$data = http_assemble($packet);
 
 			$socket = fsockopen( 'tls://'.$host, $port, $errno, $errstr );
-			debug_enforce( $socket !== false );
+			debug_enforce( $socket !== false, 'Cannot open socket to '.var_dump_human_compact('tls://'.$host) );
 			debug_enforce( strlen($data)===fwrite( $socket, $data ) );
 
 			while( !feof($socket) )
