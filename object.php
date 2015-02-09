@@ -10,7 +10,7 @@ class Object
 	/**
 	 * @param array $array
 	 */
-	public function __construct($array=array())
+	public function __construct($array=[])
 	{
 		foreach($array as $key=>$value)
 		{
@@ -38,7 +38,7 @@ class Object
  *
  * @return object
  */
-function object($array=array())
+function object($array=[])
 {
 	$obj = ((object) NULL);
 	foreach($array as $key=>$value)
@@ -132,4 +132,36 @@ function object_get_dg( $object, $what )
 			return null;
 		};
 	}
+}
+
+/**
+* @param object $config
+ * @param callable $callable
+ * @return object
+ */
+function object_map_val($config,$callable)
+{
+	return (object) array_map_val(
+		(array) $config,
+		function()use($callable)
+		{
+			return call_user_func_array( $callable, func_get_args() );
+		}
+	);
+}
+
+/**
+ * @param object $object
+ * @param callable $callable
+ * @return object
+ */
+function object_each($object,$callable)
+{
+	array_each(
+		(array) $object,
+		function()use($callable)
+		{
+			call_user_func_array( $callable, func_get_args() );
+		}
+	);
 }
