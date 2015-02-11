@@ -431,23 +431,32 @@ function array_map_val($array, $iterator)
 /**
  * @param array $array
  * @param callable $iterator function($val,$key)
+ * @param bool $recursionFirst
  *
  * @return array
  */
-function array_map_val_recursive($array, $iterator)
+function array_map_val_recursive($array, $iterator, $recursionFirst=true)
 {
-	$keys = array_keys($array);
-	$values = array_values($array);
-	$mapped = array_map(function($value, $key) use($iterator)
-	{
-		if(is_array($value))
+	return array_map_val(
+		$array,
+		function()use($iterator,$recursionFirst)
 		{
-			$value = array_map_val_recursive($value, $iterator);
+			$args = func_get_args();
+			if( !$recursionFirst )
+			{
+				$args[0] = call_user_func_array( $iterator, $args );
+			}
+			if( is_array($args[0]) )
+			{
+				$args[0] = array_map_val_recursive( $args[0], $iterator );
+			}
+			if( $recursionFirst )
+			{
+				$args[0] = call_user_func_array( $iterator, $args );
+			}
+			return $args[0];
 		}
-		$value = $iterator($value, $key);
-		return $value;
-	},$values,$keys);
-	return array_combine($keys,$mapped);
+	);
 }
 
 /**
@@ -653,6 +662,10 @@ function array_unset_val(&$array, $val, $strict = true)
  */
 function array_get($array,$key)
 {
+	debug_enforce(
+		array_key_exists( $key, $array ),
+		"Key ".var_dump_human_compact($key)." do not exists in ".var_dump_human_compact($array)
+	);
 	return $array[ $key ];
 }
 

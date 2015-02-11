@@ -620,3 +620,68 @@ function tuple_max_dg( $getters )
 		);
 	};
 }
+
+/**
+ * @param array|object $collection
+ * @param callable $callable
+ * @param bool $recursionFirst
+ * @return array|object
+ * @throws Exception
+ */
+function collection_map_val_recursive($collection,$callable,$recursionFirst=true)
+{
+	if( is_array($collection) )
+	{
+		$ret = array_map_val_recursive(
+			$collection,
+			function()use($callable,$recursionFirst)
+			{
+				$args = func_get_args();
+				if( !$recursionFirst )
+				{
+					$args[0] = call_user_func_array( $callable, $args );
+				}
+				if( is_object($args[0]) || is_array($args[0]) )
+				{
+					$args[0] = collection_map_val_recursive( $args[0], $callable, $recursionFirst );
+				}
+				if( $recursionFirst )
+				{
+					$args[0] = call_user_func_array( $callable, $args );
+				}
+				return $args[0];
+			},
+			$recursionFirst
+		);
+	}
+	elseif( is_object($collection) )
+	{
+		$ret = object_map_val_recursive(
+			$collection,
+			function()use($callable,$recursionFirst)
+			{
+				$args = func_get_args();
+				if( !$recursionFirst )
+				{
+					$args[0] = call_user_func_array( $callable, $args );
+				}
+				if( is_array($args[0]) || is_object($args[0]) )
+				{
+					$args[0] = collection_map_val_recursive( $args[0], $callable, $recursionFirst );
+				}
+				if( $recursionFirst )
+				{
+					$args[0] = call_user_func_array( $callable, $args );
+				}
+				return $args[0];
+			},
+			$recursionFirst
+		);
+	}
+	else
+	{
+		debug_enforce( false, "Cannot handle collection: ".var_dump_human_compact($collection) );
+		$ret = [];
+	}
+	return $ret;
+}

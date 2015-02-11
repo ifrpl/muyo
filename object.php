@@ -165,3 +165,56 @@ function object_each($object,$callable)
 		}
 	);
 }
+
+/**
+ * @param object $object
+ * @param callable $callable
+ * @return object
+ */
+function object_some($object,$callable)
+{
+	foreach( $object as $k => $v )
+	{
+		if( $callable($v,$k) )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * @param object $config
+ * @param callable $callable
+ * @param bool $recursionFirst
+ * @return object
+ */
+function object_map_val_recursive($config,$callable,$recursionFirst=true)
+{
+	$ret = clone($config);
+	foreach ($config as $key=>$val)
+	{
+		if( !$recursionFirst )
+		{
+			$ret->{$key} = call_user_func( $callable, $val, $key );
+		}
+		if( is_object($val) )
+		{
+			$val = object_map_val_recursive( $val, $callable );
+		}
+		if( $recursionFirst )
+		{
+			$ret->{$key} = call_user_func( $callable, $val, $key );
+		}
+	}
+	return $ret;
+}
+
+/**
+ * @param object $object
+ * @return bool
+ */
+function object_empty($object)
+{
+	return !object_some( $object, return_dg(true) );
+}

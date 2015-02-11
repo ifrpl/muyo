@@ -243,7 +243,7 @@ function var_dump_human_compact($var, $key = null)
 	elseif ( is_object($var) )
 	{
 		$class = get_class($var);
-		if ( $class === 'Object' )
+		if ( in_array($class,['Object','stdClass']) )
 		{
 			$ret .= var_dump_human_compact((array)$var);
 		}
