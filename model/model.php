@@ -210,7 +210,7 @@ abstract class Lib_Model implements Iterator
 	 * @param string $name
 	 * @return mixed|null
 	 */
-	protected function recordColumnGet($name)
+	public function recordColumnGet($name)
 	{
 		return $this->_recordAccess($name) ? $this->_data[$name] : null;
 	}
@@ -220,7 +220,7 @@ abstract class Lib_Model implements Iterator
 	 * @param $value
 	 * @return $this
 	 */
-	protected function recordColumnSet($name, $value)
+	public function recordColumnSet($name, $value)
 	{
 		if( $this->_recordAccess($name) )
 		{
@@ -233,7 +233,7 @@ abstract class Lib_Model implements Iterator
 	 * @param string $name
 	 * @return bool
 	 */
-	protected function recordColumnExists($name)
+	public function recordColumnExists($name)
 	{
 		return array_key_exists($name,$this->_data);
 	}
@@ -241,7 +241,7 @@ abstract class Lib_Model implements Iterator
 	/**
 	 * @return array
 	 */
-	protected function recordColumnsGet()
+	public function recordColumnsGet()
 	{
 		$data = array();
 		foreach($this->_data as $name => $value)
@@ -257,7 +257,7 @@ abstract class Lib_Model implements Iterator
 	/**
 	 * @param $array
 	 */
-	protected function recordColumnsSet($array)
+	public function recordColumnsSet($array)
 	{
 		$this->_data = $array;
 	}
