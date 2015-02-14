@@ -153,7 +153,6 @@ function object_map_val($config,$callable)
 /**
  * @param object $object
  * @param callable $callable
- * @return object
  */
 function object_each($object,$callable)
 {

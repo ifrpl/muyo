@@ -482,7 +482,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * @param string $cond
 	 * @param mixed $value
 	 * @param null|int $type
-	 * @return Lib_Model_Db_Mysql
+	 * @return $this
 	 */
 	public function setWhere($cond, $value = null, $type = null)
 	{
