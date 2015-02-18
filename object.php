@@ -151,6 +151,22 @@ function object_map_val($config,$callable)
 }
 
 /**
+ * @param object $config
+ * @param callable $callable
+ * @return object
+ */
+function object_filter_val($config,$callable)
+{
+	return (object) array_filter_key(
+		(array) $config,
+		function()use($callable)
+		{
+			return call_user_func_array( $callable, func_get_args() );
+		}
+	);
+}
+
+/**
  * @param object $object
  * @param callable $callable
  */
@@ -216,4 +232,41 @@ function object_map_val_recursive($config,$callable,$recursionFirst=true)
 function object_empty($object)
 {
 	return !object_some( $object, return_dg(true) );
+}
+
+function instanceof_dg($class=null,$object=null)
+{
+	if( is_null($object) )
+	{
+		$object = tuple_get(0);
+	}
+	elseif( is_object($object) )
+	{
+		$object = return_dg($object);
+	}
+	else
+	{
+		debug_enforce_type( $object, 'callable' );
+	}
+
+	if( is_null( $class ) )
+	{
+		$class = tuple_get(1);
+	}
+	elseif( is_string( $class ) )
+	{
+		$class = return_dg( $class );
+	}
+	else
+	{
+		debug_enforce_type( $class, 'callable' );
+	}
+
+	return function()use($object,$class)
+	{
+		$args = func_get_args();
+		$object = call_user_func_array( $object, $args );
+		$class = call_user_func_array( $class, $args );
+		return $object instanceof $class;
+	};
 }
