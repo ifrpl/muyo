@@ -1290,3 +1290,25 @@ function array_join($array0, $array1, $preserveKey = true)
 
 	return $ret;
 }
+
+/**
+ * @param array $item
+ * @param string|int $key
+ * @param array $array
+ * @return array
+ */
+function array_append(&$item, $key, $array)
+{
+	if( is_array($item) )
+	{
+		if( isset($array[$key]) )
+		{
+			array_walk($item, "array_append", $array[$key]);
+		}
+	}
+	elseif( isset($array[$key]) )
+	{
+		$item = $array[$key];
+	}
+	return $item;
+}

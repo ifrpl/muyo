@@ -90,3 +90,12 @@ function cli_serialize($cli)
 	}
 	return $ret;
 }
+
+/**
+ * @return bool
+ */
+function isCLI()
+{
+	return (php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR']));
+}
+

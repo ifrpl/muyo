@@ -234,6 +234,12 @@ function object_empty($object)
 	return !object_some( $object, return_dg(true) );
 }
 
+/**
+ * @param string|callable|null $class
+ * @param object|callable|null $object
+ *
+ * @return callable
+ */
 function instanceof_dg($class=null,$object=null)
 {
 	if( is_null($object) )
@@ -269,4 +275,74 @@ function instanceof_dg($class=null,$object=null)
 		$class = call_user_func_array( $class, $args );
 		return $object instanceof $class;
 	};
+}
+
+if( !function_exists('spl_object_hash') )
+{
+	function spl_object_hash(&$object)
+	{
+		static $hashes;
+
+		if( !is_object($object) )
+		{
+			trigger_error(__FUNCTION__."() expects parameter 1 to be object", E_USER_WARNING);
+			return null;
+		}
+
+		if( !isset($hashes) )
+		{
+			$hashes = array();
+		}
+
+		$class_name = get_class($object);
+		if( !array_key_exists($class_name, $hashes) )
+		{
+			$hashes[$class_name] = array();
+		}
+
+		// find existing instance
+		foreach($hashes[$class_name] as $hash => $o)
+		{
+			if( $object===$o )
+			{
+				return $hash;
+			}
+		}
+
+		$hash = md5(uniqid($class_name));
+		while( array_key_exists($hash, $hashes[$class_name]) )
+		{
+			$hash = md5(uniqid($class_name));
+		}
+
+		$hashes[$class_name][$hash] = $object;
+		return $hash;
+	}
+}
+
+if( !function_exists('get_called_class') )
+{
+	function get_called_class()
+	{
+		$bt = debug_backtrace();
+		$l = 0;
+		do
+		{
+			$l++;
+			$lines = file($bt[$l]['file']);
+			$callerLine = $lines[$bt[$l]['line']-1];
+			preg_match('/([a-zA-Z0-9\_]+)::'.$bt[$l]['function'].'/', $callerLine, $matches);
+
+			if( $matches[1]=='self' )
+			{
+				$line = $bt[$l]['line']-1;
+				while( $line>0 && strpos($lines[$line], 'class')===false )
+				{
+					$line--;
+				}
+				preg_match('/class[\s]+(.+?)[\s]+/si', $lines[$line], $matches);
+			}
+		} while( $matches[1]=='parent' && $matches[1] );
+		return $matches[1];
+	}
 }

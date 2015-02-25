@@ -45,67 +45,44 @@ function ifr_protocol()
  */
 function request($paramName=false,$default=false)
 {
-	$params = requestGet();
+	$request = $_SERVER["REQUEST_URI"];
 
-	foreach($_POST as $key=>$value)
+	if( isset($GLOBALS['IFR']['params']) )
 	{
-		$params[$key]=$value;
-	}
-
-	return $paramName?(isset($params[$paramName])?$params[$paramName]:$default):$params;
-}
-
-/**
- * @param bool $paramName
- * @param bool $default
- *
- * @return array|bool
- */
-function requestGet($paramName=false,$default=false)
-{
-	global $config;
-	//        $request=$_SERVER["REQUEST_URI"];
-
-	$request = isset($_SERVER['PATH_INFO'])?$_SERVER['PATH_INFO']:(isset($_SERVER['REDIRECT_URL'])?$_SERVER['REDIRECT_URL']:$_SERVER["REQUEST_URI"]);
-	$request .= isset($_SERVER['QUERY_STRING'])?'?'.$_SERVER['QUERY_STRING']:'';
-
-	if(isset($config->nginx))
-	{
-		if($config->nginx == 1)
-		{
-			$request = urldecode($request);
-		}
-	}
-
-	if(isset($config->request))
-	{
-		$names = (array)$config->request;
+		$names = $GLOBALS['IFR']['params'];
 	}
 	else
 	{
 		$names = array();
 	}
 
-	$params=array();
-
-	if(strpos($request,'?',0)!==false)
+	$params = array();
+	if( strpos($request, '?', 0)!==false )
 	{
-		list($path,$paramsStr)=explode('?',$request);
+		list($path, $paramsStr) = explode('?', $request);
 	}
 	else
 	{
 		$path = $request;
-		$paramsStr='';
+		$paramsStr = '';
 	}
-	$path = explode('/',trim($path,'/'));
+	$path = explode('/', trim($path, '/'));
 
-	while($node = array_shift($path))
+	if( count($path) )
 	{
-		if($node!='')
+		if( substr($path[0], -4)=='.php' )
 		{
-			if($name = array_shift($names))
+			array_shift($path);
+		}
+	}
+
+	while( $node = array_shift($path) )
+	{
+		if( $node!='' )
+		{
+			if( $name = array_shift($names) )
 			{
-				$params[$name]=$node;
+				$params[$name] = $node;
 			}
 			else
 			{
@@ -115,15 +92,15 @@ function requestGet($paramName=false,$default=false)
 		}
 	}
 
-	if($paramsStr!='')
+	if( $paramsStr!='' )
 	{
-		$paramsArray=explode('&',$paramsStr);
+		$paramsArray = explode('&', $paramsStr);
 
 		foreach($paramsArray as $param)
 		{
-			if(strpos($request,'=',0)!==false)
+			if( strpos($request, '=', 0)!==false )
 			{
-				list($key,$value)=explode('=',$param);
+				list($key, $value) = explode('=', $param);
 			}
 			else
 			{
@@ -131,11 +108,33 @@ function requestGet($paramName=false,$default=false)
 				$value = true;
 			}
 
-			$params[$key]=$value;
+			$params[$key] = $value;
 		}
 	}
 
-	return $paramName?(isset($params[$paramName])?$params[$paramName]:$default):$params;
+	return isset($params[$paramName]) ? $params[$paramName] : $default;
+}
+
+/**
+ * @param string $paramName
+ * @param bool $default
+ *
+ * @return array|bool
+ */
+function requestGet($paramName,$default=false)
+{
+	return isset($_GET[$paramName]) ? $_GET[$paramName] : $default;
+}
+
+/**
+ * @param string $paramName
+ * @param bool $default
+ *
+ * @return bool
+ */
+function requestPost($paramName,$default=false)
+{
+	return isset($_POST[$paramName]) ? $_POST[$paramName] : $default;
 }
 
 /**

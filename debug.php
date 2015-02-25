@@ -64,24 +64,33 @@ function debug_allow()
 
 /**
  * @param mixed $tab
- * @param ...
- * @return null|string
+ * @param bool|null $cli
  */
-function printr($tab)
+function printr( $tab, $cli=null )
 {
-	if(!debug_allow()) return null;
+	if(!debug_allow()) return;
 
 	if( func_num_args() > 1 )
 	{
 		$tab = func_get_args();
 	}
 	$dbg = debug_backtrace();
-	$cli = isCLI();
-	if(!$cli)
+	if( is_null($cli) )
 	{
-		echo "<pre style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>";
+		$cli = isCLI();
+	}
+	if( !$cli )
+	{
+		write( "<pre style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>" );
+		$id = defined('__ROOT') ? uniqid() : null;
+		if( $id!==null )
+		{
+			write( "<iframe name='{$id}' style='display: none;'></iframe>" );
+		}
 		$f = "{$dbg[0]['file']}:{$dbg[0]['line']}";
-		echo "<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'><a href='http://localhost:8091?message=$f'>$f</a></div>";
+		write( "<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'>" );
+		$target = $id!==null ? " target='{$id}'" : '';
+		write( "<a href='http://localhost:8091?message=$f'{$target}>$f</a></div>" );
 	}
 	$tmp = print_r($tab,true);
 
@@ -92,11 +101,11 @@ function printr($tab)
 	echo $tmp;
 	if(!$cli)
 	{
-		echo "</pre>\n";
+		write( "</pre>\n" );
 	}
 	else
 	{
-		echo "\n";
+		writeln('');
 	}
 }
 

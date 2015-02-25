@@ -66,14 +66,6 @@ function is_iterable( $obj/*,$interface=false*/ )
 }
 
 /**
- * @return bool
- */
-function isCLI()
-{
-	return (php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR']));
-}
-
-/**
  * @param number $price
  * @param number $discount
  *
