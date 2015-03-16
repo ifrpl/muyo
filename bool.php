@@ -17,33 +17,39 @@ if(!function_exists('boolval'))
 	}
 }
 
-/**
- * @param callable|null $getter
- *
- * @return callable
- */
-function boolval_dg($getter=null)
+if( !function_exists('boolval_dg') )
 {
-	if( $getter===null )
+	/**
+	 * @param callable|null $getter
+	 *
+	 * @return callable
+	 */
+	function boolval_dg($getter=null)
 	{
-		$getter = tuple_get();
+		if( $getter===null )
+		{
+			$getter = tuple_get();
+		}
+		return function()use($getter)
+		{
+			return boolval( call_user_func_array( $getter, func_get_args() ) );
+		};
 	}
-	return function()use($getter)
-	{
-		return boolval( call_user_func_array( $getter, func_get_args() ) );
-	};
 }
 
-/**
- * @param callable $a
- * @param callable $b
- * @return callable
- */
-function eq_dg($a,$b)
+if( !function_exists('eq_dg') )
 {
-	return function()use($a,$b)
+	/**
+	 * @param callable $a
+	 * @param callable $b
+	 * @return callable
+	 */
+	function eq_dg($a,$b)
 	{
-		$args = func_get_args();
-		return call_user_func_array($a,$args)==call_user_func_array($b,$args);
-	};
+		return function()use($a,$b)
+		{
+			$args = func_get_args();
+			return call_user_func_array($a,$args)==call_user_func_array($b,$args);
+		};
+	}
 }

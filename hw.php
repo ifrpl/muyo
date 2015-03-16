@@ -5,26 +5,29 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 
-/**
- * @return int
- */
-function hw_core_get()
+if( !function_exists('hw_core_get') )
 {
-    $nb = 0;
+	/**
+	 * @return int
+	 */
+	function hw_core_get()
+	{
+	    $nb = 0;
 
-    $output = file_get_contents('/proc/cpuinfo');
-    $lines = explode("\n", $output);
+	    $output = file_get_contents('/proc/cpuinfo');
+	    $lines = explode("\n", $output);
 
-    foreach($lines as $line)
-    {
-        $tab = array_map(function($value){return trim($value);}, explode(':', $line));
-        if(2 != count($tab) || 'processor' != $tab[0])
-        {
-            continue;
-        }
+	    foreach($lines as $line)
+	    {
+	        $tab = array_map(function($value){return trim($value);}, explode(':', $line));
+	        if(2 != count($tab) || 'processor' != $tab[0])
+	        {
+	            continue;
+	        }
 
-        $nb++;
-    }
+	        $nb++;
+	    }
 
-	return $nb;
+		return $nb;
+	}
 }
