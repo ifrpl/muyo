@@ -85,6 +85,38 @@ if( !function_exists('str_startswith_dg') )
 	}
 }
 
+if( !function_exists('str_between') )
+{
+	/**
+	 * @param string $haystack
+	 * @param string $begin
+	 * @param string $end
+	 * @param $with boolean
+	 * @return string
+	 */
+	function str_between($haystack,$begin,$end,$with=false)
+	{
+		$ret = $haystack;
+
+		if($with)
+		{
+			$ret_begin = strpos($ret,$begin);
+			$ret = substr($ret,$ret_begin);
+			$ret_end = strpos($ret,$end)+strlen($end);
+			$ret = substr($ret,$ret_end);
+		}
+		else
+		{
+			$ret_begin = strpos($ret,$begin)+strlen($begin);
+			$ret = substr($ret,$ret_begin);
+			$ret_end = strpos($ret,$end);
+			$ret = substr($ret,0,$ret_end);
+		}
+
+		return $ret;
+	}
+}
+
 if( !function_exists('str_contains') )
 {
 	/**
