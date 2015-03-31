@@ -558,3 +558,109 @@ if( !function_exists('basename_dg') )
 		};
 	}
 }
+
+if( !function_exists('directory_list') )
+{
+	/**
+	 * @param string $directory
+	 * @param int $order_flag
+	 * @param resource|null $context
+	 * @return array
+	 */
+	function directory_list( $directory, $order_flag=SCANDIR_SORT_ASCENDING, $context=null )
+	{
+		debug_enforce( is_dir($directory), "Parameter ".var_dump_human_compact($directory)." is not a directory." );
+		debug_enforce( in_array($order_flag, [SCANDIR_SORT_DESCENDING,SCANDIR_SORT_ASCENDING,SCANDIR_SORT_NONE]), "Invalid order flag ".var_dump_human_compact($order_flag) );
+		debug_enforce( is_null($context)||is_resource($context), "Invalid resource context ".var_dump_human_compact($context) );
+		$directory = ensure( $directory, str_endswith_dg(DIRECTORY_SEPARATOR), str_append_dg(DIRECTORY_SEPARATOR) );
+		if( is_null($context) )
+		{
+			$ret = scandir( $directory, $order_flag );
+		}
+		else
+		{
+			$ret = scandir( $directory, $order_flag, $context );
+		}
+		debug_enforce( false !== $ret, posix_get_last_error() );
+		return array_chain(
+			$ret,
+			array_filter_key_dg( not_dg(in_array_dg(['..', '.'])) ),
+			array_map_val_dg(str_prepend_dg($directory))
+		);
+	}
+}
+
+if( !function_exists('directory_list_dg') )
+{
+	/**
+	 * @param string|callable $directory
+	 * @param int|callable $order_flag
+	 * @param resource|callable|null $context
+	 * @return callable
+	 */
+	function directory_list_dg( $directory, $order_flag=SCANDIR_SORT_ASCENDING, $context=null )
+	{
+		if( !is_callable($directory) )
+		{
+			$directory = return_dg( $directory );
+		}
+		if( !is_callable($order_flag) )
+		{
+			$order_flag = return_dg( $order_flag );
+		}
+		if( !is_callable($context) )
+		{
+			$context = return_dg( $context );
+		}
+		return function()use( $directory, $order_flag, $context )
+		{
+			$args = func_get_args();
+			return directory_list(
+				call_user_func_array( $directory, $args ),
+				call_user_func_array( $order_flag, $args ),
+				call_user_func_array( $context, $args )
+			);
+		};
+	}
+}
+
+if( !function_exists('file_remove') )
+{
+	/**
+	 * @param string $path
+	 */
+	function file_remove($path)
+	{
+		debug_enforce( unlink( $path ), "Could not remove file ".var_dump_human_compact($path) );
+	}
+}
+
+if( !function_exists('file_copy') )
+{
+	function file_copy($source,$destination)
+	{
+		debug_enforce( copy( $source, $destination ), "Cannot copy file from ".var_dump_human_compact($source)." to ".var_dump_human_compact($destination) );
+	}
+}
+
+if( !function_exists('is_file_dg') )
+{
+	function is_file_dg($path=null)
+	{
+		if( null===$path )
+		{
+			$path = tuple_get(0);
+		}
+		elseif( !is_callable($path) )
+		{
+			$path = return_dg($path);
+		}
+		return function()use($path)
+		{
+			$args = func_get_args();
+			return is_file(
+				call_user_func_array($path,$args)
+			);
+		};
+	}
+}

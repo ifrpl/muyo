@@ -96,6 +96,26 @@ if( !function_exists('parallel_each') )
 	}
 }
 
+if( !function_exists('parallel_each_dg') )
+{
+	function parallel_each_dg( $callable, $array=null )
+	{
+		if( $array===null )
+		{
+			$array = tuple_get(0);
+		}
+		elseif( !is_callable($array) )
+		{
+			$array = return_dg($array);
+		}
+		return function()use($callable,$array)
+		{
+			$args = func_get_args();
+			parallel_each(call_user_func_array($array,$args),$callable);
+		};
+	}
+}
+
 $cli_format_error = function($cmd,$message,$stderr)
 {
 	$err = $stderr ? 'StdErr:'.PHP_EOL.str_indent($stderr,1).PHP_EOL : '';

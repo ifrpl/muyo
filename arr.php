@@ -217,8 +217,8 @@ if( !function_exists('array_contains') )
 if( !function_exists('array_contains_dg') )
 {
 	/**
-	 * @param mixed $needle
-	 * @param array $array
+	 * @param mixed|callable $needle
+	 * @param array|callable|null $array
 	 * @return callable
 	 */
 	function array_contains_dg($needle, $array=null)
@@ -250,13 +250,41 @@ if( !function_exists('array_contains_dg') )
 	}
 }
 
+if( !function_exists('in_array_dg') )
+{
+	/**
+	 * @param array $array
+	 * @param array|callable|null $needle
+	 * @return callable
+	 */
+	function in_array_dg( $array, $needle=null )
+	{
+		if( is_array($array) )
+		{
+			$array = return_dg( $array );
+		}
+		else
+		{
+			debug_enforce( $array, 'callable' );
+		}
+		if( is_null($needle) )
+		{
+			$needle = tuple_get(0);
+		}
+		elseif( !is_callable($needle) )
+		{
+			$needle = return_dg($needle);
+		}
+		return array_contains_dg( $needle, $array );
+	}
+}
+
 if( !function_exists('array_not_contains_dg') )
 {
 	/**
-	 * TODO: Think about better tuple chaining (composition method).
-	 *
 	 * @param mixed $needle
 	 * @return callable
+	 * @deprecated wrap with not_dg() instead
 	 */
 	function array_not_contains_dg($needle)
 	{

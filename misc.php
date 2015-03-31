@@ -23,6 +23,37 @@ if( !function_exists('getCurrentEnv') )
 	}
 }
 
+if( !function_exists('mutate_include_path') )
+{
+	/**
+	 * @param callable $callable
+	 */
+	function include_path_mutate($callable)
+	{
+		$path = explode(PATH_SEPARATOR,get_include_path());
+		$path = call_user_func($callable,$path);
+		set_include_path(implode(PATH_SEPARATOR,$path));
+	}
+}
+
+if( !function_exists('add_include_path') )
+{
+	/**
+	 * @param string|array $entry
+	 */
+	function include_path_append($entry)
+	{
+		if( is_array($entry) )
+		{
+			$entry = implode(PATH_SEPARATOR,$entry);
+		}
+		if( !empty($entry) )
+		{
+			set_include_path( get_include_path().PATH_SEPARATOR.$entry );
+		}
+	}
+}
+
 if( !function_exists('autoload') )
 {
 	function autoload()
@@ -292,6 +323,7 @@ if( !function_exists('not_dg') )
 	 */
 	function not_dg( $callable )
 	{
+		debug_enforce( is_callable($callable), "Expected callable, got ".var_dump_human_compact($callable) );
 		return function()use($callable)
 		{
 			$args = func_get_args();

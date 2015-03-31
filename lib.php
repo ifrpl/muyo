@@ -8,6 +8,10 @@
  * @package lib\main
  */
 
+if( !defined('ROOT_PATH') )
+{
+	define( 'ROOT_PATH', getcwd() );
+}
 ini_set('include_path',ini_get('include_path').PATH_SEPARATOR.dirname(__FILE__));
 
 require_once "arr.php";

@@ -314,6 +314,54 @@ if( !function_exists('instanceof_dg') )
 	}
 }
 
+if( !function_exists('new_dg') )
+{
+	/**
+	 * @param callable|string $class
+	 * @return mixed
+	 */
+	function new_dg($class)
+	{
+		if( !is_callable($class) )
+		{
+			$class = return_dg($class);
+		}
+		return function()use($class)
+		{
+			$args = func_get_args();
+			$class = call_user_func_array( $class, $args );
+			return new $class;
+		};
+	}
+}
+
+if( !function_exists('new_1_dg') )
+{
+	/**
+	 * @param callable|string $class
+	 * @param callable|mixed $arg
+	 * @return mixed
+	 */
+	function new_1_dg($class,$arg)
+	{
+		if( !is_callable($class) )
+		{
+			$class = return_dg($class);
+		}
+		if( !is_callable($arg) )
+		{
+			$arg = return_dg($arg);
+		}
+		return function()use($class,$arg)
+		{
+			$args = func_get_args();
+			$class = call_user_func_array( $class, $args );
+			$arg = call_user_func_array( $arg, $args );
+			return new $class($arg);
+		};
+	}
+}
+
 if( !function_exists('spl_object_hash') )
 {
 	function spl_object_hash(&$object)
