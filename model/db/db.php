@@ -85,7 +85,12 @@ abstract class Lib_Model_Db extends Lib_Model
 	{
 		if( empty($this->_alias) )
 		{
-			$this->_alias = strtolower(str_replace('_', '', get_class($this)));
+			$this->_alias = array_chain(
+				get_class($this),
+				str_replace_dg('_',''),
+				str_replace_dg('\\',''),
+				strtolower_dg()
+			);
 		}
 
 		parent::__construct($options, $init);
