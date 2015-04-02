@@ -59,121 +59,136 @@ class Doctype
 	}
 }
 
-/**
- * @param int $version
- * @see Doctype::$ver
- */
-function html_doctype_set($version)
+if( !function_exists('html_doctype_set') )
 {
-	Doctype::set( $version );
-}
-
-/**
- * @return int
- * @see Doctype::$ver
- */
-function html_doctype_get()
-{
-	return Doctype::get();
-}
-
-/**
- * @param string $name
- * @param array $attr
- * @param string $content
- * @return string
- */
-function html_tag( $name, $attr, $content )
-{
-	$attrChain = array(
-		array_filter_key_dg(function( $val, $key )
-		{
-			$skip = $val === false;
-			return !$skip;
-		})
-	);
-	if( Doctype::isXhtml() )
+	/**
+	 * @param int $version
+	 * @see Doctype::$ver
+	 */
+	function html_doctype_set($version)
 	{
-		$attrChain []= array_map_val_dg(function( $val, $key )
-		{
-			if( true === $val )
-			{
-				$val = $key;
-			}
-			return $val;
-		});
+		Doctype::set( $version );
 	}
-	$attrChain []= array_map_key_dg(function( $val, $key )
+}
+
+if( !function_exists('html_doctype_get') )
+{
+	/**
+	 * @return int
+	 * @see Doctype::$ver
+	 */
+	function html_doctype_get()
 	{
-		return preg_replace( '/([\t\n\f \/>"\'=]+)/', '', $key );
-	});
-	$flags = htmlspecialchars_flags();
-	$attrChain []= array_map_val_dg(function( $val, $key )use( $flags )
+		return Doctype::get();
+	}
+}
+
+if( !function_exists('html_tag') )
+{
+	/**
+	 * @param string $name
+	 * @param array $attr
+	 * @param string $content
+	 * @return string
+	 */
+	function html_tag( $name, $attr, $content )
 	{
-		$val = str_wrap( htmlspecialchars( $val, ENT_QUOTES|$flags ), '"' );
-		return " {$key}={$val}";
-	});
-	$attrChain []= array_implode_dg('');
-	$attr = call_user_func_array( 'array_chain', array_merge( array($attr), $attrChain ) );
-	if( empty($content) )
-	{
+		$attrChain = array(
+			array_filter_key_dg(function( $val, $key )
+			{
+				$skip = $val === false;
+				return !$skip;
+			})
+		);
 		if( Doctype::isXhtml() )
 		{
-			$ret = "<{$name}{$attr}/>";
+			$attrChain []= array_map_val_dg(function( $val, $key )
+			{
+				if( true === $val )
+				{
+					$val = $key;
+				}
+				return $val;
+			});
 		}
-		else
+		$attrChain []= array_map_key_dg(function( $val, $key )
 		{
-			$ret = "<{$name}{$attr}>";
-		}
-	}
-	else
-	{
-		$ret = "<{$name}{$attr}>{$content}</{$name}>";
-	}
-	return $ret;
-}
-
-/**
- * @param string $string
- * @return string
- */
-function html_from_string( $string )
-{
-	if( debug_assert( is_string($string), var_dump_human_compact( $string ) ) )
-	{
-		$ret = htmlspecialchars( $string, htmlspecialchars_flags() );
-	}
-	else
-	{
-		$ret = '';
-	}
-	return $ret;
-}
-
-/**
- * @return int
- */
-function htmlspecialchars_flags()
-{
-	switch( Doctype::get() )
-	{
-		case Doctype::VER_HTML_4_01:
-			$flags = ENT_HTML401;
-		break;
-		case Doctype::VER_HTML_5:
-			$flags = ENT_HTML5;
-		break;
-		default:
+			return preg_replace( '/([\t\n\f \/>"\'=]+)/', '', $key );
+		});
+		$flags = htmlspecialchars_flags();
+		$attrChain []= array_map_val_dg(function( $val, $key )use( $flags )
+		{
+			$val = str_wrap( htmlspecialchars( $val, ENT_QUOTES|$flags ), '"' );
+			return " {$key}={$val}";
+		});
+		$attrChain []= array_implode_dg('');
+		$attr = call_user_func_array( 'array_chain', array_merge( array($attr), $attrChain ) );
+		if( empty($content) )
+		{
 			if( Doctype::isXhtml() )
 			{
-				$flags = ENT_XHTML;
+				$ret = "<{$name}{$attr}/>";
 			}
 			else
 			{
-				debug_enforce( false, "Unhandled doctype ".Doctype::get() );
-				$flags = null;
+				$ret = "<{$name}{$attr}>";
 			}
-		break;
+		}
+		else
+		{
+			$ret = "<{$name}{$attr}>{$content}</{$name}>";
+		}
+		return $ret;
 	}
-	return $flags;
+}
+
+if( !function_exists('html_from_string') )
+{
+	/**
+	 * @param string $string
+	 * @return string
+	 */
+	function html_from_string( $string )
+	{
+		if( debug_assert( is_string($string), var_dump_human_compact( $string ) ) )
+		{
+			$ret = htmlspecialchars( $string, htmlspecialchars_flags() );
+		}
+		else
+		{
+			$ret = '';
+		}
+		return $ret;
+	}
+}
+
+if( !function_exists('htmlspecialchars_flags') )
+{
+	/**
+	 * @return int
+	 */
+	function htmlspecialchars_flags()
+	{
+		switch( Doctype::get() )
+		{
+			case Doctype::VER_HTML_4_01:
+				$flags = ENT_HTML401;
+			break;
+			case Doctype::VER_HTML_5:
+				$flags = ENT_HTML5;
+			break;
+			default:
+				if( Doctype::isXhtml() )
+				{
+					$flags = ENT_XHTML;
+				}
+				else
+				{
+					debug_enforce( false, "Unhandled doctype ".Doctype::get() );
+					$flags = null;
+				}
+			break;
+		}
+		return $flags;
+	}
 }

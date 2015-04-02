@@ -85,7 +85,12 @@ abstract class Lib_Model_Db extends Lib_Model
 	{
 		if( empty($this->_alias) )
 		{
-			$this->_alias = strtolower(str_replace('_', '', get_class($this)));
+			$this->_alias = array_chain(
+				get_class($this),
+				str_replace_dg('_',''),
+				str_replace_dg('\\',''),
+				strtolower_dg()
+			);
 		}
 
 		parent::__construct($options, $init);
@@ -630,11 +635,19 @@ abstract class Lib_Model_Db extends Lib_Model
 			return ctype_alnum($char) ? $char : ' ';
 		});
 		$db = $this->getDb();
+		$firstOne = true;
 		$where = array_chain( explode(' ', $mappedTerm),
 			array_filter_key_dg( not_dg(empty_dg()) ),
-			array_map_val_dg( function( $termPart )use($db,$likeCol,$eqCol,$collate)
+			array_map_val_dg( function( $termPart )use($db,$likeCol,$eqCol,$collate,&$firstOne)
 			{
-				$t1 = $db->quote("$termPart%",'string');
+				if($firstOne)
+				{
+					$t1 = $db->quote( "$termPart%", 'string' );
+					$firstOne = false;
+				} else
+				{
+					$t1 = $db->quote( "%$termPart%", 'string' );
+				}
 				$t2 = $db->quote($termPart,'string');
 				$whereLike = array_map_val($likeCol, function($column)use($collate,$termPart,$t1)
 				{

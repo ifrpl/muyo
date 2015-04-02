@@ -5,83 +5,89 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 
-/**
- * @param string $command
- * @param array|null &$output
- * @param int|null &$retval
- * @return string
- */
-function proc_exec($command, &$output=array(), &$retval=null)
+if( !function_exists('proc_exec') )
 {
-	$descriptors = array(
-		0 => array("pipe","r"),
-		1 => array("pipe","w"),
-		2 => array("pipe","w"),
-	);
-	$res = proc_open($command, $descriptors, $pipes);
-
-	fclose($pipes[0]);
-	$stdout = stream_get_contents($pipes[1]);
-	fclose($pipes[1]);
-	$stderr = stream_get_contents($pipes[2]);
-	fclose($pipes[2]);
-
-	$output = explode(PHP_EOL,$stdout);
-
-	$retval = proc_close($res);
-	if( 0 !== $retval)
+	/**
+	 * @param string $command
+	 * @param array|null &$output
+	 * @param int|null &$retval
+	 * @return string
+	 */
+	function proc_exec($command, &$output=array(), &$retval=null)
 	{
-		logger_log("Process returned error." . PHP_EOL
-			. " * Cli: " . $command          . PHP_EOL
-			. " * Return value: " . $retval  . PHP_EOL
-			. " * Stderr: "                  . PHP_EOL
-			. str_indent($stderr,1)          . PHP_EOL
-			. " * Stdout: "                  . PHP_EOL
-			. str_indent($stdout,1)          . PHP_EOL
+		$descriptors = array(
+			0 => array("pipe","r"),
+			1 => array("pipe","w"),
+			2 => array("pipe","w"),
 		);
-		debug_assert(false); // FIXME: should be enforce but i wont risk it now
-	}
+		$res = proc_open($command, $descriptors, $pipes);
 
-	$ol = count($output);
-	return $ol > 0 ? $output[$ol-1] : '';
+		fclose($pipes[0]);
+		$stdout = stream_get_contents($pipes[1]);
+		fclose($pipes[1]);
+		$stderr = stream_get_contents($pipes[2]);
+		fclose($pipes[2]);
+
+		$output = explode(PHP_EOL,$stdout);
+
+		$retval = proc_close($res);
+		if( 0 !== $retval)
+		{
+			logger_log("Process returned error." . PHP_EOL
+				. " * Cli: " . $command          . PHP_EOL
+				. " * Return value: " . $retval  . PHP_EOL
+				. " * Stderr: "                  . PHP_EOL
+				. str_indent($stderr,1)          . PHP_EOL
+				. " * Stdout: "                  . PHP_EOL
+				. str_indent($stdout,1)          . PHP_EOL
+			);
+			debug_assert(false); // FIXME: should be enforce but i wont risk it now
+		}
+
+		$ol = count($output);
+		return $ol > 0 ? $output[$ol-1] : '';
+	}
 }
 
-/**
- * @param string|callable $command_getter
- * @param array|callable $output_setter
- * @param array|callable $retval_setter
- * @return callable
- */
-function proc_exec_dg($command_getter, &$output_setter=array(), &$retval_setter=null )
+if( !function_exists('proc_exec_dg') )
 {
-	return function()use( $command_getter, &$output_setter, &$retval_setter )
+	/**
+	 * @param string|callable $command_getter
+	 * @param array|callable $output_setter
+	 * @param array|callable $retval_setter
+	 * @return callable
+	 */
+	function proc_exec_dg($command_getter, &$output_setter=array(), &$retval_setter=null )
 	{
-		$args = func_get_args();
-		if( is_callable($command_getter) )
+		return function()use( $command_getter, &$output_setter, &$retval_setter )
 		{
-			$command = call_user_func_array( $command_getter, $args );
-		}
-		else
-		{
-			$command = $command_getter;
-		}
-		$ret = proc_exec( $command, $output, $retval );
-		if( is_callable($output_setter) )
-		{
-			$output_setter( $output );
-		}
-		else
-		{
-			$output_setter = $output;
-		}
-		if( is_callable($retval_setter) )
-		{
-			$retval_setter( $retval );
-		}
-		else
-		{
-			$retval_setter = $retval;
-		}
-		return $ret;
-	};
+			$args = func_get_args();
+			if( is_callable($command_getter) )
+			{
+				$command = call_user_func_array( $command_getter, $args );
+			}
+			else
+			{
+				$command = $command_getter;
+			}
+			$ret = proc_exec( $command, $output, $retval );
+			if( is_callable($output_setter) )
+			{
+				$output_setter( $output );
+			}
+			else
+			{
+				$output_setter = $output;
+			}
+			if( is_callable($retval_setter) )
+			{
+				$retval_setter( $retval );
+			}
+			else
+			{
+				$retval_setter = $retval;
+			}
+			return $ret;
+		};
+	}
 }
