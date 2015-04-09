@@ -942,208 +942,212 @@ abstract class Lib_Model implements Iterator
 	{
 		$form = new App_Form_New();
 
-		$options = array('elements' => array());
+		$elements = [];
 
 		foreach($this->_settings as $column => $setting)
 		{
-			if( $this->recordColumnExists($column) )
+			if(!$this->recordColumnExists($column) )
 			{
-				if(!isset($setting['show_in']) || (isset($setting['show_in']) && in_array('form', $setting['show_in'])))
-				{
-
-					$settingColumn = array(
-						'type' => 'text'
-					);
-
-					if(isset($setting['formOptions']))
-					{
-						$settingColumn['options'] = $setting['formOptions'];
-					}
-					elseif(!array_key_exists('options', $settingColumn))
-					{
-						$settingColumn['options'] = array();
-					}
-
-					$type = 'text';
-					if(isset($setting['type']))
-					{
-						$type = $setting['type'];
-					}
-					if(isset($setting['label']))
-					{
-						$settingColumn['options']['label'] = $setting['label'];
-					}
-					elseif(isset($setting['title']))
-					{
-						$settingColumn['options']['label'] = $setting['title'];
-					}
-
-					if(isset($setting['options']['validators']))
-					{
-						$settingColumn['options']['validators'] = $setting['validators'];
-					}
-					if(isset($setting['filters']))
-					{
-						$settingColumn['options']['filters'] = $setting['filters'];
-					}
-					if(isset($setting['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $setting['decorators'];
-					}
-
-					switch($type)
-					{
-						case "boolean":
-						case "bool":
-							if(!isset($settingColumn['options']['decorators']))
-							{
-								$settingColumn['options']['decorators'] = $form->elementDecorators;
-							}
-							break;
-						case "array":
-							if(!isset($settingColumn['options']['decorators']))
-							{
-								$settingColumn['options']['decorators'] = $form->elementDecorators;
-							}
-							break;
-						case "date":
-							if(!isset($settingColumn['options']['validators']['date']))
-							{
-								$settingColumn['options']['validators']['date'] = array('Date',false,array('Y-m-d'));
-							}
-							if(!isset($settingColumn['options']['decorators']))
-							{
-								$settingColumn['options']['decorators'] = $form->elementDecorators;
-							}
-							break;
-						case "datetime":
-							if(!isset($settingColumn['options']['validators']['date']))
-							{
-								$settingColumn['options']['validators']['date'] = array('Date',false,array('Y-m-d H:i:s'));
-							}
-							if(!isset($settingColumn['options']['decorators']))
-							{
-								$settingColumn['options']['decorators'] = $form->elementDecorators;
-							}
-							break;
-						case "time":
-							if(!isset($settingColumn['options']['validators']['date']))
-							{
-								$settingColumn['options']['validators']['date'] = array('Date',false,array('H:i:s'));
-							}
-							if(!isset($settingColumn['options']['decorators']))
-							{
-								$settingColumn['options']['decorators'] = $form->elementDecorators;
-							}
-							break;
-						case "uint":
-						case "int":
-							@$settingColumn['options']['validators'][] = 'Int';
-							if(!isset($settingColumn['options']['decorators']))
-							{
-								$settingColumn['options']['decorators'] = $form->elementDecorators;
-							}
-							break;
-						case "float":
-							if(!isset($settingColumn['options']['decorators']))
-							{
-								$settingColumn['options']['decorators'] = $form->elementDecorators;
-							}
-							break;
-						case "email":
-							@$settingColumn['options']['validators'][] = 'EmailAddress';
-							if(!isset($settingColumn['options']['decorators']))
-							{
-								$settingColumn['options']['decorators'] = $form->elementDecorators;
-							}
-							break;
-						case "host":
-							@$settingColumn['options']['validators'][] = 'Hostname';
-							if(!isset($settingColumn['options']['decorators']))
-							{
-								$settingColumn['options']['decorators'] = $form->elementDecorators;
-							}
-							break;
-						case "text":
-							if(!isset($settingColumn['options']['decorators']))
-							{
-								$settingColumn['options']['decorators'] = $form->elementDecorators;
-							}
-							break;
-						case "currency":
-						break;
-						case "country":
-							$settingColumn['type'] = 'country';
-						break;
-						case "hidden":
-							$settingColumn['type'] = 'hidden';
-						break;
-						default:
-							debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
-						break;
-					}
-
-					if(isset($setting['formType']))
-					{
-						$settingColumn['type'] = $setting['formType'];
-					}
-					else
-					{
-						$settingColumn['type'] = $this->getFormType($type);
-					}
-					if(isset($setting['unique']) && $setting['unique'] == true)
-					{
-						if(!isset($settingColumn['options']['validators']))
-						{
-							$settingColumn['options']['validators'] = array();
-						}
-						if(!isset($settingColumn['options']['validators']['unique']))
-						{
-							$settingColumn['options']['validators']['unique'] = array('Db_RecordNotExistOrIsUnique', false, array(array(
-								'table' => $this->getTable(),
-								'field' => $column,
-								'primary_key' => $this->getPrimaryKey()
-							)));
-						}
-					}
-					if(isset($setting['required']) && $setting['required'] == true)
-					{
-						$settingColumn['options']['required'] = true;
-					}
-
-					if(isset($setting['multiOptions']))
-					{
-						$multiOptions = $setting['multiOptions'];
-						if($settingColumn['type'] == 'select' || (isset($settingColumn['formType']) && $settingColumn['formType'] == 'select'))
-						{
-							$multiOptions = array('' => 'LABEL_SELECT') + $multiOptions;
-						}
-						$settingColumn['options']['multiOptions'] = $multiOptions;
-
-						if(isset($setting['otherMultioption']) && $setting['formType'] == 'multiCheckbox')
-						{
-							$settingColumn['options']['otherMultioption'] = $setting['otherMultioption'];
-						}
-					}
-
-					if(isset($setting['hidden']) && $setting['hidden'] == true)
-					{
-						$settingColumn['options']['decorators'] = $form->hiddenDecorators;
-						$settingColumn['type'] = 'hidden';
-					}
-
-					$options['elements'][$column] = $settingColumn;
-				}
-
+				continue;
 			}
+
+			if(isset($setting['show_in']) && (isset($setting['show_in']) && !in_array('form', $setting['show_in'])))
+			{
+				continue;
+			}
+
+			$settingColumn = array(
+				'type' => 'text'
+			);
+
+			if(isset($setting['formOptions']))
+			{
+				$settingColumn['options'] = $setting['formOptions'];
+			}
+			elseif(!array_key_exists('options', $settingColumn))
+			{
+				$settingColumn['options'] = array();
+			}
+
+			$type = 'text';
+			if(isset($setting['type']))
+			{
+				$type = $setting['type'];
+			}
+			if(isset($setting['label']))
+			{
+				$settingColumn['options']['label'] = $setting['label'];
+			}
+			elseif(isset($setting['title']))
+			{
+				$settingColumn['options']['label'] = $setting['title'];
+			}
+
+			if(isset($setting['options']['validators']))
+			{
+				$settingColumn['options']['validators'] = $setting['validators'];
+			}
+			if(isset($setting['filters']))
+			{
+				$settingColumn['options']['filters'] = $setting['filters'];
+			}
+			if(isset($setting['decorators']))
+			{
+				$settingColumn['options']['decorators'] = $setting['decorators'];
+			}
+
+			if(isset($setting['helper']) && isset($setting['helper']['name']))
+			{
+				/* TODO 20150401 : make helper definition compatible with FormElement one
+				$settingColumn['options']['helper'] = $setting['helper']['name'];
+				*/
+			}
+
+			switch($type)
+			{
+				case "boolean":
+				case "bool":
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->elementDecorators;
+					}
+					break;
+				case "array":
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->elementDecorators;
+					}
+					break;
+				case "date":
+					if(!isset($settingColumn['options']['validators']['date']))
+					{
+						$settingColumn['options']['validators']['date'] = array('Date',false,array('Y-m-d'));
+					}
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->elementDecorators;
+					}
+					break;
+				case "datetime":
+					if(!isset($settingColumn['options']['validators']['date']))
+					{
+						$settingColumn['options']['validators']['date'] = array('Date',false,array('Y-m-d H:i:s'));
+					}
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->elementDecorators;
+					}
+					break;
+				case "time":
+					if(!isset($settingColumn['options']['validators']['date']))
+					{
+						$settingColumn['options']['validators']['date'] = array('Date',false,array('H:i:s'));
+					}
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->elementDecorators;
+					}
+					break;
+				case "uint":
+				case "int":
+					@$settingColumn['options']['validators'][] = 'Int';
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->elementDecorators;
+					}
+					break;
+				case "float":
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->elementDecorators;
+					}
+					break;
+				case "email":
+					@$settingColumn['options']['validators'][] = 'EmailAddress';
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->elementDecorators;
+					}
+					break;
+				case "host":
+					@$settingColumn['options']['validators'][] = 'Hostname';
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->elementDecorators;
+					}
+					break;
+				case "text":
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->elementDecorators;
+					}
+					break;
+				default:
+					debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
+					break;
+			}
+
+			if(isset($setting['formType']))
+			{
+				$settingColumn['type'] = $setting['formType'];
+			}
+			else
+			{
+				$settingColumn['type'] = $this->_getFormType($type);
+			}
+			if(isset($setting['unique']) && $setting['unique'] == true)
+			{
+				if(!isset($settingColumn['options']['validators']))
+				{
+					$settingColumn['options']['validators'] = array();
+				}
+				if(!isset($settingColumn['options']['validators']['unique']))
+				{
+					$settingColumn['options']['validators']['unique'] = array('Db_RecordNotExistOrIsUnique', false, array(array(
+						'table' => $this->getTable(),
+						'field' => $column,
+						'primary_key' => $this->getPrimaryKey()
+					)));
+				}
+			}
+			if(isset($setting['required']) && $setting['required'] == true)
+			{
+				$settingColumn['options']['required'] = true;
+			}
+
+			if(isset($setting['multiOptions']))
+			{
+				$multiOptions = $setting['multiOptions'];
+				if($settingColumn['type'] == 'select' || (isset($settingColumn['formType']) && $settingColumn['formType'] == 'select'))
+				{
+					$multiOptions = array('' => 'LABEL_SELECT') + $multiOptions;
+				}
+				$settingColumn['options']['multiOptions'] = $multiOptions;
+
+				if(isset($setting['otherMultioption']) && $setting['formType'] == 'multiCheckbox')
+				{
+					$settingColumn['options']['otherMultioption'] = $setting['otherMultioption'];
+				}
+			}
+
+			if(isset($setting['hidden']) && $setting['hidden'] == true)
+			{
+				$settingColumn['options']['decorators'] = $form->hiddenDecorators;
+				$settingColumn['type'] = 'hidden';
+			}
+
+			$elements[$column] = $settingColumn;
 		}
-		$form->setOptions($options);
+
+		$form->setOptions([
+			'elements' => $elements
+		]);
 		$form->setDisableLoadDefaultDecorators(true);
 
 		return $form;
 	}
 
-	private function getFormType($type)
+	private function _getFormType($type)
 	{
 		$formType = 'text';
 		switch($type)
@@ -1188,10 +1192,10 @@ abstract class Lib_Model implements Iterator
 				break;
 			case "hidden":
 				$formType = 'hidden';
-			break;
+				break;
 			default:
 				debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
-			break;
+				break;
 		}
 
 		return $formType;
