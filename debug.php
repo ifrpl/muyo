@@ -1079,3 +1079,17 @@ if( !function_exists('ensure') )
 		return $ret;
 	}
 }
+
+if( !function_exists('paranoid') )
+{
+	function paranoid()
+	{
+		set_error_handler(
+			function ($errno, $errstr, $errfile, $errline)
+			{
+				$exception = new Exception($errstr . '; File: '.$errfile.':'.$errline, $errno);
+				throw $exception;
+			}
+		);
+	}
+}
