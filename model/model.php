@@ -903,6 +903,31 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
+	 * @return array
+	 */
+	public function changedColumnsDiffGet()
+	{
+		return array_chain(
+			$this->recordColumnsGet(),
+			array_filter_key_dg(
+				function ($val, $name)
+				{
+					return $this->changedColumnIs($name);
+				}
+			),
+			array_map_val_dg(
+				function ($val, $name)
+				{
+					$valueFrom = $this->changedColumnGet($name);
+					$valueTo = $val;
+
+					return [ $valueFrom, $valueTo ];
+				}
+			)
+		);
+	}
+
+	/**
 	 * @param array $row
 	 * @return Lib_Model
 	 */
