@@ -1427,3 +1427,64 @@ if( !function_exists('trim_dg') )
 		};
 	}
 }
+
+if( !function_exists('str_pad_dg') )
+{
+	function str_pad_dg($padLength,$padString=null,$padDirection=STR_PAD_RIGHT,$subject=null)
+	{
+		if( is_int($padLength) )
+		{
+			$padLength = return_dg($padLength);
+		}
+		else
+		{
+			debug_enforce_type($padLength,'callable');
+		}
+
+		if( is_null($padString) )
+		{
+			$padString = return_dg(' ');
+		}
+		elseif( is_string($padString) )
+		{
+			$padString = return_dg($padString);
+		}
+		else
+		{
+			debug_enforce_type($padString,'callable');
+		}
+
+		if( is_int($padDirection) )
+		{
+			$padDirection = return_dg($padDirection);
+		}
+		else
+		{
+			debug_enforce_type( $padDirection, 'callable' );
+		}
+
+		if( is_null($subject) )
+		{
+			$subject = tuple_get(0);
+		}
+		elseif( is_string($subject) )
+		{
+			$subject = return_dg($subject);
+		}
+		else
+		{
+			debug_enforce_type($subject,'callable');
+		}
+
+		return function()use($padLength,$padString,$padDirection,$subject)
+		{
+			$args = func_get_args();
+			return str_pad(
+				call_user_func_array( $subject, $args ),
+				call_user_func_array( $padLength, $args ),
+				call_user_func_array( $padString, $args ),
+				call_user_func_array( $padDirection, $args )
+			);
+		};
+	}
+}
