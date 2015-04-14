@@ -294,11 +294,13 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
-	 * @param $array
+	 * @param array $array
+	 * @return $this
 	 */
 	public function recordColumnsSet($array)
 	{
 		$this->_data = $array;
+		return $this;
 	}
 
 	/**
