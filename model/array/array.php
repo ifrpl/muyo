@@ -51,14 +51,3 @@ class Lib_Model_Array extends Lib_Model
 	}
 
 }
-
-/**
-* @return callable
- */
-function count_dg()
-{
-	return function($array)
-	{
-		return count($array);
-	};
-}

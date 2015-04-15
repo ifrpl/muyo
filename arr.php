@@ -1592,3 +1592,17 @@ if( !function_exists('array_append') )
 		return $item;
 	}
 }
+
+if( !function_exists('count_dg') )
+{
+	/**
+	* @return callable
+	 */
+	function count_dg()
+	{
+		return function($array)
+		{
+			return count($array);
+		};
+	}
+}
