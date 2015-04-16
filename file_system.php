@@ -194,23 +194,6 @@ if( !function_exists('path2array') )
 	}
 }
 
-if( !function_exists('rrmdir') )
-{
-	/**
-	 * @param string $path
-	 */
-	function rrmdir($path)
-	{
-		if( !str_endswith($path,'/.') && !str_endswith($path,'/..') )
-		{
-			@array_map('rrmdir',@glob($path.'/*'));
-			@array_map('rrmdir',@glob($path.'/.*'));
-			@unlink($path);
-			@rmdir($path);
-		}
-	}
-}
-
 if( !function_exists('rmkdir') )
 {
 	function rmkdir($path)
@@ -373,6 +356,18 @@ if( !function_exists('glob_match') )
 		} );
 	}
 }
+
+if( !function_exists('rglob') )
+{
+	function rglob($pattern, $flags = 0) {
+	    $files = glob($pattern, $flags);
+	    foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
+	        $files += rglob($dir.'/'.basename($pattern), $flags);
+	    }
+	    return $files;
+	}
+}
+
 
 if( !function_exists('file_put_contents_dg') )
 {
