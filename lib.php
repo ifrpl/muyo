@@ -4,35 +4,6 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-/**
- * @package lib\main
- */
+require_once __DIR__.'/_.php';
 
-if( !defined('ROOT_PATH') )
-{
-	define( 'ROOT_PATH', getcwd() );
-}
-ini_set('include_path',ini_get('include_path').PATH_SEPARATOR.dirname(__FILE__));
-
-require_once "arr.php";
-require_once "cli.php";
-require_once "database.php";
-require_once "misc.php";
-require_once "debug.php";
-require_once "file_system.php";
-require_once "locale.php";
-require_once "logger.php";
-require_once "net.php";
-require_once "hw.php";
-require_once "proc.php";
-require_once "parallel.php";
-require_once "object.php";
-require_once "shell.php";
-require_once "string.php";
-require_once "html.php";
-require_once "bool.php";
-
-require_once "model".DIRECTORY_SEPARATOR."_.php";
-require_once "object".DIRECTORY_SEPARATOR."_.php";
-require_once "zend.php";
-require_once "wkhtmltox.php";
+//debug_assert( false, 'lib.php had been deprecated in favor of _.php' );

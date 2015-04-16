@@ -6,6 +6,7 @@
 
 
 ini_set('include_path',ini_get('include_path').PATH_SEPARATOR.dirname(__FILE__).DIRECTORY_SEPARATOR.'zend');
+require_once __DIR__.'/zend/debug.php';
 
 if( !function_exists('getConfig') )
 {

@@ -9,113 +9,116 @@
 $logger = null;
 
 
-class Logger
+if( !class_exists('Logger') )
 {
-	static public function dump($obj, $message = null, $logLevel = LOG_DEBUG)
+	class Logger
 	{
-		if(null == $message)
+		static public function dump($obj, $message = null, $logLevel = LOG_DEBUG)
 		{
-			$message = buildIdFromCallstack(1);
-		}
-
-		return self::_dump($obj, $message, $logLevel);
-	}
-
-	static public function dumpToFile($obj, $fileName = '')
-	{
-		$id = buildIdFromCallstack(1);
-
-		$outputDirPath = ROOT_PATH . DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
-		if(!file_exists($outputDirPath))
-		{
-			mkdir($outputDirPath, 0777, true);
-		}
-
-		if(!empty($fileName))
-		{
-			$fileName .= '-';
-		}
-
-		$fileName .= IFR_Main_Time::udate('Ymd-His-u') . '.txt';
-
-		$dumpFilePath = $outputDirPath. DIRECTORY_SEPARATOR . $fileName;
-
-		$outputFile = fopen($dumpFilePath, 'wt');
-		self::_dump($obj, '', -1, $outputFile);
-		fclose($outputFile);
-
-		return $dumpFilePath;
-	}
-
-	static public function debug($message)
-	{
-		return logger_log($message, LOG_DEBUG);
-	}
-
-	static public function info($message)
-	{
-		return logger_log($message, LOG_INFO);
-	}
-
-	static public function warn($message)
-	{
-		return logger_log($message, LOG_WARNING);
-	}
-
-	static public function error($message)
-	{
-		return logger_log($message, LOG_ERR);
-	}
-
-	public static function notice($message)
-	{
-		return logger_log($message, LOG_NOTICE);
-	}
-
-	private static function _dump($obj, $message = null, $logLevel = LOG_DEBUG, $outputFile = null)
-	{
-		if(is_array($obj))
-		{
-			$collection = array_reduce_val(
-				$obj,
-				function($startValue, $val, $key){
-					return $startValue || ($val instanceof Lib_Model);
-				},
-				false
-			);
-
-			if($collection)
+			if(null == $message)
 			{
-				$message .= ' [collection]';
-
-				array_each(
-					$obj,
-					function($value, $key) use($message, $logLevel, $outputFile){
-						self::_dump($value, $message . "[$key]", $logLevel, $outputFile);
-					}
-				);
-
-				return;
+				$message = buildIdFromCallstack(1);
 			}
 
+			return self::_dump($obj, $message, $logLevel);
 		}
 
-		if($obj instanceof Lib_Model)
+		static public function dumpToFile($obj, $fileName = '')
 		{
-			$message .= sprintf(' %s->toArray()', get_class($obj));
+			$id = buildIdFromCallstack(1);
 
-			/* @var Lib_Model $obj */
-			$obj = $obj->toArray();
+			$outputDirPath = ROOT_PATH . DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
+			if(!file_exists($outputDirPath))
+			{
+				mkdir($outputDirPath, 0777, true);
+			}
+
+			if(!empty($fileName))
+			{
+				$fileName .= '-';
+			}
+
+			$fileName .= IFR_Main_Time::udate('Ymd-His-u') . '.txt';
+
+			$dumpFilePath = $outputDirPath. DIRECTORY_SEPARATOR . $fileName;
+
+			$outputFile = fopen($dumpFilePath, 'wt');
+			self::_dump($obj, '', -1, $outputFile);
+			fclose($outputFile);
+
+			return $dumpFilePath;
 		}
 
-		$dump = var_export($obj, true);
-		if(null != $outputFile)
+		static public function debug($message)
 		{
-			fwrite($outputFile, $message . ': ' . $dump);
+			return logger_log($message, LOG_DEBUG);
 		}
-		else
+
+		static public function info($message)
 		{
-			logger_log($message . ': ' . $dump, $logLevel);
+			return logger_log($message, LOG_INFO);
+		}
+
+		static public function warn($message)
+		{
+			return logger_log($message, LOG_WARNING);
+		}
+
+		static public function error($message)
+		{
+			return logger_log($message, LOG_ERR);
+		}
+
+		public static function notice($message)
+		{
+			return logger_log($message, LOG_NOTICE);
+		}
+
+		private static function _dump($obj, $message = null, $logLevel = LOG_DEBUG, $outputFile = null)
+		{
+			if(is_array($obj))
+			{
+				$collection = array_reduce_val(
+					$obj,
+					function($startValue, $val, $key){
+						return $startValue || ($val instanceof Lib_Model);
+					},
+					false
+				);
+
+				if($collection)
+				{
+					$message .= ' [collection]';
+
+					array_each(
+						$obj,
+						function($value, $key) use($message, $logLevel, $outputFile){
+							self::_dump($value, $message . "[$key]", $logLevel, $outputFile);
+						}
+					);
+
+					return;
+				}
+
+			}
+
+			if($obj instanceof Lib_Model)
+			{
+				$message .= sprintf(' %s->toArray()', get_class($obj));
+
+				/* @var Lib_Model $obj */
+				$obj = $obj->toArray();
+			}
+
+			$dump = var_export($obj, true);
+			if(null != $outputFile)
+			{
+				fwrite($outputFile, $message . ': ' . $dump);
+			}
+			else
+			{
+				logger_log($message . ': ' . $dump, $logLevel);
+			}
 		}
 	}
 }

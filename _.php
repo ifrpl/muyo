@@ -4,5 +4,11 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-require_once __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'loader.php';
+if( !defined('ROOT_PATH') )
+{
+	define( 'ROOT_PATH', getcwd() );
+}
+ini_set('include_path',ini_get('include_path').PATH_SEPARATOR.dirname(__FILE__));
+
+require_once __DIR__.DIRECTORY_SEPARATOR.'loader.php';
 loader_include_dir_recursive(__DIR__);

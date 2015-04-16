@@ -1339,18 +1339,41 @@ if( !function_exists('array_walk_dg') )
 if( !function_exists('array_implode_dg') )
 {
 	/**
-	 * @param string|null $separator
+	 * @param string|callable|null $separator
+	 * @param array|callable|null
 	 * @return callable
 	 */
-	function array_implode_dg( $separator=null )
+	function array_implode_dg( $separator=null, $array=null )
 	{
-		if( null==$separator )
+		if( null===$separator )
 		{
-			$separator = PHP_EOL;
+			$separator = return_dg(PHP_EOL);
 		}
-		return function( $array )use($separator)
+		elseif( !is_callable($separator) )
 		{
-			return implode( $separator, $array );
+			$separator = return_dg($separator);
+		}
+
+		if( is_null($array) )
+		{
+			$array = tuple_get(0);
+		}
+		elseif( is_array($array) )
+		{
+			$array = return_dg($array);
+		}
+		else
+		{
+			debug_enforce_type( $array, 'callable' );
+		}
+
+		return function()use($separator,$array)
+		{
+			$args = func_get_args();
+			return implode(
+				call_user_func_array($separator,$args),
+				call_user_func_array($array,$args)
+			);
 		};
 	}
 }
@@ -1567,5 +1590,19 @@ if( !function_exists('array_append') )
 			$item = $array[$key];
 		}
 		return $item;
+	}
+}
+
+if( !function_exists('count_dg') )
+{
+	/**
+	* @return callable
+	 */
+	function count_dg()
+	{
+		return function($array)
+		{
+			return count($array);
+		};
 	}
 }
