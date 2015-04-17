@@ -357,6 +357,23 @@ if( !function_exists('glob_match') )
 	}
 }
 
+if( !function_exists('rrmdir') )
+{
+	/**
+	 * @param string $path
+	 */
+	function rrmdir($path)
+	{
+		if( !str_endswith($path,'/.') && !str_endswith($path,'/..') )
+		{
+			@array_map('rrmdir',@glob($path.'/*'));
+			@array_map('rrmdir',@glob($path.'/.*'));
+			@unlink($path);
+			@rmdir($path);
+		}
+	}
+}
+
 if( !function_exists('rglob') )
 {
 	function rglob($pattern, $flags = 0) {
