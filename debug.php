@@ -4,6 +4,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+require_once __DIR__.'/string.php';
 
 if( !function_exists('debug_allow') )
 {

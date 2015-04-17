@@ -4,6 +4,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+require_once __DIR__.'/debug.php';
+require_once __DIR__.'/misc.php';
 
 if( !function_exists('array_insert_') )
 {
@@ -983,33 +985,32 @@ if( !function_exists('array_key_exists_dg') )
 if( !function_exists('array_first') )
 {
 	/**
-	 * Returns [0..count]
+	 * Returns [0..n]
 	 *
 	 * @param array $array
-	 * @param int $count
+	 * @param int $n
 	 *
 	 * @return array
 	 */
-	function array_first($array,$count = 1)
+	function array_first($array,$n = 1)
 	{
-		return array_slice($array,0,$count,is_array_assoc($array));
+		return array_slice($array,0,$n,is_array_assoc($array));
 	}
 }
 
 if( !function_exists('array_first_dg') )
 {
 	/**
-	 * Returns [0..count]
+	 * Returns [0..n]
 	 *
-	 * @param int $count
-	 *
+	 * @param int $n
 	 * @return callable
 	 */
-	function array_first_dg($count = 1)
+	function array_first_dg($n = 1)
 	{
-		return function($array)use($count)
+		return function($array)use($n)
 		{
-			return array_first($array,$count);
+			return array_first($array,$n);
 		};
 	}
 }
@@ -1017,33 +1018,33 @@ if( !function_exists('array_first_dg') )
 if( !function_exists('array_initial') )
 {
 	/**
-	 * Returns [0..$-idx]
+	 * Returns [0..$-n]
 	 *
 	 * @param array $array
-	 * @param int $idx
+	 * @param int $n
 	 *
 	 * @return array
 	 */
-	function array_initial($array,$idx = 1)
+	function array_initial($array,$n = 1)
 	{
-		return array_slice($array,0,-$idx,is_array_assoc($array));
+		return array_slice($array,0,-$n,is_array_assoc($array));
 	}
 }
 
 if( !function_exists('array_initial_dg') )
 {
 	/**
-	 * Returns [0..$-idx]
+	 * Returns [0..$-n]
 	 *
-	 * @param int $idx
+	 * @param int $n
 	 *
 	 * @return callable
 	 */
-	function array_initial_dg($idx = 1)
+	function array_initial_dg($n = 1)
 	{
-		return function($array)use($idx)
+		return function($array)use($n)
 		{
-			return array_initial($array,$idx);
+			return array_initial($array,$n);
 		};
 	}
 }
@@ -1051,33 +1052,33 @@ if( !function_exists('array_initial_dg') )
 if( !function_exists('array_last') )
 {
 	/**
-	 * Returns [$-count..$]
+	 * Returns [$-n..$]
 	 *
 	 * @param array $array
-	 * @param int $count
+	 * @param int $n
 	 *
 	 * @return array
 	 */
-	function array_last($array,$count = 1)
+	function array_last($array,$n = 1)
 	{
-		return array_slice($array,-$count,null,is_array_assoc($array));
+		return array_slice($array,-$n,null,is_array_assoc($array));
 	}
 }
 
 if( !function_exists('array_last_dg') )
 {
 	/**
-	 * Returns [$-count..$]
+	 * Returns [$-n..$]
 	 *
-	 * @param int $count
+	 * @param int $n
 	 *
 	 * @return callable
 	 */
-	function array_last_dg($count = 1)
+	function array_last_dg($n = 1)
 	{
-		return function($array)use($count)
+		return function($array)use($n)
 		{
-			return array_last($array,$count);
+			return array_last($array,$n);
 		};
 	}
 }
@@ -1085,35 +1086,35 @@ if( !function_exists('array_last_dg') )
 if( !function_exists('array_rest') )
 {
 	/**
-	 * Returns [idx..$]
+	 * Returns [n..$]
 	 *
 	 * @param array $array
-	 * @param int $idx
+	 * @param int $n
 	 *
 	 * @return array
 	 */
-	function array_rest($array,$idx = 1)
+	function array_rest($array,$n = 1)
 	{
-		return array_slice($array,$idx,null,is_array_assoc($array));
+		return array_slice($array,$n,null,is_array_assoc($array));
 	}
 }
 
 if( !function_exists('array_rest_dg') )
 {
 	/**
-	 * Returns [idx..$]
+	 * Returns [n..$]
 	 *
-	 * @param int $idx
+	 * @param int $n
 	 *
 	 * @return callable
 	 */
-	function array_rest_dg($idx = 1)
+	function array_rest_dg($n = 1)
 	{
-		return function()use($idx)
+		return function()use($n)
 		{
 			$array = func_get_args();
 			$array = array_shift( $array );
-			return array_rest( $array, $idx );
+			return array_rest( $array, $n );
 		};
 	}
 }
@@ -1604,5 +1605,22 @@ if( !function_exists('count_dg') )
 		{
 			return count($array);
 		};
+	}
+}
+
+if( !function_exists('array_eq') )
+{
+	/**
+	 * @param array $array1
+	 * @param array $array2,...
+	 * @return bool
+	 */
+	function array_eq( $array1, $array2 )
+	{
+		$diff = call_user_func_array(
+			'array_diff',
+			func_get_args()
+		);
+		return empty($diff);
 	}
 }
