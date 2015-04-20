@@ -777,3 +777,60 @@ if( !function_exists('http_accept_charset_sort') )
 		return http_accept_sort( $pairs );
 	}
 }
+
+if( !function_exists('uri_data_from_base64') )
+{
+	/**
+	 * @param string     $base64
+	 * @param null|finfo $mime mime and charset as defined in RFC 2045
+	 * @return string
+	 */
+	function uri_data_from_base64($base64, $mime=null )
+	{
+		debug_enforce( !empty($base64), "Base64 string cannot be empty" );
+		if( $mime===null )
+		{
+			$mime = new finfo( FILEINFO_MIME_ENCODING );
+		}
+		if( is_object($mime) && $mime instanceof finfo )
+		{
+			$mime = $mime->buffer($base64, FILEINFO_MIME_ENCODING );
+		}
+		else
+		{
+			/** @var string $mime */
+			debug_enforce_type($mime,'string');
+		}
+		return 'data:'.$mime.';base64,'.$base64;
+	}
+}
+
+if( !function_exists('uri_data_unpack') )
+{
+	/**
+	 * @param string $uri_data
+	 * @return array
+	 * @throws Exception
+	 */
+	function uri_data_unpack($uri_data)
+	{
+		debug_enforce(
+			preg_match( '/^data:([^;,]+)?;?([^;,]+)?;?(base64)?,(.+)$/', $uri_data, $matches ),
+			'Malformed data uri: '.var_dump_human_compact($uri_data)
+		);
+		return array_rest( $matches, 1 );
+	}
+}
+
+if( !function_exists('uri_data_to_base64') )
+{
+	/**
+	 * @param array $uri_data
+	 * @return string
+	 */
+	function uri_data_to_base64( $uri_data )
+	{
+		$parts = uri_data_unpack( $uri_data );
+		return array_pop( $parts );
+	}
+}
