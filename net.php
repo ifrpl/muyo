@@ -782,7 +782,7 @@ if( !function_exists('uri_data_from_base64') )
 {
 	/**
 	 * @param string     $base64
-	 * @param null|finfo $mime mime and charset as defined in RFC 2045
+	 * @param null|finfo|string $mime mime and charset as defined in RFC 2045
 	 * @return string
 	 */
 	function uri_data_from_base64($base64, $mime=null )
