@@ -1020,11 +1020,12 @@ abstract class Lib_Model implements Iterator
 	/**
 	 * @param string $type
 	 * @param mixed $value
+	 * @param bool $unique
 	 * @return bool
 	 */
-	public function settingIsNull($type,$value)
+	public function settingIsNull($type, $value, $unique = null)
 	{
-		return (!in_array($type, array('bool','boolean','string','text'))) && $value === '';
+		return (!in_array($type, ['bool','boolean','string','text']) || $unique) && $value === '';
 	}
 
 	/**
@@ -1329,7 +1330,8 @@ abstract class Lib_Model implements Iterator
 		{
 			if( !$strict || ($strict && $this->recordColumnExists($key)) )
 			{
-				if( $this->settingExistsGlobally($key) && $this->settingIsNull($this->getSettingGlobal($key,'type'),$value) )
+				if( $this->settingExistsGlobally($key) &&
+					$this->settingIsNull($this->getSettingGlobal($key,'type'), $value, $this->getSettingGlobal($key,'unique')) )
 				{
 					$value = null;
 				}
