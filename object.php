@@ -5,31 +5,34 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 
-class Object
+if( !class_exists('Object') )
 {
-	/**
-	 * @param array $array
-	 */
-	public function __construct($array=[])
+	class Object
 	{
-		foreach($array as $key=>$value)
+		/**
+		 * @param array $array
+		 */
+		public function __construct($array=[])
 		{
-			if(is_array($value))
+			foreach($array as $key=>$value)
 			{
-				$value = new Object($value);
+				if(is_array($value))
+				{
+					$value = new Object($value);
+				}
+				$this->$key = $value;
 			}
-			$this->$key = $value;
 		}
-	}
 
-	/**
-	 * @param $name
-	 *
-	 * @return null
-	 */
-	public function __get($name)
-	{
-		return isset($this->{$name})?$this->{$name}:null;
+		/**
+		 * @param $name
+		 *
+		 * @return null
+		 */
+		public function __get($name)
+		{
+			return isset($this->{$name})?$this->{$name}:null;
+		}
 	}
 }
 

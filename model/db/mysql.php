@@ -151,6 +151,30 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @param string|Zend_Db_Expr $expr
+	 * @param bool $distinct
+	 * @param null|string &$bindAs
+	 * @return $this
+	 */
+	public function maxSet( $expr, $distinct=false, &$bindAs=null )
+	{
+		$exprCopy = $expr;
+		if( true===$this->prefixColumn( $this, $expr ) )
+		{
+			$bindAs = $exprCopy;
+		}
+		$expr = (string) $expr;
+		if( $distinct )
+		{
+			$expr = str_prepend( 'DISTINCT ', $expr );
+		}
+		$expr = 'MAX('.$expr.')';
+		return $this
+			->setColumns( $bindAs===null ? $expr : "{$expr} AS {$bindAs}", $this->getAlias() )
+		;
+	}
+
+	/**
 	 * @return int
 	 */
 	public function count()
@@ -160,7 +184,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
-	 * WARNING: properly string/expression escaping is missing
+	 * WARNING: proper string/expression escaping is missing
 	 * @param array|Zend_Db_Expr|string $expr
 	 * @param string|null $alias
 	 * @param string|null $separator
@@ -995,20 +1019,21 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 	/**
 	 * @param Lib_Model_db $model
-	 * @param string|null $column
+	 * @param string &$column
 	 * @return string
 	 */
-	private function prefixColumn($model, $column = null)
+	private function prefixColumn($model, &$column)
 	{
-		if( is_null($column) )
-		{
-			$column = $model->getAlias().'.'.$model->getPrimaryKey();
-		}
-		elseif( false === strpos($column,'.') )
+		if( false === strpos($column,'.') )
 		{
 			$column = $model->getAlias().'.'.$column;
+			$prefixed = true;
 		}
-		return $column;
+		else
+		{
+			$prefixed = false;
+		}
+		return $prefixed;
 	}
 
 	/**
@@ -1088,10 +1113,17 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function joinTo($model,$thisKeyCol,$thatKeyCol=null,$conditions='')
 	{
-		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
+		if( !debug_assert( null !== $thatKeyCol ) )
+		{
+			$thatKeyCol = $model->getPrimaryKey();
+		}
+		elseif( !debug_assert( null !== $thisKeyCol ) )
+		{
+			$thisKeyCol = $this->getPrimaryKey();
+		}
 
-		$thatKeyCol = $this->prefixColumn($model, $thatKeyCol);
-		$thisKeyCol = $this->prefixColumn($this, $thisKeyCol);
+		$this->prefixColumn($model, $thatKeyCol);
+		$this->prefixColumn($this, $thisKeyCol);
 
 		$conditions = str_replace('{that}',$model->getAlias(),$conditions);
 		$conditions = str_replace('{this}',$this->getAlias(),$conditions);
@@ -1131,10 +1163,16 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function joinFrom($model, $thisKeyCol, $thatKeyCol=null, $conditions='')
 	{
-		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
-
-		$thatKeyCol = $this->prefixColumn($model, $thatKeyCol);
-		$thisKeyCol = $this->prefixColumn($this, $thisKeyCol);
+		if( !debug_assert( null !== $thatKeyCol ) )
+		{
+			$thatKeyCol = $model->getPrimaryKey();
+		}
+		elseif( !debug_assert( null !== $thisKeyCol ) )
+		{
+			$thisKeyCol = $this->getPrimaryKey();
+		}
+		$this->prefixColumn($model, $thatKeyCol);
+		$this->prefixColumn($this, $thisKeyCol);
 
 		$conditions = str_replace('{that}', $model->getAlias(), $conditions);
 		$conditions = str_replace('{this}', $this->getAlias(), $conditions);

@@ -1075,6 +1075,21 @@ if( !function_exists('strtoupper_dg') )
 	}
 }
 
+if( !function_exists('str_prepend') )
+{
+	/**
+	 * @param string $string
+	 * @param string $what
+	 * @return string
+	 */
+	function str_prepend( $string, $what )
+	{
+		$what = (string) $what;
+		$string = (string) $string;
+		return $what.$string;
+	}
+}
+
 if( !function_exists('str_prepend_dg') )
 {
 	/**
@@ -1085,7 +1100,7 @@ if( !function_exists('str_prepend_dg') )
 	{
 		return function( $string )use( $what )
 		{
-			return $what.$string;
+			return str_prepend( $string, $what );
 		};
 	}
 }
