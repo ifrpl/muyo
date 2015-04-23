@@ -1115,9 +1115,6 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	{
 		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
 
-		$thatKeyCol = $this->prefixColumn($model, $thatKeyCol);
-		$thisKeyCol = $this->prefixColumn($this, $thisKeyCol);
-
 		$this->prefixColumn($model, $thatKeyCol);
 		$this->prefixColumn($this, $thisKeyCol);
 
@@ -1159,14 +1156,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function joinFrom($model, $thisKeyCol, $thatKeyCol=null, $conditions='')
 	{
-		if( !debug_assert( null !== $thatKeyCol ) )
-		{
-			$thatKeyCol = $model->getPrimaryKey();
-		}
-		elseif( !debug_assert( null !== $thisKeyCol ) )
-		{
-			$thisKeyCol = $this->getPrimaryKey();
-		}
+		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
+
 		$this->prefixColumn($model, $thatKeyCol);
 		$this->prefixColumn($this, $thisKeyCol);
 
