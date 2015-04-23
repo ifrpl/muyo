@@ -653,22 +653,6 @@ if( !function_exists('array_uniq_dg') )
 	}
 }
 
-if( !function_exists('list_uniq') )
-{
-	/**
-	 * Warning: Opposed to {@see array_uniq} it doesn't preserve original keys
-	 *
-	 * @param array $list
-	 * @param callable $iterator
-	 *
-	 * @return array
-	 */
-	function list_uniq($list, $iterator)
-	{
-		return array_values(array_uniq($list,$iterator));
-	}
-}
-
 if( !function_exists('array_pluck') )
 {
 	/**
@@ -907,33 +891,6 @@ if( !function_exists('is_array_assoc') )
 			else
 			{
 				$ret = array_some($val,tuple_get(1,'is_string'));
-			}
-		}
-		return $ret;
-	}
-}
-
-if( !function_exists('is_array_list') )
-{
-	/**
-	 * @param mixed $val
-	 * @return bool
-	 */
-	function is_array_list($val)
-	{
-		if( !is_array($val) )
-		{
-			$ret = false;
-		}
-		else
-		{
-			if( empty($val) )
-			{
-				$ret = true; // WARNING: common for both type of arrays
-			}
-			else
-			{
-				$ret = array_some($val,tuple_get(1,'is_int'));
 			}
 		}
 		return $ret;

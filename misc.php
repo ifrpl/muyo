@@ -308,14 +308,24 @@ if( !function_exists('and_dg') )
 if( !function_exists('empty_dg') )
 {
 	/**
+	 * @param callable|null $subject
 	 * @return callable
 	 */
-	function empty_dg()
+	function empty_dg( $subject=null )
 	{
-		return function()
+		if( null===$subject )
 		{
-			$arg = func_get_arg(0);
-			return empty($arg);
+			$subject = tuple_get(0);
+		}
+		else
+		{
+			debug_enforce_type( $subject, 'callable' );
+		}
+		return function()use( $subject )
+		{
+			$args = func_get_args();
+			$subject = call_user_func_array( $subject, $args );
+			return empty( $subject );
 		};
 	}
 }
