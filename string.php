@@ -475,6 +475,43 @@ if( !function_exists('str_map_dg') )
 	}
 }
 
+if( !function_exists('str_filter') )
+{
+	/**
+	 * @param string $string
+	 * @param string|array|callable $allow
+	 * @return string
+	 * @throws Exception
+	 */
+	function str_filter($string,$allow)
+	{
+		debug_enforce_type( $string, 'string' );
+		if( is_array_list($allow) )
+		{
+			debug_enforce(
+				array_all($allow,tuple_get(0,'is_string')),
+				"Unhandled value for allow parameter: ".var_dump_human_compact($allow)
+			);
+			$allow = implode('',$allow);
+		}
+		if( is_string($allow) )
+		{
+			$allow = str_contains_dg( tuple_get(0), $allow );
+		}
+		$ret = '';
+		$len = strlen($string);
+		for ($i = 0; $i < $len; $i++)
+		{
+			$char = $string[ $i ];
+			if( $allow($char) )
+			{
+				$ret .= $char;
+			}
+		}
+		return $ret;
+	}
+}
+
 if( !function_exists('str_all') )
 {
 	/**
@@ -1270,6 +1307,20 @@ if( !function_exists('ctype_alnum_dg') )
 		return function($char)
 		{
 			return ctype_alnum($char);
+		};
+	}
+}
+
+if( !function_exists('ctype_space_dg') )
+{
+	/**
+	 * @return callable
+	 */
+	function ctype_space_dg()
+	{
+		return function($char)
+		{
+			return ctype_space($char);
 		};
 	}
 }
