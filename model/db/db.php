@@ -515,13 +515,12 @@ abstract class Lib_Model_Db extends Lib_Model
 
 	/**
 	 * @param Zend_Db_Select|null $q
-	 * @param bool $collection
 	 *
 	 * @return $this
 	 */
-	public function loadOne($q = null, $collection = false)
+	public function loadOne($q = null)
 	{
-		$ret = $this->load($q,$collection);
+		$ret = $this->load($q,true);
 		$count = count($ret);
 
 		if( $count === 0 )
