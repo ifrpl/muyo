@@ -151,6 +151,28 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @param string|null $expr
+	 * @param string|null $bindAs
+	 * @return $this
+	 */
+	public function countSet( $expr=null, &$bindAs=null )
+	{
+		if( $expr===null )
+		{
+			$expr = '1';
+		}
+		else
+		{
+			$this->prefixColumn( $this, $expr );
+		}
+		if( $bindAs===null )
+		{
+			$bindAs = 'count';
+		}
+		return $this->setCount( $expr, $bindAs );
+	}
+
+	/**
 	 * @param string|Zend_Db_Expr $expr
 	 * @param bool $distinct
 	 * @param null|string &$bindAs
