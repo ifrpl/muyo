@@ -141,7 +141,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function __sleep()
 	{
-		return array('_data');
+		return array('_data', '_settings');
 	}
 
 	/**
