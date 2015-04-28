@@ -381,12 +381,16 @@ abstract class Lib_Model_Db extends Lib_Model
 
 	/**
 	 * @param int $id
+	 * @param array|callable|null $constructor
 	 * @return static
 	 */
-	public static function getById($id)
+	public static function getById( $id, $constructor=null )
 	{
 		$dummy = static::find();
-		return static::getBy(array($dummy->getPrimaryKey()=>$id));
+		return static::getBy(
+			[$dummy->getPrimaryKey()=>$id],
+			$constructor
+		);
 	}
 
 	/**
@@ -479,7 +483,7 @@ abstract class Lib_Model_Db extends Lib_Model
 		}
 		else
 		{
-			throw new Lib_Exception("Static method '{$name}' not implemented.");
+			throw new Exception("Static method '{$name}' not implemented.");
 		}
 	}
 
