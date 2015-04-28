@@ -757,3 +757,30 @@ if( !function_exists('collection_map_val_recursive') )
 		return $ret;
 	}
 }
+
+if( !function_exists('max_execution_time_set_dg') )
+{
+	/**
+	 * @param int|callable $seconds
+	 * @return callable
+	 */
+	function max_execution_time_set_dg($seconds)
+	{
+		if( is_numeric($seconds) )
+		{
+			$seconds = return_dg( $seconds );
+		}
+		else
+		{
+			debug_enforce_type( $seconds, 'callable' );
+		}
+		return function()use($seconds)
+		{
+			$args = func_get_args();
+			$key = 'max_execution_time';
+			$ret = ini_get( $key );
+			ini_set( $key, call_user_func_array( $seconds, $args ) );
+			return $ret;
+		};
+	}
+}
