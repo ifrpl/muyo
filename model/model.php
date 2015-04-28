@@ -1879,6 +1879,12 @@ abstract class Lib_Model implements Iterator
 						$settingColumn['options']['decorators'] = $form->elementDecorators;
 					}
 					break;
+				case "hidden":
+					if(!isset($settingColumn['options']['decorators']))
+					{
+						$settingColumn['options']['decorators'] = $form->hiddenDecorators;
+					}
+					break;
 				default:
 					debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
 					break;
