@@ -376,16 +376,47 @@ if( !function_exists('rrmdir') )
 
 if( !function_exists('rglob') )
 {
-	function rglob($pattern, $flags = 0) {
-	    $files = glob($pattern, $flags);
-	    foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
+    define('RGLOB_UP',      +1);
+    define('RGLOB_DOWN',    -1);
 
-	        $files = array_merge(
-                $files,
-                rglob($dir.'/'.basename($pattern), $flags)
+    /**
+     * Recursive glob
+     *
+     * @param $pattern
+     * @param int $flags
+     * @param int $direction
+     * @return array
+     */
+	function rglob($pattern, $flags = 0, $direction = RGLOB_DOWN)
+    {
+	    $files = glob($pattern, $flags);
+        $subFiles = [];
+
+	    foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir)
+        {
+            $subFiles = array_merge(
+                $subFiles,
+                rglob($dir.'/'.basename($pattern), $flags, $direction)
             );
 	    }
-	    return $files;
+
+        if(RGLOB_DOWN == $direction)
+        {
+            return array_merge(
+                $files,
+                $subFiles
+            );
+        }
+
+        if(RGLOB_UP == $direction)
+        {
+            return array_merge(
+                $subFiles,
+                $files
+            );
+        }
+
+        assert(false, 'Invalid direction');
 	}
 }
 
