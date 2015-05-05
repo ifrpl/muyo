@@ -785,9 +785,9 @@ if( !function_exists('debug_handler_assertion_default_dg') )
 		return function ($script, $line, $message)
 		{
 			$e = new Exception("{$script}:{$line} Assertion failed. {$message}");
-			if( getCurrentEnv() === 'production' )
+			if(\IFR\Main\App::isProd())
 			{
-				logger_log( $e );
+				Logger::error( $e );
 			}
 			else
 			{

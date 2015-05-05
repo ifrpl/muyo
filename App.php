@@ -19,7 +19,12 @@ class App{
 		return self::$_instance;
 	}
 
-	public function getEnv()
+    public static function isProd()
+    {
+        return self::PRODUCTION_ENV == self::getEnv();
+    }
+
+	public static function getEnv()
 	{
 		return defined('APPLICATION_ENV') ? APPLICATION_ENV : self::PRODUCTION_ENV;
 	}
