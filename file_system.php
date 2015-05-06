@@ -711,38 +711,3 @@ if( !function_exists('is_file_dg') )
 		};
 	}
 }
-
-if( !function_exists('file_bson') )
-{
-	/**
-	 * @param $filename
-	 * @return array of arrays
-	 */
-	function file_bson($filename)
-	{
-		$ret = [];
-
-		$file = fopen($filename, 'r');
-
-		while (true)
-		{
-			$packedLength = fread($file, 4);
-
-			if (feof($file))
-			{
-				break;
-			}
-
-			$unpacked = unpack('V', $packedLength);
-			$length = array_shift($unpacked);
-
-			fseek($file, -4, SEEK_CUR);
-			$ret[] = bson_decode(fread($file, $length));
-		}
-
-		fclose($file);
-
-		return $ret;
-	}
-}
-
