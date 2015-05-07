@@ -2,6 +2,7 @@
 
 namespace Tests\TestCase\Model;
 
+require_once 'autoload.php';
 
 /**
  * Field and settings management
@@ -12,7 +13,7 @@ namespace Tests\TestCase\Model;
  * Class c00
  * @package Tests\TestCase
  */
-class c00 extends \PHPUnit_Framework_TestCase
+class C00 extends \PHPUnit_Framework_TestCase
 {
     private $model = null;
 

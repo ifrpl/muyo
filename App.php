@@ -29,6 +29,64 @@ class App{
 		return defined('APPLICATION_ENV') ? APPLICATION_ENV : self::PRODUCTION_ENV;
 	}
 
+    public function loadConfig($filePath)
+    {
+        $config = $this->_loadConfig($filePath, true);
+
+        $localConfig = $this->_loadConfig($filePath . ".local");
+
+        $config->merge($localConfig);
+
+        return $config;
+    }
+
+    public function loadFile($filePath)
+    {
+        if (!file_exists($filePath))
+        {
+            return false;
+        }
+
+        require_once $filePath;
+
+        $localFilePath = $filePath . ".local";
+        if(file_exists($localFilePath))
+        {
+            require_once $localFilePath;
+        }
+
+        return true;
+    }
+
+    private function _loadConfig($fullpath, $write = false)
+    {
+        if (!file_exists($fullpath))
+        {
+            return Zend_Config([], $write);
+        }
+
+        $extArray = explode(".", trim(strtolower($fullpath)));
+
+        do
+        {
+            $ext = array_pop($extArray);
+        }
+        while($ext == "local");
+
+        switch($ext)
+        {
+            case 'ini':
+                return new Zend_Config_Ini($fullpath, null, $write);
+            case 'xml':
+                return new Zend_Config_Xml($fullpath, null, $write);
+            case 'php':
+                $data = include $fullpath;
+                return new Zend_Config($data, $write);
+            default:
+                throw new Zend_Config_Exception("Invalid '$ext' format for config file");
+        }
+    }
+
 	/**
 	 * @param array $config
 	 * @param bool $createDbVersion

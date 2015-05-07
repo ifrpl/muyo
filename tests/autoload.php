@@ -5,16 +5,7 @@ require_once __DIR__ . '/vendor/phpunit/phpunit/src/Framework/Assert/Functions.p
 
 require_once realpath(dirname(__DIR__)) . DIRECTORY_SEPARATOR .'_.php';
 
-$envFilePath = "./configs/environment.php";
-/** Init environment */
-if( file_exists( "$envFilePath.local" ) )
-{
-	require_once "$envFilePath.local";
-}
-elseif( file_exists( $envFilePath ) )
-{
-	require_once $envFilePath;
-}
+define('APPLICATION_PATH',  __DIR__);
+define('CONF_PATH',         '/etc/IFR/Main/tests/configs');
 
-define('APPLICATION_PATH', __DIR__);
- 
+\IFR\Main\App::get()->loadFile(CONF_PATH . '/environment.php');

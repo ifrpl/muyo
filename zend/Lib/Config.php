@@ -81,11 +81,11 @@ class Lib_Config
 					$cfg = new Zend_Config_Xml($fullpath, null, $write);
 					break;
 				default:
-					throw new Zend_Config_Exception('Invalid format for config file');
+					throw new Zend_Config_Exception("Invalid '$ext' format for config file");
 					break;
 			}
 		} else {
-				throw new Zend_Application_Resource_Exception('File does not exist');
+				throw new Zend_Application_Resource_Exception("File '$fullpath' does not exist");
 		}
 		return $cfg;
 	}

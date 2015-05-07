@@ -43,7 +43,8 @@ abstract class Abstract_ extends \Lib_Model_Db_Mysql
 
 		// PDO
 
-		$config = getConfig('./configs/application.xml', \IFR\Main\App::getEnv())->db->toArray();
+		$config = getConfig(CONF_PATH . '/application.xml', \IFR\Main\App::getEnv());
+        $config = $config->db->toArray();
 
 		$this->_db = $this->app->getMysqlDb($config);
 
