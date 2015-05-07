@@ -8,6 +8,9 @@
 abstract class Lib_Model implements Iterator
 {
 	const SETTING_TYPE='type';
+	const SETTING_VIRTUAL = 'virtual';
+	const SETTING_SET = 'set';
+	const SETTING_GET = 'get';
 
 	/**
 	 * @var array field type identifiers
@@ -187,9 +190,12 @@ abstract class Lib_Model implements Iterator
 
 			$this->schemaColumnApplyDefault($name,$settings,$defaultValue);
 
-			$this->_data[$name] = $defaultValue;
 			$this->addSetting($name,$settings);
 			$this->settingDefaultSet($name,$settings);
+			if( !$this->getSetting( $name, self::SETTING_VIRTUAL ) )
+			{
+				$this->recordColumnSet( $name, $defaultValue );
+			}
 		}
 		return $this;
 	}
@@ -301,6 +307,35 @@ abstract class Lib_Model implements Iterator
 	{
 		$this->_data = $array;
 		return $this;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function recordColumnCurrent()
+	{
+		return current($this->_data);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function recordColumnKey()
+	{
+		return key($this->_data);
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function recordColumnNext()
+	{
+		return next($this->_data);
+	}
+
+	public function recordColumnRewind()
+	{
+		reset($this->_data);
 	}
 
 	/**
@@ -714,14 +749,24 @@ abstract class Lib_Model implements Iterator
 			)
 		)
 		{
-			$method = 'set' . $this->getMethodSufixForProperty($column);
-			if ( method_exists($this, $method) )
+			if( $this->settingExists( $column, self::SETTING_SET ) )
 			{
-				$this->$method($value);
+				call_user_func(
+					$this->getSetting( $column, self::SETTING_SET ),
+					$value
+				);
 			}
 			else
 			{
-				$this->recordColumnSet( $column, $value );
+				$method = 'set' . $this->getMethodSufixForProperty($column);
+				if ( method_exists($this, $method) )
+				{
+					$this->$method($value);
+				}
+				else
+				{
+					$this->recordColumnSet( $column, $value );
+				}
 			}
 		}
 		return $this;
@@ -770,21 +815,27 @@ abstract class Lib_Model implements Iterator
 			)
 		)
 		{
-
-			$method = 'get' . $this->getMethodSufixForProperty($column);
-			if( method_exists($this, $method) )
+			if( $this->settingExists( $column, self::SETTING_GET ) )
 			{
-				$ret = $this->$method();
+				call_user_func( $this->getSetting( $column, self::SETTING_GET ) );
 			}
 			else
 			{
-				if( $this->recordColumnExists($column) )
+				$method = 'get' . $this->getMethodSufixForProperty($column);
+				if( method_exists($this, $method) )
 				{
-					$ret = $this->recordColumnGet($column);
+					$ret = $this->$method();
 				}
 				else
 				{
-					$ret = $this->getDefaultValueForColumn( $column );
+					if( $this->recordColumnExists($column) )
+					{
+						$ret = $this->recordColumnGet($column);
+					}
+					else
+					{
+						$ret = $this->getDefaultValueForColumn( $column );
+					}
 				}
 			}
 		}
@@ -920,7 +971,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function changedColumnsReset()
 	{
-		$this->changeRecordData = $this->_data;
+		$this->changeRecordData = $this->recordColumnsGet();
 		return $this;
 	}
 
@@ -1144,7 +1195,7 @@ abstract class Lib_Model implements Iterator
 	public function settingTableGet( $key )
 	{
 		$settings = $this->settingsTableGet();
-		if( debug_assert( array_key_exists($key,$settings), "Setting doesn't exists: ".var_dump_human_full(array($settings,$key)) ) )
+		if( debug_assert( array_key_exists($key,$settings), "Setting ".var_dump_human_compact($key)." doesn't exists in ".var_dump_human_compact(array_keys($settings)) ) )
 		{
 			$ret = $settings[ $key ];
 		}
@@ -1153,6 +1204,17 @@ abstract class Lib_Model implements Iterator
 			$ret = null;
 		}
 		return $ret;
+	}
+
+	/**
+	 * @param string $key
+	 * @param mixed $value
+	 * @return $this
+	 */
+	public function settingTableSet($key, $value)
+	{
+		$this->_settingsTable[ $key ] = $value;
+		return $this;
 	}
 
 	public function serialize()
@@ -1437,7 +1499,7 @@ abstract class Lib_Model implements Iterator
 		$class = get_called_class();
 		if( $this->recordExists() )
 		{
-			$data = var_dump_human_compact($this->_data);
+			$data = var_dump_human_compact( $this->recordColumnsGet() );
 			return $class.'{'.$data.'}';
 		}
 		else
@@ -1470,7 +1532,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function current()
 	{
-		return current($this->_data);
+		return $this->recordColumnCurrent();
 	}
 
 	/**
@@ -1478,7 +1540,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function next()
 	{
-		return next($this->_data);
+		return $this->recordColumnNext();
 	}
 
 	/**
@@ -1486,7 +1548,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function key()
 	{
-		return key($this->_data);
+		return $this->recordColumnKey();
 	}
 
 	/**
@@ -1495,12 +1557,12 @@ abstract class Lib_Model implements Iterator
 	public function valid()
 	{
 		$key = $this->key();
-		return array_key_exists($key, $this->_data);
+		return $this->recordColumnExists( $key );
 	}
 
 	public function rewind()
 	{
-		reset($this->_data);
+		$this->recordColumnRewind();
 	}
 
 
