@@ -1,8 +1,7 @@
 <?php
 
-namespace Tests\TestCase;
+namespace Tests\TestCase\Model;
 
-require_once 'autoload.php';
 
 /**
  * Field and settings management
