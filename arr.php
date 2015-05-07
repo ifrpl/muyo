@@ -7,6 +7,22 @@
 require_once __DIR__.'/debug.php';
 require_once __DIR__.'/misc.php';
 
+if( !function_exists('array_dg') )
+{
+	/**
+	 * @param mixed ...
+	 * @return callable
+	 */
+	function array_dg()
+	{
+		$args = func_get_args();
+		return function()use($args)
+		{
+			return $args;
+		};
+	}
+}
+
 if( !function_exists('array_insert_') )
 {
 	/**
@@ -511,6 +527,9 @@ if( !function_exists('array_map_val') )
 		{
 			$keys = array_keys($array);
 			$values = array_values($array);
+			debug_enforce_type( $iterator, 'callable' );
+			debug_enforce_type( $values, 'array' );
+			debug_enforce_type( $keys, 'array' );
 			$mapped = array_map($iterator, $values, $keys);
 			return array_combine($keys, $mapped);
 		}

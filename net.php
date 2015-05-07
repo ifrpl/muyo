@@ -1000,3 +1000,29 @@ if( !function_exists('http_response_file_download') )
 		call_safe(max_execution_time_set_dg(0),$download,max_execution_time_set_dg(tuple_get(0)));
 	}
 }
+
+if( !function_exists('urlencode_dg') )
+{
+	/**
+	 * @param string|callable $string
+	 * @return callable
+	 */
+	function urlencode_dg($string)
+	{
+		if( is_string($string) )
+		{
+			$string = return_dg($string);
+		}
+		else
+		{
+			debug_enforce_type( $string, 'callable' );
+		}
+		return function()use($string)
+		{
+			$args = func_get_args();
+			return urlencode(
+				call_user_func_array( $string, $args )
+			);
+		};
+	}
+}

@@ -728,6 +728,32 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
+	 * @param string|callable $column
+	 * @param mixed $value
+	 * @return callable
+	 */
+	public function propertySetDg( $column, $value )
+	{
+		if( is_string($column) )
+		{
+			debug_enforce( $this->schemaColumnExists( $column ), "Cannot set non-existant column ".var_dump_human_compact($column) );
+			$column = return_dg( $column );
+		}
+		else
+		{
+			debug_enforce_type( $column, 'callable' );
+		}
+		return function()use($column,$value)
+		{
+			$args = func_get_args();
+			return $this->propertySet(
+				call_user_func_array( $column, $args ),
+				call_user_func_array( $value, $args )
+			);
+		};
+	}
+
+	/**
 	 * @param string $column
 	 * @return mixed
 	 */
@@ -770,6 +796,31 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
+	 * @param string|callable $column
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function propertyGetDg($column)
+	{
+		if( is_string($column) )
+		{
+			debug_enforce( $this->schemaColumnExists($column), "Cannot set non-existant column ".var_dump_human_compact($column) );
+			$column = return_dg( $column );
+		}
+		else
+		{
+			debug_enforce_type( $column, 'callable' );
+		}
+		return function()use($column)
+		{
+			$args = func_get_args();
+			return $this->propertyGet(
+				call_user_func_array( $column, $args )
+			);
+		};
+	}
+
+	/**
 	 * @param string $column
 	 * @return bool
 	 */
@@ -782,6 +833,25 @@ abstract class Lib_Model implements Iterator
 
 		// Watch out for this incompatible change
 		return $this->schemaColumnExists($column);
+	}
+
+	/**
+	 * @param string|callable $column
+	 * @return callable
+	 */
+	public function propertyExistsDg($column)
+	{
+		if( is_string($column) )
+		{
+			$column = return_dg( $column );
+		}
+		return function()use($column)
+		{
+			$args = func_get_args();
+			return $this->propertyExists(
+				call_user_func_array( $column, $args )
+			);
+		};
 	}
 
 	/**
