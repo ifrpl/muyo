@@ -1,10 +1,9 @@
 {
 	"name": "ifrpl/muyo",
 	"description": "PHP utility library",
+	"keywords": ["php"],
+	"type": "library",
 	"require": {
 		"php": ">=5.3.2"
-	},
-	"autoload": {
-		"files": ["_.php"]
 	}
 }
