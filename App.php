@@ -4,9 +4,6 @@ namespace IFR\Main;
 
 class App{
 
-	const PRODUCTION_ENV    = 'production';
-	const DEVELOPMENT_ENV   = 'development';
-
 	static private $_instance = null;
 
 	public static function get()
@@ -21,13 +18,8 @@ class App{
 
     public static function isProd()
     {
-        return self::PRODUCTION_ENV == self::getEnv();
+        return ENV_PRODUCTION == getCurrentEnv();
     }
-
-	public static function getEnv()
-	{
-		return defined('APPLICATION_ENV') ? APPLICATION_ENV : self::PRODUCTION_ENV;
-	}
 
     public function loadConfig($filePath)
     {
@@ -42,20 +34,13 @@ class App{
 
     public function loadFile($filePath)
     {
-        if (!file_exists($filePath))
+        foreach([$filePath, $filePath . '.local'] as $filePath)
         {
-            return false;
+            if (file_exists($filePath))
+            {
+                require_once $filePath;
+            }
         }
-
-        require_once $filePath;
-
-        $localFilePath = $filePath . ".local";
-        if(file_exists($localFilePath))
-        {
-            require_once $localFilePath;
-        }
-
-        return true;
     }
 
     private function _loadConfig($fullpath, $write = false)

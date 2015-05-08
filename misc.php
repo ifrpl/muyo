@@ -4,6 +4,8 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+const ENV_PRODUCTION    = 'production';
+const ENV_DEVELOPMENT   = 'development';
 
 if( !function_exists('getCurrentEnv') )
 {
@@ -18,7 +20,7 @@ if( !function_exists('getCurrentEnv') )
 		}
 		else
 		{
-			return 'development';
+			return ENV_PRODUCTION;
 		}
 	}
 }
