@@ -193,6 +193,27 @@ if( !function_exists('tuple_get') )
 	}
 }
 
+if( !function_exists('tuple_carry') )
+{
+	/**
+	 * @param int  $n
+	 * @param callable|null $apply
+	 * @param mixed $seed
+	 * @return callable
+	 */
+	function tuple_carry($n=0,$apply=null,$seed=null)
+	{
+		$carry = $seed;
+		return function()use($n,$apply,&$carry)
+		{
+			$args = func_get_args();
+			$ret = $apply ? $apply($carry) : $carry;
+			$carry = $args[$n];
+			return $ret;
+		};
+	}
+}
+
 if( !function_exists('return_dg') )
 {
 	/**

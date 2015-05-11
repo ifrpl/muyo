@@ -6,3 +6,5 @@
 
 require_once __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'loader.php';
 loader_include_dir_recursive(__DIR__);
+
+debug_assert( false, 'NO ERROR' );
