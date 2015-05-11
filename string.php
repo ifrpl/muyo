@@ -512,6 +512,39 @@ if( !function_exists('str_filter') )
 	}
 }
 
+if( !function_exists('str_filter_dg') )
+{
+	/**
+	 * @param callable|string $allow
+	 * @param callable|string|null $string
+	 *
+	 * @return callable
+	 */
+	function str_filter_dg($allow,$string=null)
+	{
+		if( null === $string )
+		{
+			$string = tuple_get(0);
+		}
+		elseif( is_string($string) )
+		{
+			$string = return_dg($string);
+		}
+		else
+		{
+			debug_enforce_type( $string, 'callable' );
+		}
+		return function()use($allow,$string)
+		{
+			$args = func_get_args();
+			return str_filter(
+				call_user_func_array( $string, $args ),
+				$allow
+			);
+		};
+	}
+}
+
 if( !function_exists('str_all') )
 {
 	/**
