@@ -38,6 +38,64 @@ if( !function_exists('is_iterable') )
 	}
 }
 
+if( !function_exists('is_type') )
+{
+	/**
+	 * @param mixed $var
+	 * @param string $type
+	 * @return bool
+	 */
+	function is_type( $var, $type )
+	{
+		if( is_callable($var) && $type === 'callable' )
+		{
+			$t = 'callable';
+		}
+		else
+		{
+			$t = gettype($var);
+		}
+		return $t === $type;
+	}
+}
+
+if( !function_exists('is_type_dg') )
+{
+	/**
+	 * @param string|callable $type
+	 * @param callable|null $var
+	 * @return callable
+	 * @throws Exception
+	 */
+	function is_type_dg($type,$var=null)
+	{
+		if( is_string($type) )
+		{
+			$type = return_dg($type);
+		}
+		else
+		{
+			debug_enforce( is_type($type,'callable'), "Invalid type identifier ".var_dump_human_compact($type) );
+		}
+		if( null===$var )
+		{
+			$var = tuple_get();
+		}
+		else
+		{
+			debug_enforce( is_type($var,'callable'), "is_type_dg expects callable returning actual variable, given: ".var_dump_human_compact($var) );
+		}
+		return function()use($type,$var)
+		{
+			$args = func_get_args();
+			return is_type(
+				call_user_func_array( $type, $args ),
+				call_user_func_array( $var, $args )
+			);
+		};
+	}
+}
+
 if( !function_exists('discount') )
 {
 	/**

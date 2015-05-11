@@ -829,16 +829,39 @@ if( !function_exists('debug_enforce_type') )
 	 */
 	function debug_enforce_type( $var, $type )
 	{
-		if( is_callable($var) && $type === 'callable' )
+		debug_enforce( is_type( $var, $type ), "Expected parameter of type ".var_dump_human_compact($type) );
+		return $var;
+	}
+}
+
+if( !function_exists('debug_enforce_type_dg') )
+{
+	function debug_enforce_type_dg( $type, $var=null )
+	{
+		if( is_string($type) )
 		{
-			$t = 'callable';
+			$type = return_dg($type);
 		}
 		else
 		{
-			$t = gettype($var);
+			debug_enforce_type( $type, 'callable' );
 		}
-		debug_enforce( $t === $type, "Parameter of type $type expected, but $t passed" );
-		return $var;
+		if( null===$var )
+		{
+			$var = tuple_get();
+		}
+		else
+		{
+			debug_enforce_type( $var, 'callable' );
+		}
+		return function()use($type,$var)
+		{
+			$args = func_get_args();
+			return debug_enforce_type(
+				call_user_func_array( $var, $args ),
+				call_user_func_array( $type, $args )
+			);
+		};
 	}
 }
 

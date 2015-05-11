@@ -465,6 +465,46 @@ abstract class Lib_Model implements Iterator
 		return $this->_settings;
 	}
 
+	/**
+	 * @param string|array $key
+	 * @param mixed $value
+	 * @return $this
+	 * @throws Exception
+	 */
+	public function settingsSet( $key, $value )
+	{
+		arrayize($key);
+		debug_enforce( array_all_dg(is_type_dg('string')), "Invalid setting key ".var_dump_human_compact($key) );
+		$current = &$this->_settings;
+		while( !empty($key) )
+		{
+			debug_enforce_type( $current, 'array' );
+			$part = array_shift( $key );
+			$current = &$current[$part];
+		}
+		$current = $value;
+		return $this;
+	}
+
+	/**
+	 * @param string|array $key
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function settingsGet( $key=[] )
+	{
+		arrayize($key);
+		debug_enforce( array_all_dg(is_type_dg('string')), "Invalid setting key ".var_dump_human_compact($key) );
+		$current = &$this->_settings;
+		while( !empty($key) )
+		{
+			debug_enforce_type( $current, 'array' );
+			$part = array_shift( $key );
+			$current = &$current[$part];
+		}
+		return $current;
+	}
+
 	public function getSettingsJoined()
 	{
 		return $this->_settingsJoined;

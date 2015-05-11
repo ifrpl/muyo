@@ -94,7 +94,10 @@ if( !function_exists('loader_include_dg') )
 	{
 		if( null===$path )
 		{
-			$path = tuple_get(0);
+			$path = function()
+			{
+				return func_get_arg(0);
+			};
 		}
 		elseif( is_string($path) )
 		{
@@ -140,7 +143,10 @@ if( !function_exists('loader_include_once_dg') )
 	{
 		if( null===$path )
 		{
-			$path = tuple_get(0);
+			$path = function()
+			{
+				return func_get_arg(0);
+			};
 		}
 		elseif( is_string($path) )
 		{
@@ -186,7 +192,10 @@ if( !function_exists('loader_require_dg') )
 	{
 		if( null===$path )
 		{
-			$path = tuple_get(0);
+			$path = function()
+			{
+				return func_get_arg(0);
+			};
 		}
 		elseif( is_string($path) )
 		{
@@ -232,7 +241,10 @@ if( !function_exists('loader_require_once_dg') )
 	{
 		if( null===$path )
 		{
-			$path = tuple_get(0);
+			$path = function()
+			{
+				return func_get_arg(0);
+			};
 		}
 		elseif( is_string($path) )
 		{
