@@ -857,7 +857,7 @@ abstract class Lib_Model implements Iterator
 		{
 			if( $this->settingExists( $column, self::SETTING_GET ) )
 			{
-				call_user_func( $this->getSetting( $column, self::SETTING_GET ) );
+				$ret = call_user_func( $this->getSetting( $column, self::SETTING_GET ) );
 			}
 			else
 			{

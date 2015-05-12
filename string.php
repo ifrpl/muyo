@@ -454,7 +454,10 @@ if( !function_exists('str_map') )
 	 */
 	function str_map($string,$iterator)
 	{
-		return implode('',array_map_val(str_split($string),$iterator));
+		debug_enforce_type( $string, 'string' );
+		debug_enforce_type( $iterator, 'callable' );
+		$parts = array_map_val(str_split($string),$iterator);
+		return implode('',$parts);
 	}
 }
 
@@ -1333,13 +1336,27 @@ if( !function_exists('ctype_xdigit_dg') )
 if( !function_exists('ctype_alnum_dg') )
 {
 	/**
+	 * @param string|callable|null $value
 	 * @return callable
 	 */
-	function ctype_alnum_dg()
+	function ctype_alnum_dg( $value=null )
 	{
-		return function($char)
+		if( is_string($value) )
 		{
-			return ctype_alnum($char);
+			$value = return_dg($value);
+		}
+		elseif( null===$value )
+		{
+			$value = tuple_get();
+		}
+		else
+		{
+			debug_enforce_type( $value, 'callable' );
+		}
+		return function()use($value)
+		{
+			$args = func_get_args();
+			return ctype_alnum( call_user_func_array( $value, $args ) );
 		};
 	}
 }
@@ -1584,6 +1601,80 @@ if( !function_exists('str_pad_dg') )
 				call_user_func_array( $padString, $args ),
 				call_user_func_array( $padDirection, $args )
 			);
+		};
+	}
+}
+
+if( !function_exists('is_char') )
+{
+	/**
+	 * @param string $value
+	 * @return bool
+	 */
+	function is_char($value)
+	{
+		return is_string($value) && strlen($value)===1;
+	}
+}
+
+if( !function_exists('char_accent_map_element') )
+{
+	/**
+	 * @param array|null $value
+	 * @return array
+	 */
+	function char_accent_map_element( $value=null )
+	{
+		static $char_accent_map = ['É'=>'E','E'=>'E','Ë'=>'E','š'=>'s','I'=>'I','Í'=>'I','f'=>'f','o'=>'o','µ'=>'m','Î'=>'I','ž'=>'z','?'=>'D','Y'=>'Y','N'=>'N','O'=>'O','Ó'=>'O','Ô'=>'O','Š'=>'S','L'=>'L','Ö'=>'O','Ž'=>'Z','§'=>'S','A'=>'A','U'=>'U','Á'=>'A','Ú'=>'U','Â'=>'A','Ü'=>'U','Ä'=>'A','Ý'=>'Y','ß'=>'S','Ç'=>'C','a'=>'a','á'=>'a','â'=>'a','u'=>'u','i'=>'i','n'=>'n','ş'=>'s','ü'=>'u','e'=>'e','Ň'=>'N','Ź'=>'Z','ä'=>'a','ý'=>'y','ň'=>'n','ź'=>'z','Ţ'=>'T','Ż'=>'Z','y'=>'y','Ę'=>'E','ţ'=>'t','ż'=>'z','ç'=>'c','ę'=>'e','Ť'=>'T','Ě'=>'E','ť'=>'t','é'=>'e','Ă'=>'A','ě'=>'e','J'=>'J','T'=>'T','ă'=>'e','G'=>'G','j'=>'j','t'=>'t','ë'=>'e','Ą'=>'A','g'=>'g','K'=>'K','ą'=>'a','k'=>'k','Ő'=>'O','í'=>'i','Ć'=>'C','ő'=>'o','î'=>'i','ć'=>'c','Ĺ'=>'L','C'=>'C','ĺ'=>'l','c'=>'c','Ŕ'=>'R','l'=>'l','ŕ'=>'r','Ů'=>'U','H'=>'H','Ľ'=>'L','R'=>'R','ů'=>'u','ó'=>'o','Č'=>'C','h'=>'h','ľ'=>'l','r'=>'r','Ű'=>'U','ô'=>'o','č'=>'c','Ř'=>'R','ű'=>'u','Ď'=>'D','ř'=>'r','ö'=>'o','ď'=>'d','Ł'=>'L','Ś'=>'S','Đ'=>'D','ł'=>'l','ś'=>'s','W'=>'W','đ'=>'d','Ń'=>'N','S'=>'S','w'=>'w','ń'=>'n','s'=>'s','ú'=>'u','Ş'=>'S'];
+		$ret = $char_accent_map;
+		if( null!==$value )
+		{
+			$char_accent_map = $value;
+		}
+		return $ret;
+	}
+}
+
+if( !function_exists('char_accent_map_dg') )
+{
+	/**
+	 * @param string|callable|null $char
+	 * @param string|callable|null $placeholder
+	 * @return string
+	 */
+	function char_accent_map_dg( $char=null, $placeholder=null )
+	{
+		if( null===$char )
+		{
+			$char = tuple_get(0);
+		}
+		elseif( is_char($char) )
+		{
+			$char = return_dg($char);
+		}
+		else
+		{
+			debug_enforce_type( $char, 'callable' );
+		}
+		if( is_null($placeholder) )
+		{
+			$placeholder = return_dg('-');
+		}
+		elseif( is_string($placeholder) )
+		{
+			$placeholder = return_dg($placeholder);
+		}
+		else
+		{
+			debug_enforce_type( $placeholder, 'callable' );
+		}
+		$map = char_accent_map_element();
+		return function()use($map,$char,$placeholder)
+		{
+			$args = func_get_args();
+			$c = call_user_func_array( $char, $args );
+			$ret = array_key_exists( $c, $map ) ? $map[$c] : call_user_func_array( $placeholder, $args );
+			return $ret;
 		};
 	}
 }

@@ -96,6 +96,21 @@ if( !function_exists('is_type_dg') )
 	}
 }
 
+if( !function_exists('gettype_dg') )
+{
+	/**
+	 * @param callable $value
+	 * @return callable
+	 */
+	function gettype_dg($value)
+	{
+		return function()use($value)
+		{
+			return gettype( call_user_func_array( $value, func_get_args() ) );
+		};
+	}
+}
+
 if( !function_exists('discount') )
 {
 	/**
@@ -569,6 +584,44 @@ if( !function_exists('call_if') )
 				return identity_dg();
 			}
 		}
+	}
+}
+
+if( !function_exists('if_dg') )
+{
+	/**
+	 * @param bool|callable $constraint
+	 * @param mixed|callable $true
+	 * @param mixed|callable $false
+	 * @return callable
+	 */
+	function if_dg($constraint,$true,$false)
+	{
+		if( is_bool($constraint) )
+		{
+			$constraint = return_dg($constraint);
+		}
+		if( !is_callable( $true ) )
+		{
+			$true = return_dg( $true );
+		}
+		if( !is_callable( $false ) )
+		{
+			$false = return_dg( $false );
+		}
+		return function()use($constraint,$true,$false)
+		{
+			$args = func_get_args();
+			if( call_user_func_array( $constraint, $args ) )
+			{
+				$ret = call_user_func_array( $true, $args );
+			}
+			else
+			{
+				$ret = call_user_func_array( $false, $args );
+			}
+			return $ret;
+		};
 	}
 }
 
