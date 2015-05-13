@@ -1007,15 +1007,7 @@ if( !function_exists('debug_assert_type') )
 	 */
 	function debug_assert_type($var,$type)
 	{
-		if( is_callable($var) && $type === 'callable' )
-		{
-			$t = 'callable';
-		}
-		else
-		{
-			$t = gettype($var);
-		}
-		debug_assert( $t === $type, "Parameter of type $type expected, but $t passed" );
+		debug_assert( is_type( $var, $type ), "Expected parameter of type ".var_dump_human_compact($type) );
 		return $var;
 	}
 }
