@@ -20,7 +20,7 @@ if( !function_exists('getCurrentEnv') )
 		}
 		else
 		{
-			return ENV_PRODUCTION;
+			return ENV_DEVELOPMENT;
 		}
 	}
 }
