@@ -220,7 +220,7 @@ if( !function_exists('trim_application_path') )
 	 */
 	function trim_application_path($path)
 	{
-		if( str_startswith($path, ROOT_PATH) )
+		if( defined('ROOT_PATH') && str_startswith($path, ROOT_PATH) )
 		{
 			$path = substr($path,strlen(ROOT_PATH)+1);
 			if( PATH_SEPARATOR === $path[0] )

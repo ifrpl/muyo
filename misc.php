@@ -75,7 +75,8 @@ if( !function_exists('saveSerial') )
 	 */
 	function saveSerial($filename,$data)
 	{
-		$filename = ROOT_PATH.'/tmp/'.$filename.'.phpserial';
+        $filename = defined('ROOT_PATH') ? ROOT_PATH : '';
+		$filename .= '/tmp/'.$filename.'.phpserial';
 		file_put_contents($filename,serialize($data));
 	}
 }
