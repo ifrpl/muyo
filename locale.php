@@ -51,8 +51,11 @@ if( !function_exists('tr') )
 
 		if(!isset($config->locale->{$ret}))
 		{
+            $filePath = defined('ROOT_PATH') ? ROOT_PATH : '';
+            $filePath .= '/locale/'.$config->lang.'.found';
+
 			file_put_contents(
-				ROOT_PATH.'/locale/'.$config->lang.'.found',
+                $filePath,
 				"\$locale['{$ret}'] = '{$ret}';\n",
 				FILE_APPEND
 			);

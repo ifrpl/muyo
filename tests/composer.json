@@ -1,0 +1,10 @@
+{
+    "require": {
+		"phpunit/phpunit": "*",
+		"zendframework/zendframework1": "*"
+    },
+	"minimum-stability": "stable",
+	"autoload": {
+		"classmap": ["./Model"]
+	}
+}

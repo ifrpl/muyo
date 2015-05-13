@@ -129,12 +129,13 @@ if( !function_exists('printrlog') )
 		$msg .= print_r($tab,true);
 		$msg .= "\n";
 
-		$logdir = ROOT_PATH.'/tmp';
+		$logdir = defined('ROOT_PATH') ? ROOT_PATH : '';
+        $logdir .= '/tmp';
 		if( !is_dir($logdir) )
 		{
 			mkdir($logdir, 0777, true);
 		}
-		file_put_contents(ROOT_PATH.'/tmp/log',$msg,FILE_APPEND);
+		file_put_contents($logdir . DIRECTORY_SEPARATOR . 'log', $msg, FILE_APPEND);
 		writeln($tab);
 	}
 }
@@ -785,9 +786,9 @@ if( !function_exists('debug_handler_assertion_default_dg') )
 		return function ($script, $line, $message)
 		{
 			$e = new Exception("{$script}:{$line} Assertion failed. {$message}");
-			if( getCurrentEnv() === 'production' )
+			if( ENV_PRODUCTION == getCurrentEnv() )
 			{
-				logger_log( $e );
+				Logger::error( $e );
 			}
 			else
 			{
