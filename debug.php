@@ -398,6 +398,18 @@ if( !function_exists('debug') )
 	 */
 	function debug($tab)
 	{
+		call_user_func_array( 'debug_full', func_get_args() );
+	}
+}
+
+if( !function_exists('debug_full') )
+{
+	/**
+	 * @param mixed $tab
+	 * @param mixed ...
+	 */
+	function debug_full($tab)
+	{
 		if(!debug_allow()) return;
 
 		$trace = backtrace(1);
@@ -406,7 +418,9 @@ if( !function_exists('debug') )
 			write("<pre style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>");
 
 			$traceFile = backtrace();
-			$f = "{$traceFile[0]['file']}:{$traceFile[0]['line']}";
+			$fFile = array_key_exists( 'file', $traceFile[0] ) ? $traceFile[0]['file'] : '???';
+			$fLine = array_key_exists( 'line', $traceFile[0] ) ? $traceFile[0]['line'] : '???';
+			$f = "{$fFile}:{$fLine}";
 			write("<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'><a href='http://localhost:8091?message=$f'>$f</a></div>");
 
 			write("<hr>");
