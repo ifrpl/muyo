@@ -405,15 +405,16 @@ abstract class Lib_Model_Db extends Lib_Model
 		$model = static::find()->filterBy($conditions);
 		if( null === $constructor )
 		{
-			$constructor = array_keys($model->_data);
+			$constructor = array_keys($model->recordColumnsGet());
 		}
-		if( is_array($constructor) )
+		if( is_callable($constructor) )
 		{
-			$model->setColumns($constructor);
+			$constructor($model);
 		}
 		else
 		{
-			$constructor($model);
+			arrayize($constructor);
+			$model->setColumns($constructor);
 		}
 		return $model->load();
 	}

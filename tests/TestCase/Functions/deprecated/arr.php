@@ -10,5 +10,3 @@ debug_assert( array_eq( array_last( range(1,5), 3 ), [3,4,5] ) );
 //debug_assert( array_eq( array_from( range(1,5), 3 ), [3,4,5] ) ); // TODO: array_rest
 //debug_assert( array_eq( array_before( range(1,5), 3 ), [1,2] ) );
 //debug_assert( array_eq( array_after( range(1,5), 3 ), [4,5] ) );
-
-debug_assert( false, 'NO ERROR' );
