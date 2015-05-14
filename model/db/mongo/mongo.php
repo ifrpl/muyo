@@ -26,6 +26,8 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	private $_select;
 	private $_buildCondutions;
 
+	private $_timeout = null;
+
 	protected $_settings = array(
 		'_id' => array(
 			'hidden' => true
@@ -82,6 +84,17 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		$this->_onSave();
 		$this->changedColumnsReset();
 
+		return $this;
+	}
+
+	/**
+	 * @param int $timeout Mongo Cursor timeout in milliseconds. Use -1 to wait forever
+	 *
+	 * @return $this
+	 */
+	public function setTimeout($timeout)
+	{
+		$this->_timeout = $timeout;
 		return $this;
 	}
 
@@ -327,6 +340,11 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 //		{
 			$cursor = $this->getCollection()->find($select->getConditions(), $select->getFields());
 //		}
+
+		if($this->_timeout)
+		{
+			$cursor->timeout($this->_timeout);
+		}
 
 		if($select->getOrder())
 		{

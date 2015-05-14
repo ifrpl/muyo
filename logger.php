@@ -27,7 +27,9 @@ if( !class_exists('Logger') )
 		{
 			$id = buildIdFromCallstack(1);
 
-			$outputDirPath = ROOT_PATH . DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
+            $outputDirPath = defined('ROOT_PATH') ? ROOT_PATH : '';
+			$outputDirPath .= DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
+
 			if(!file_exists($outputDirPath))
 			{
 				mkdir($outputDirPath, 0777, true);

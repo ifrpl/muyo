@@ -220,7 +220,7 @@ if( !function_exists('trim_application_path') )
 	 */
 	function trim_application_path($path)
 	{
-		if( str_startswith($path, ROOT_PATH) )
+		if( defined('ROOT_PATH') && str_startswith($path, ROOT_PATH) )
 		{
 			$path = substr($path,strlen(ROOT_PATH)+1);
 			if( PATH_SEPARATOR === $path[0] )
@@ -376,12 +376,47 @@ if( !function_exists('rrmdir') )
 
 if( !function_exists('rglob') )
 {
-	function rglob($pattern, $flags = 0) {
+    define('RGLOB_UP',      +1);
+    define('RGLOB_DOWN',    -1);
+
+    /**
+     * Recursive glob
+     *
+     * @param $pattern
+     * @param int $flags
+     * @param int $direction
+     * @return array
+     */
+	function rglob($pattern, $flags = 0, $direction = RGLOB_DOWN)
+    {
 	    $files = glob($pattern, $flags);
-	    foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
-	        $files += rglob($dir.'/'.basename($pattern), $flags);
+        $subFiles = [];
+
+	    foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir)
+        {
+            $subFiles = array_merge(
+                $subFiles,
+                rglob($dir.'/'.basename($pattern), $flags, $direction)
+            );
 	    }
-	    return $files;
+
+        if(RGLOB_DOWN == $direction)
+        {
+            return array_merge(
+                $files,
+                $subFiles
+            );
+        }
+
+        if(RGLOB_UP == $direction)
+        {
+            return array_merge(
+                $subFiles,
+                $files
+            );
+        }
+
+        assert(false, 'Invalid direction');
 	}
 }
 
@@ -676,3 +711,38 @@ if( !function_exists('is_file_dg') )
 		};
 	}
 }
+
+if( !function_exists('file_bson') )
+{
+	/**
+	 * @param $filename
+	 * @return array of arrays
+	 */
+	function file_bson($filename)
+	{
+		$ret = [];
+
+		$file = fopen($filename, 'r');
+
+		while (true)
+		{
+			$packedLength = fread($file, 4);
+
+			if (feof($file))
+			{
+				break;
+			}
+
+			$unpacked = unpack('V', $packedLength);
+			$length = array_shift($unpacked);
+
+			fseek($file, -4, SEEK_CUR);
+			$ret[] = bson_decode(fread($file, $length));
+		}
+
+		fclose($file);
+
+		return $ret;
+	}
+}
+

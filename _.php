@@ -4,7 +4,7 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-if( !defined('ROOT_PATH') )
+if( !defined('ROOT_PATH') && !defined('NO_OVERRIDE') )
 {
 	define( 'ROOT_PATH', getcwd() );
 }

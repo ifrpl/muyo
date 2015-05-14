@@ -30,7 +30,7 @@ if( !function_exists('cli_parse') )
 				$param = substr(array_shift($value), 2);
 				$value = join('', $value);
 
-				$ret['param'][$param] = !empty($value) ? $value : true;
+				$ret['param'][$param] = '' != ($value) ? $value : true;
 				continue;
 			}
 			// flag
