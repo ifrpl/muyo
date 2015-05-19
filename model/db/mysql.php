@@ -1352,44 +1352,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function findBy($cond)
 	{
-		$select = $this->getSelect();
-		$select->reset('where');
-		foreach($cond as $col => $value)
-		{
-			if( is_array($value) )
-			{
-				$valueChar = '?';
-				$cond = '=';
-
-				if(isset($value['condition']) && isset($value['value']))
-				{
-					$cond = $value['condition'];
-					$value = $value['value'];
-					$valueChar = '?';
-				}
-
-				if( is_array($value) )
-				{
-					$cond = 'IN';
-					$valueChar = '(?)';
-				}
-
-				$select->where($col.' '. $cond .' '.$valueChar, $value);
-			}
-			else
-			{
-				if( is_null($value) )
-				{
-					$select->where($col.' IS NULL');
-				}
-				else
-				{
-					$select->where($col.' = ?', $value);
-				}
-			}
-		}
-
-		return $this->load($select);
+		debug_assert( false, 'Function findBy is scheduled for deletion, replace by Model::getListBy($conditions)' );
+		return static::getListBy( $cond );
 	}
 
 	/**
@@ -1401,18 +1365,9 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function findOneBy($conditions)
 	{
-		$this->setLimit(1);
-		$results = $this->findBy($conditions);
-
-		if( count($results) == 0 )
-		{
-			$this->fromArray($conditions);
-		}
-		else
-		{
-			$c = current($results);
-			$this->fromArray($c->toArray());
-		}
+		debug_assert( false, 'Function findOneBy is scheduled for deletion, replace with Model::getBy($conditions)' );
+		$instance = static::getBy( $conditions, array_keys($this->schemaColumnsGet()) );
+		$this->fromArray( $instance->toArray() );
 		$this->changedColumnsReset();
 		return $this;
 	}
@@ -1425,13 +1380,18 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function getRow()
 	{
-		$pkey = $this->getPrimaryKey();
-		if( null !== $pkey )
+		debug_assert( false, 'Function getRow is scheduled for deletion, replace with Model::getById( $id )' );
+
+		$key = $this->getPrimaryKey();
+		if( null !== $key )
 		{
-			$row = $this->findOneBy([$pkey => $this->{$pkey}]);
-			return $row;
+			$ret = static::getById( $key );
 		}
-		return null;
+		else
+		{
+			$ret = null;
+		}
+		return $ret;
 	}
 
 }

@@ -541,8 +541,10 @@ abstract class Lib_Model_Db extends Lib_Model
 	/**
 	 * @param Zend_Db_Select|null $q
 	 * @param bool $collection
-	 *
 	 * @return Lib_Model_Db
+	 *
+	 * @deprecated
+	 * @see loadOne
 	 */
 	public function getOne( $q = null, $collection = false )
 	{
