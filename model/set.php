@@ -105,12 +105,10 @@ class Lib_Model_Set implements Iterator
 	 */
 	public function pluck( $property )
 	{
-		$primaryKey = $this->_modelObject->getPrimaryKey();
-		$ret = array();
-		foreach( $this as $model )
+		$ret = [];
+		for ( $this->rewind(); $this->valid(); $this->next() )
 		{
-			//BUG: get rid of this primaryKey thing
-			$ret [ $model->{$primaryKey} ]= $model->{$property};
+			$ret [ $this->key() ] = $this->current()->{$property};
 		}
 		return $ret;
 	}
@@ -121,12 +119,11 @@ class Lib_Model_Set implements Iterator
 	 */
 	public function map( $callable )
 	{
-		$primaryKey = $this->_modelObject->getPrimaryKey();
-		$ret = array();
-		foreach( $this as $id => $model )
+		$ret = [];
+		for( $this->rewind(); $this->valid(); $this->next() )
 		{
-			//BUG: get rid of this primaryKey thing
-			$ret [ $model->{$primaryKey} ]= $callable( $model, $id );
+			$key = $this->key();
+			$ret [ $key ] = $callable( $this->current(), $key );
 		}
 		return $ret;
 	}
@@ -138,9 +135,9 @@ class Lib_Model_Set implements Iterator
 	public function all($callable)
 	{
 		$ret = true;
-		foreach($this as $id => $model)
+		for( $this->rewind(); $this->valid(); $this->next() )
 		{
-			if( !$callable($model,$id) )
+			if( !$callable( $this->current(), $this->key() ) )
 			{
 				$ret = false;
 				break;
@@ -156,9 +153,9 @@ class Lib_Model_Set implements Iterator
 	public function any($callable)
 	{
 		$ret = false;
-		foreach($this as $id => $model)
+		for( $this->rewind(); $this->valid(); $this->next() )
 		{
-			if( $callable($model,$id) )
+			if( $callable( $this->current(), $this->key() ) )
 			{
 				$ret = true;
 				break;
@@ -168,6 +165,8 @@ class Lib_Model_Set implements Iterator
 	}
 
 	/**
+	 * Warning: unusual reduce implementation
+	 *
 	 * @param callable $callable
 	 * @return bool
 	 */
@@ -175,8 +174,9 @@ class Lib_Model_Set implements Iterator
 	{
 		$ret = true;
 		$carry = null;
-		foreach($this as $id => $model)
+		for( $this->rewind(); $this->valid(); $this->next() )
 		{
+			$model = $this->current();
 			if( $carry !== null && !$callable($carry,$model) )
 			{
 				$ret = false;
@@ -193,13 +193,14 @@ class Lib_Model_Set implements Iterator
 	 */
 	public function filter( $callable )
 	{
-		$ret = array();
-		foreach( $this as $id => $model )
+		$ret = [];
+		for( $this->rewind(); $this->valid(); $this->next() )
 		{
-			if( $callable( $model, $id ) )
+			$value = $this->current();
+			$key = $this->key();
+			if( $callable( $value, $key ) )
 			{
-			//BUG: get rid of this primaryKey thing
-				$ret[ key($this->_resultSet) ] = current($this->_resultSet);
+				$ret[ $key ] = $value;
 			}
 		}
 		return $this->setResultSet( $ret );
@@ -210,9 +211,9 @@ class Lib_Model_Set implements Iterator
 	 */
 	public function each( $callable )
 	{
-		foreach( $this as $id=>$model )
+		for( $this->rewind(); $this->valid(); $this->next() )
 		{
-			$callable( $model, $id );
+			$callable( $this->current(), $this->key() );
 		}
 	}
 }
