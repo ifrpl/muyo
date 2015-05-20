@@ -946,10 +946,12 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @param string|null $q
+	 * @param bool $collection
 	 * @return Lib_Model_Set
 	 * @throws Exception
 	 */
-	public function loadSet()
+	public function loadSet( $q=null, $collection=false )
 	{
 		$q = $this->getSelect();
 
@@ -959,7 +961,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		{
 			$q->columns(['*']);
 		}
-		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
+		elseif( !$collection && !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
 		{
 			$this->setColumns($pkey);
 		}
