@@ -421,6 +421,31 @@ abstract class Lib_Model_Db extends Lib_Model
 
 	/**
 	 * @static
+	 * @param array $conditions
+	 * @param array|callable|null $constructor
+	 *
+	 * @return Lib_Model_Set
+	 */
+	public static function getSetBy($conditions,$constructor=null)
+	{
+		$model = static::find()->filterBy($conditions);
+		if( null === $constructor )
+		{
+			$constructor = array_keys($model->_data);
+		}
+		if( is_array($constructor) )
+		{
+			$model->setColumns($constructor);
+		}
+		else
+		{
+			$constructor($model);
+		}
+		return $model->loadSet();
+	}
+
+	/**
+	 * @static
 	 *
 	 * @param $name
 	 * @param $args
@@ -433,15 +458,23 @@ abstract class Lib_Model_Db extends Lib_Model
 	public static function __callStatic($name, $args)
 	{
 		$matches = array();
-		if( preg_match('/^get(List)*By([a-zA-Z]+)$/', $name, $matches) )
+		if( preg_match('/^get(List|Set)*By([a-zA-Z]+)$/', $name, $matches) )
 		{
 			/** @var Lib_Model $model */
 			$model = new static;
 			$cond = array();
 			$list = false;
+			$set = false;
 			if( !empty($matches[1]) )
 			{
-				$list = true;
+				if($matches[1] == 'List')
+				{
+					$list = true;
+				}
+				else
+				{
+					$set = true;
+				}
 			}
 
 			$filter = new Zend_Filter_Word_CamelCaseToSeparator('_');
@@ -459,6 +492,12 @@ abstract class Lib_Model_Db extends Lib_Model
 			}
 
 			$cond[$attr] = array_shift($args);
+
+			if($set)
+			{
+				return static::getSetBy($cond);
+			}
+
 			$result = static::getListBy($cond);
 
 			if( !$list )
