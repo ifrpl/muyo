@@ -778,6 +778,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function propertySet( $column, $value )
 	{
+		debug_enforce( !empty($column), "Cannot set value of empty property" );
 		if( $column == 'id' && $this->getPrimaryKey())
 		{
 			$column = $this->getPrimaryKey();
@@ -844,6 +845,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function propertyGet( $column )
 	{
+		debug_enforce( !empty($column), "Cannot get name of empty property" );
 		if( $column == 'id' && $this->getPrimaryKey() )
 		{
 			$column = $this->getPrimaryKey();
@@ -917,6 +919,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function propertyExists($column)
 	{
+		debug_enforce( !empty($column), "Cannot check if empty property exists" );
 		if( $column == 'id' && $this->getPrimaryKey())
 		{
 			$column = $this->getPrimaryKey();
