@@ -381,12 +381,16 @@ abstract class Lib_Model_Db extends Lib_Model
 
 	/**
 	 * @param int $id
+	 * @param array|callable|null $constructor
 	 * @return static
 	 */
-	public static function getById($id)
+	public static function getById( $id, $constructor=null )
 	{
 		$dummy = static::find();
-		return static::getBy(array($dummy->getPrimaryKey()=>$id));
+		return static::getBy(
+			[$dummy->getPrimaryKey()=>$id],
+			$constructor
+		);
 	}
 
 	/**
@@ -401,15 +405,16 @@ abstract class Lib_Model_Db extends Lib_Model
 		$model = static::find()->filterBy($conditions);
 		if( null === $constructor )
 		{
-			$constructor = array_keys($model->_data);
+			$constructor = array_keys($model->recordColumnsGet());
 		}
-		if( is_array($constructor) )
+		if( is_callable($constructor) )
 		{
-			$model->setColumns($constructor);
+			$constructor($model);
 		}
 		else
 		{
-			$constructor($model);
+			arrayize($constructor);
+			$model->setColumns($constructor);
 		}
 		return $model->load();
 	}
@@ -518,7 +523,7 @@ abstract class Lib_Model_Db extends Lib_Model
 		}
 		else
 		{
-			throw new Lib_Exception("Static method '{$name}' not implemented.");
+			throw new Exception("Static method '{$name}' not implemented.");
 		}
 	}
 
@@ -575,8 +580,10 @@ abstract class Lib_Model_Db extends Lib_Model
 	/**
 	 * @param Zend_Db_Select|null $q
 	 * @param bool $collection
-	 *
 	 * @return Lib_Model_Db
+	 *
+	 * @deprecated
+	 * @see loadOne
 	 */
 	public function getOne( $q = null, $collection = false )
 	{
@@ -651,60 +658,6 @@ abstract class Lib_Model_Db extends Lib_Model
 	public function storeId( $value )
 	{
 		return $this->store( $this->getPrimaryKey(), $value );
-	}
-
-	/**
-	 * @param string $term
-	 * @param array $eqCol
-	 * @param array $likeCol
-	 * @param array $additionalSelectCol
-	 * @return $this
-	 */
-	public function buildSearchCondition(
-		$term,
-		array $eqCol = array(),
-		array $likeCol = array(),
-		array $additionalSelectCol = array()
-	)
-	{
-		$collate = 'utf8_general_ci';
-		$mappedTerm = str_map($term,function($char)
-		{
-			return ctype_alnum($char) ? $char : ' ';
-		});
-		$db = $this->getDb();
-		$firstOne = true;
-		$where = array_chain( explode(' ', $mappedTerm),
-			array_filter_key_dg( not_dg(empty_dg()) ),
-			array_map_val_dg( function( $termPart )use($db,$likeCol,$eqCol,$collate,&$firstOne)
-			{
-				if($firstOne)
-				{
-					$t1 = $db->quote( "$termPart%", 'string' );
-					$firstOne = false;
-				} else
-				{
-					$t1 = $db->quote( "%$termPart%", 'string' );
-				}
-				$t2 = $db->quote($termPart,'string');
-				$whereLike = array_map_val($likeCol, function($column)use($collate,$termPart,$t1)
-				{
-					return "$column COLLATE $collate LIKE $t1";
-				});
-				$whereEq = array_map_val($eqCol, function($column)use($termPart,$t2)
-				{
-					return "$column = $t2";
-				});
-				$where = array_merge( $whereLike, $whereEq );
-				return '( '.implode( ' OR ', $where ).' )';
-			} )
-		);
-
-		$this
-			->setColumns( array_merge( $eqCol, $likeCol, $additionalSelectCol ) )
-			->setWhere( implode(" AND ", $where) );
-
-		return $this;
 	}
 	
 }

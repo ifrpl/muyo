@@ -946,10 +946,12 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @param string|null $q
+	 * @param bool $collection
 	 * @return Lib_Model_Set
 	 * @throws Exception
 	 */
-	public function loadSet()
+	public function loadSet( $q=null, $collection=false )
 	{
 		$q = $this->getSelect();
 
@@ -959,7 +961,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		{
 			$q->columns(['*']);
 		}
-		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
+		elseif( !$collection && !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
 		{
 			$this->setColumns($pkey);
 		}
@@ -1028,6 +1030,29 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		debug_enforce_count_gte( $columns, 1 );
 		debug_assert_count_eq( $columns, 1 );
 		$ret=array_shift( $columns );
+		return $ret;
+	}
+
+	/**
+	 * @param mixed $null
+	 * @return mixed
+	 */
+	public function loadStringNullable( $null=null )
+	{
+		$array = $this->loadArray( null,true );
+		if( count($array)===0 )
+		{
+			$ret = $null;
+		}
+		else
+		{
+			debug_assert_count_eq( $array, 1 );
+			$record = array_shift( $array );
+			$columns = array_flatten( $record );
+			debug_enforce_count_gte( $columns, 1 );
+			debug_assert_count_eq( $columns, 1 );
+			$ret=array_shift( $columns );
+		}
 		return $ret;
 	}
 
@@ -1135,7 +1160,16 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function joinTo($model,$thisKeyCol,$thatKeyCol=null,$conditions='')
 	{
-		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
+		if( $thatKeyCol===null )
+		{
+			debug_assert( $thisKeyCol!==null );
+			$thatKeyCol = $model->getPrimaryKey();
+		}
+		elseif( $thisKeyCol===null )
+		{
+			debug_assert( $thatKeyCol!==null );
+			$thisKeyCol = $this->getPrimaryKey();
+		}
 
 		$this->prefixColumn($model, $thatKeyCol);
 		$this->prefixColumn($this, $thisKeyCol);
@@ -1178,7 +1212,16 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function joinFrom($model, $thisKeyCol, $thatKeyCol=null, $conditions='')
 	{
-		debug_assert( null !== $thatKeyCol || null !== $thisKeyCol );
+		if( $thatKeyCol===null )
+		{
+			debug_assert( $thisKeyCol!==null );
+			$thatKeyCol = $model->getPrimaryKey();
+		}
+		elseif( $thisKeyCol===null )
+		{
+			debug_assert( $thatKeyCol!==null );
+			$thisKeyCol = $this->getPrimaryKey();
+		}
 
 		$this->prefixColumn($model, $thatKeyCol);
 		$this->prefixColumn($this, $thisKeyCol);
@@ -1311,44 +1354,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function findBy($cond)
 	{
-		$select = $this->getSelect();
-		$select->reset('where');
-		foreach($cond as $col => $value)
-		{
-			if( is_array($value) )
-			{
-				$valueChar = '?';
-				$cond = '=';
-
-				if(isset($value['condition']) && isset($value['value']))
-				{
-					$cond = $value['condition'];
-					$value = $value['value'];
-					$valueChar = '?';
-				}
-
-				if( is_array($value) )
-				{
-					$cond = 'IN';
-					$valueChar = '(?)';
-				}
-
-				$select->where($col.' '. $cond .' '.$valueChar, $value);
-			}
-			else
-			{
-				if( is_null($value) )
-				{
-					$select->where($col.' IS NULL');
-				}
-				else
-				{
-					$select->where($col.' = ?', $value);
-				}
-			}
-		}
-
-		return $this->load($select);
+		debug_assert( false, 'Function findBy is scheduled for deletion, replace by Model::getListBy($conditions)' );
+		return static::getListBy( $cond );
 	}
 
 	/**
@@ -1360,18 +1367,9 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function findOneBy($conditions)
 	{
-		$this->setLimit(1);
-		$results = $this->findBy($conditions);
-
-		if( count($results) == 0 )
-		{
-			$this->fromArray($conditions);
-		}
-		else
-		{
-			$c = current($results);
-			$this->fromArray($c->toArray());
-		}
+		debug_assert( false, 'Function findOneBy is scheduled for deletion, replace with Model::getBy($conditions)' );
+		$instance = static::getBy( $conditions, array_keys($this->schemaColumnsGet()) );
+		$this->fromArray( $instance->toArray() );
 		$this->changedColumnsReset();
 		return $this;
 	}
@@ -1384,13 +1382,72 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function getRow()
 	{
-		$pkey = $this->getPrimaryKey();
-		if( null !== $pkey )
+		debug_assert( false, 'Function getRow is scheduled for deletion, replace with Model::getById( $id )' );
+
+		$key = $this->getPrimaryKey();
+		if( null !== $key )
 		{
-			$row = $this->findOneBy([$pkey => $this->{$pkey}]);
-			return $row;
+			$ret = static::getById( $key );
 		}
-		return null;
+		else
+		{
+			$ret = null;
+		}
+		return $ret;
+	}
+
+	/**
+	 * @param string $term
+	 * @param array $eqCol
+	 * @param array $likeCol
+	 * @param array $additionalSelectCol
+	 * @return $this
+	 */
+	public function buildSearchCondition(
+		$term,
+		array $eqCol = array(),
+		array $likeCol = array(),
+		array $additionalSelectCol = array()
+	)
+	{
+		$collate = 'utf8_general_ci';
+		$mappedTerm = str_map($term,function($char)
+		{
+			return ctype_alnum($char) ? $char : ' ';
+		});
+		$db = $this->getDb();
+		$firstOne = true;
+		$where = array_chain( explode(' ', $mappedTerm),
+			array_filter_key_dg( not_dg(empty_dg()) ),
+			array_map_val_dg( function( $termPart )use($db,$likeCol,$eqCol,$collate,&$firstOne)
+			{
+				if($firstOne)
+				{
+					$t1 = $db->quote( "$termPart%", 'string' );
+					$firstOne = false;
+				} else
+				{
+					$t1 = $db->quote( "%$termPart%", 'string' );
+				}
+				$t2 = $db->quote($termPart,'string');
+				$whereLike = array_map_val($likeCol, function($column)use($collate,$termPart,$t1)
+				{
+					return "$column COLLATE $collate LIKE $t1";
+				});
+				$whereEq = array_map_val($eqCol, function($column)use($termPart,$t2)
+				{
+					return "$column = $t2";
+				});
+				$where = array_merge( $whereLike, $whereEq );
+				return '( '.implode( ' OR ', $where ).' )';
+			} )
+		);
+
+		$this
+			->setColumns( array_merge( $eqCol, $likeCol, $additionalSelectCol ) )
+			->setWhere( implode(" AND ", $where) );
+
+		return $this;
 	}
 
 }

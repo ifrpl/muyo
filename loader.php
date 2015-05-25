@@ -72,6 +72,198 @@ if( !function_exists('autoload') )
 	}
 }
 
+if( !function_exists('loader_include') )
+{
+	/**
+	 * @param string $path
+	 * @return mixed
+	 */
+	function loader_include( $path )
+	{
+		return include( $path );
+	}
+}
+
+if( !function_exists('loader_include_dg') )
+{
+	/**
+	 * @param string|callable|null $path
+	 * @return callable
+	 */
+	function loader_include_dg( $path=null )
+	{
+		if( null===$path )
+		{
+			$path = function()
+			{
+				return func_get_arg(0);
+			};
+		}
+		elseif( is_string($path) )
+		{
+			$path = return_dg($path);
+		}
+		else
+		{
+			debug_enforce_type( is_string($path), 'callable' );
+		}
+		return function()use($path)
+		{
+			$args = func_get_args();
+			return loader_include(
+				call_user_func_array( $path, $args )
+			);
+		};
+	}
+}
+
+if( !function_exists('loader_include_once') )
+{
+	/**
+	 * @param string $path
+	 * @return mixed
+	 */
+	function loader_include_once($path)
+	{
+		if( file_exists( $path.'.local' ) )
+		{
+			include_once( $path.'.local' );
+		}
+		return include_once( $path );
+	}
+}
+
+if( !function_exists('loader_include_once_dg') )
+{
+	/**
+	 * @param string|callable|null $path
+	 * @return callable
+	 */
+	function loader_include_once_dg( $path=null )
+	{
+		if( null===$path )
+		{
+			$path = function()
+			{
+				return func_get_arg(0);
+			};
+		}
+		elseif( is_string($path) )
+		{
+			$path = return_dg( $path );
+		}
+		else
+		{
+			debug_enforce_type( $path, 'callable' );
+		}
+		return function()use($path)
+		{
+			$args = func_get_args();
+			return loader_include_once(
+				call_user_func_array( $path, $args )
+			);
+		};
+	}
+}
+
+if( !function_exists('loader_require') )
+{
+	/**
+	 * @param string $path
+	 * @return mixed
+	 */
+	function loader_require( $path )
+	{
+		if( file_exists( $path.'.local' ) )
+		{
+			require( $path.'.local' );
+		}
+		return require( $path );
+	}
+}
+
+if( !function_exists('loader_require_dg') )
+{
+	/**
+	 * @param string|callable|null $path
+	 * @return callable
+	 */
+	function loader_require_dg( $path=null )
+	{
+		if( null===$path )
+		{
+			$path = function()
+			{
+				return func_get_arg(0);
+			};
+		}
+		elseif( is_string($path) )
+		{
+			$path = return_dg($path);
+		}
+		else
+		{
+			debug_enforce_type( $path, 'callable' );
+		}
+		return function()use($path)
+		{
+			$args = func_get_args();
+			return loader_require_dg(
+				call_user_func_array( $path, $args )
+			);
+		};
+	}
+}
+
+if( !function_exists('loader_require_once') )
+{
+	/**
+	 * @param string|callable $path
+	 * @return mixed
+	 */
+	function loader_require_once( $path )
+	{
+		if( file_exists( $path.'.local' ) )
+		{
+			require_once( $path.'.local' );
+		}
+		return require_once( $path );
+	}
+}
+
+if( !function_exists('loader_require_once_dg') )
+{
+	/**
+	 * @param string|callable|null $path
+	 * @return callable
+	 */
+	function loader_require_once_dg( $path=null )
+	{
+		if( null===$path )
+		{
+			$path = function()
+			{
+				return func_get_arg(0);
+			};
+		}
+		elseif( is_string($path) )
+		{
+			$path = return_dg( $path );
+		}
+		else
+		{
+			debug_enforce_type( $path, 'callable' );
+		}
+		return function()use($path)
+		{
+			$args = func_get_args();
+			return loader_require_once(
+				call_user_func_array( $path, $args )
+			);
+		};
+	}
+}
+
 if( !function_exists('loader_include_get') )
 {
 	/**
@@ -83,17 +275,17 @@ if( !function_exists('loader_include_get') )
 		switch( MUYO_INCLUDE_METHOD )
 		{
 			case 'include':
-				$include = function($path){ include($path); };
+				$include = loader_include_dg();
 			break;
 			case 'include_once':
-				$include = function($path){ include_once($path); };
+				$include = loader_include_once_dg();
 			break;
 			case 'require':
-				$include = function($path){ require($path); };
+				$include = loader_require_dg();
 			break;
 			case 'require_once':
 			default:
-				$include = function($path){ require_once($path); };
+				$include = loader_require_once_dg();
 			break;
 		}
 		return $include;

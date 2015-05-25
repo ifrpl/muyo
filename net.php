@@ -834,3 +834,195 @@ if( !function_exists('uri_data_to_base64') )
 		return array_pop( $parts );
 	}
 }
+
+if( !function_exists('http_output_compression') )
+{
+	if( function_exists('apache_setenv') )
+	{
+		/**
+		 * @param bool $value
+		 */
+		function http_output_compression($value)
+		{
+			if( function_exists('apache_setenv') )
+			{
+				apache_setenv( 'no-gzip', $value ? 1 : 0 );
+			}
+			ini_set( 'zlib.output_compression', $value ? 'On' : 'Off' );
+		}
+	}
+	else
+	{
+		/**
+		 * @param bool $value
+		 */
+		function http_output_compression($value)
+		{
+			ini_set( 'zlib.output_compression', $value ? 'On' : 'Off' );
+		}
+	}
+}
+
+if( !function_exists('header_dg') )
+{
+	/**
+	 * @param string|callable|null $header
+	 * @param bool|callable|null $replace
+	 * @param int|callable|null $responseCode
+	 * @return callable
+	 */
+	function header_dg( $header=null, $replace=null, $responseCode=null )
+	{
+		if( null===$header )
+		{
+			$header = tuple_get();
+		}
+		elseif( !is_callable($header) )
+		{
+			$header = return_dg($header);
+		}
+		if( !is_callable($replace) )
+		{
+			$replace = return_dg($replace);
+		}
+		if( !is_callable($responseCode) )
+		{
+			$responseCode = return_dg($responseCode);
+		}
+		return function()use($header,$replace,$responseCode)
+		{
+			$args = func_get_args();
+			header(
+				call_user_func_array( $header, $args ),
+				call_user_func_array( $replace, $args ),
+				call_user_func_array( $responseCode, $args )
+			);
+		};
+	}
+}
+
+if( !function_exists('http_response_file_show') )
+{
+	/**
+	 * @param string|array $content
+	 * @param string|finfo|null $mime
+	 * @throws Exception
+	 */
+	function http_response_file_show($content,$mime=null)
+	{
+		if( is_array($content) )
+		{
+			list($content,$length) = $content;
+		}
+		else
+		{
+			debug_enforce_type( $content, 'string' );
+			$length = strlen($content);
+		}
+		if( null===$mime && class_exists('finfo') )
+		{
+			$mime = new finfo;
+		}
+		if( is_object($mime) && $mime instanceof finfo )
+		{
+			$mime = $mime->buffer( $content, FILEINFO_MIME );
+		}
+
+		$headers = [
+			'Pragma: public',
+			'Expires: -1',
+			'Cache-Control: public, must-revalidate, post-check=0, pre-check=0',
+			'Content-Disposition: inline;',
+			"Content-Type: {$mime}",
+			"Content-Length: {$length}"
+		];
+
+		http_output_compression( false );
+		array_each( $headers, header_dg() );
+
+		$download = function()use($content)
+		{
+			print($content);
+			ob_flush();
+			flush();
+		};
+		call_safe(max_execution_time_set_dg(0),$download,max_execution_time_set_dg(tuple_get(0)));
+	}
+}
+
+if( !function_exists('http_response_file_download') )
+{
+	/**
+	 * @param string|array $content
+	 * @param string $basename
+	 * @param string|finfo|null $mime
+	 * @todo http://tools.ietf.org/id/draft-ietf-http-range-retrieval-00.txt
+	 */
+	function http_response_file_download($content,$basename,$mime=null)
+	{
+		if( is_array($content) )
+		{
+			list($content,$length) = $content;
+		}
+		else
+		{
+			debug_enforce_type( $content, 'string' );
+			$length = strlen($content);
+		}
+		if( null===$mime && class_exists('finfo') )
+		{
+			$mime = new finfo;
+		}
+		if( is_object($mime) && $mime instanceof finfo )
+		{
+			$mime = $mime->buffer( $content, FILEINFO_MIME );
+		}
+
+		$headers = [
+			'Pragma: public',
+			'Expires: -1',
+			'Cache-Control: public, must-revalidate, post-check=0, pre-check=0',
+			"Content-Disposition: attachment; filename=\"{$basename}\""
+			,
+			"Content-Type: {$mime}",
+			"Content-Length: {$length}"
+		];
+
+		http_output_compression( false );
+		array_each( $headers, header_dg() );
+
+		$download = function()use($content)
+		{
+			print($content);
+			ob_flush();
+			flush();
+		};
+		call_safe(max_execution_time_set_dg(0),$download,max_execution_time_set_dg(tuple_get(0)));
+	}
+}
+
+if( !function_exists('urlencode_dg') )
+{
+	/**
+	 * @param string|callable $string
+	 * @return callable
+	 */
+	function urlencode_dg($string)
+	{
+		if( is_string($string) )
+		{
+			$string = return_dg($string);
+		}
+		else
+		{
+			debug_enforce_type( $string, 'callable' );
+		}
+		return function()use($string)
+		{
+			$args = func_get_args();
+			return urlencode(
+				call_user_func_array( $string, $args )
+			);
+		};
+	}
+}

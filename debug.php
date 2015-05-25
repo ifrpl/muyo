@@ -398,6 +398,18 @@ if( !function_exists('debug') )
 	 */
 	function debug($tab)
 	{
+		call_user_func_array( 'debug_full', func_get_args() );
+	}
+}
+
+if( !function_exists('debug_full') )
+{
+	/**
+	 * @param mixed $tab
+	 * @param mixed ...
+	 */
+	function debug_full($tab)
+	{
 		if(!debug_allow()) return;
 
 		$trace = backtrace(1);
@@ -406,7 +418,9 @@ if( !function_exists('debug') )
 			write("<pre style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>");
 
 			$traceFile = backtrace();
-			$f = "{$traceFile[0]['file']}:{$traceFile[0]['line']}";
+			$fFile = array_key_exists( 'file', $traceFile[0] ) ? $traceFile[0]['file'] : '???';
+			$fLine = array_key_exists( 'line', $traceFile[0] ) ? $traceFile[0]['line'] : '???';
+			$f = "{$fFile}:{$fLine}";
 			write("<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'><a href='http://localhost:8091?message=$f'>$f</a></div>");
 
 			write("<hr>");
@@ -830,16 +844,39 @@ if( !function_exists('debug_enforce_type') )
 	 */
 	function debug_enforce_type( $var, $type )
 	{
-		if( is_callable($var) && $type === 'callable' )
+		debug_enforce( is_type( $var, $type ), "Expected parameter of type ".var_dump_human_compact($type) );
+		return $var;
+	}
+}
+
+if( !function_exists('debug_enforce_type_dg') )
+{
+	function debug_enforce_type_dg( $type, $var=null )
+	{
+		if( is_string($type) )
 		{
-			$t = 'callable';
+			$type = return_dg($type);
 		}
 		else
 		{
-			$t = gettype($var);
+			debug_enforce_type( $type, 'callable' );
 		}
-		debug_enforce( $t === $type, "Parameter of type $type expected, but $t passed" );
-		return $var;
+		if( null===$var )
+		{
+			$var = tuple_get();
+		}
+		else
+		{
+			debug_enforce_type( $var, 'callable' );
+		}
+		return function()use($type,$var)
+		{
+			$args = func_get_args();
+			return debug_enforce_type(
+				call_user_func_array( $var, $args ),
+				call_user_func_array( $type, $args )
+			);
+		};
 	}
 }
 
@@ -985,15 +1022,7 @@ if( !function_exists('debug_assert_type') )
 	 */
 	function debug_assert_type($var,$type)
 	{
-		if( is_callable($var) && $type === 'callable' )
-		{
-			$t = 'callable';
-		}
-		else
-		{
-			$t = gettype($var);
-		}
-		debug_assert( $t === $type, "Parameter of type $type expected, but $t passed" );
+		debug_assert( is_type( $var, $type ), "Expected parameter of type ".var_dump_human_compact($type) );
 		return $var;
 	}
 }
