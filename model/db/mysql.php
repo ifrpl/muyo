@@ -320,8 +320,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	/**
 	 * Inserts to table from different query.
 	 * Warning: silently discards remote aliases if not existing as local column.
-	 * @param App_Model_Db_Mysql $model
-	 * @return App_Model_Db_Mysql
+	 * @param Lib_Model_Db_Mysql $model
+	 * @return Lib_Model_Db_Mysql
 	 */
 	public function insertFrom($model)
 	{
