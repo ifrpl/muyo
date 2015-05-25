@@ -968,9 +968,13 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 		$db = $this->getDb();
 		$this->preLoad();
+
+		$result = [];
 		try
 		{
-			$result = $db->fetchAll($q);
+			array_each($db->fetchAll($q), function($row) use(&$result){
+				$result[ $row[ $this->getPrimaryKey() ] ] = $row;
+			});
 		}
 		catch( Exception $e )
 		{

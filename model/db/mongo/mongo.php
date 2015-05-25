@@ -701,6 +701,8 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 */
 	public function getRow()
 	{
+		debug_assert( false, 'Function getRow is scheduled for deletion, replace with Model::getById( $id )' );
+
 		$alias = $this->getAlias();
 		$rows = static::findById( $this->id )->loadArray();
 		$row = array_shift( $rows );
