@@ -1386,7 +1386,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function getRow()
 	{
-		debug_assert( false, 'Function getRow is scheduled for deletion, replace with Model::getById( $id )' );
+// 		removed, cause it is to big change to do it in one simple step.
+//		debug_assert( false, 'Function getRow is scheduled for deletion, replace with Model::getById( $id )' );
 
 		$key = $this->getPrimaryKey();
 		if( null !== $key )
