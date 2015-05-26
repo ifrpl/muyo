@@ -279,6 +279,10 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 							$value = null;
 						}
 						break;
+					case "REGEX":
+						$condition = '$regex';
+						$value = new MongoRegex("/{$value}/");
+						break;
 					default:
 						throw new Exception('Mongo condition "'.$condition.'" not implemented');
 				}
