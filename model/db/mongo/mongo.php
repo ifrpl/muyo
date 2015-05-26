@@ -261,20 +261,30 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 		if(is_array($item))
 		{
-			if(isset($item['condition']) && isset($item['value']))
+			if(array_key_exists('condition', $item) && array_key_exists('value', $item))
 			{
 				$condition = $item['condition'];
+				$value = $item['value'];
+
 				switch($condition)
 				{
 					case "IN":
 						$condition = '$in';
+						$value = array_values($value);
+						break;
+					case "!=":
+						$condition = '$ne';
+						if(is_null($value))
+						{
+							$value = null;
+						}
 						break;
 					default:
 						throw new Exception('Mongo condition "'.$condition.'" not implemented');
 				}
 
 				$this->_buildCondutions[$key] = array(
-					$condition => $item['value']
+					$condition => $value
 				);
 			}
 			else
