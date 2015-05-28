@@ -49,7 +49,7 @@ if( !function_exists('is_type') )
 	 */
 	function is_type( $var, $type )
 	{
-		if( is_callable($var) && $type === 'callable' )
+		if( $type === 'callable' && is_callable($var) )
 		{
 			$t = 'callable';
 		}
