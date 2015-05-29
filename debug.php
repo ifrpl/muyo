@@ -20,26 +20,18 @@ if( !function_exists('debug_allow') )
 			 */
 			function is_debug_host()
 			{
-				$allowedSubNet = array(
-					'127.',
-					'10.10.',
-					'192.168.'
-				);
-
-				$allowedHosts = array(
-					'10.0.2.2',
-					'89.191.162.220', //Lukasz home
-					'87.206.45.163',
-					'84.10.100.73',
-					'89.69.131.15' //IFResearch Chello
-				);
-
-				if((isCLI() && getCurrentEnv() !== 'production'))
+                if((isCLI() && getCurrentEnv() !== ENV_PRODUCTION))
 				{
 					return true;
 				}
 				elseif(!isCLI() && isset($_SERVER['REMOTE_ADDR']))
 				{
+                    $allowedSubNet = array(
+                        '127.',
+                        '10.10.',
+                        '192.168.'
+                    );
+
 					foreach($allowedSubNet as $subNet)
 					{
 						if(strpos($_SERVER['REMOTE_ADDR'], $subNet) === 0)
@@ -47,11 +39,20 @@ if( !function_exists('debug_allow') )
 							return true;
 						}
 					}
-					if(in_array($_SERVER['REMOTE_ADDR'], $allowedHosts))
-					{
-						return true;
-					}
+
+                    $allowedHosts = array(
+                        '89.191.162.220', //Lukasz home
+                        '87.206.45.163',
+                        '84.10.100.73',
+                        '89.69.131.15' //IFResearch Chello
+                    );
+
+                    if(debug_assert(!in_array($_SERVER['REMOTE_ADDR'], $allowedHosts), 'Remove this trash and use a conf file instead'))
+                    {
+                        return false;
+                    }
 				}
+
 				return false;
 			}
 		}
@@ -59,8 +60,11 @@ if( !function_exists('debug_allow') )
 
 		if(
 			!is_debug_host() ||
-			($env === 'production' && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))
-		) return false;
+			($env == ENV_PRODUCTION && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))
+		)
+        {
+            return false;
+        }
 
 		return true;
 	}
@@ -188,18 +192,29 @@ if( !function_exists('printfb') )
 
 if( !function_exists('backtrace') )
 {
-	/**
-	 * @param int $ignore_depth
-	 * @return array
-	 */
-	function backtrace($ignore_depth = 0)
+    /**
+     * Retrieve minimal backtrace without first ($ignore + 2) rows.
+     *
+     * Parameters $startIndex and $limit are values relative to caller's stacktrace
+     *
+     * @param int $startIndex
+     * @param int $limit
+     *
+     * @return array
+     */
+	function backtrace($startIndex = 0, $limit = 0)
 	{
-		$ignore_depth++;
-		$ret = array_map(
-			function($row){unset($row['object']); return $row;},
-			debug_backtrace()
-		);
-		return array_splice($ret, $ignore_depth);
+        // If limit
+        if(0 != $limit)
+        {
+            $limit += 2;
+        }
+
+        $startIndex += 1;
+
+        $ret = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit);
+
+        return array_splice($ret, $startIndex);
 	}
 }
 
@@ -412,12 +427,12 @@ if( !function_exists('debug_full') )
 	{
 		if(!debug_allow()) return;
 
-		$trace = backtrace(1);
+        $trace = backtrace(1);
 		if( !isCLI() )
 		{
 			write("<pre style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>");
 
-			$traceFile = backtrace();
+			$traceFile = reset($trace);
 			$fFile = array_key_exists( 'file', $traceFile[0] ) ? $traceFile[0]['file'] : '???';
 			$fLine = array_key_exists( 'line', $traceFile[0] ) ? $traceFile[0]['line'] : '???';
 			$f = "{$fFile}:{$fLine}";
@@ -543,9 +558,12 @@ if( !function_exists('debug_assert') )
 				}
 				/** @var Callable $handler */
 
-				$trace = backtrace(1);
+				$traces = backtrace(1, 1);
+                $trace = reset($traces);
+
 				$file = isset($trace['file']) ? $trace['file'] : '';
 				$line = isset($trace['line']) ? $trace['line'] : '';
+
 				$handler($file, $line, $message);
 			}
 			return $assertion;
@@ -752,22 +770,22 @@ if( !function_exists('debug_handler_error_default_dg') )
 				case E_USER_ERROR:
 				case E_RECOVERABLE_ERROR:
 					throw $e;
-				break;
+				    break;
 				case E_WARNING:
 				case E_CORE_WARNING:
 				case E_COMPILE_WARNING:
 				case E_USER_WARNING:
 					logger_log( $e, LOG_WARNING );
-				break;
+				    break;
 				case E_NOTICE:
 				case E_USER_NOTICE:
 				case E_DEPRECATED:
 				case E_USER_DEPRECATED:
 					logger_log( $e, LOG_NOTICE );
-				break;
+				    break;
 				default:
 					debug_assert(false,"Unknown value");
-				break;
+				    break;
 			}
 		};
 	}
