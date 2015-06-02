@@ -21,6 +21,11 @@ class App{
         return ENV_PRODUCTION == getCurrentEnv();
     }
 
+    public static function isDebug()
+    {
+        return defined('DEBUG_ENABLED');
+    }
+
     public function loadConfig($filePath)
     {
         $config = $this->_loadConfig($filePath, true);

@@ -6,6 +6,7 @@
 
 const ENV_PRODUCTION    = 'production';
 const ENV_DEVELOPMENT   = 'development';
+const ENV_TEST          = 'test';
 
 if( !function_exists('getCurrentEnv') )
 {

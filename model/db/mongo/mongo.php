@@ -118,9 +118,22 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			{
 				$data[$key] = $value->serialize();
 			}
-			if(is_array($value))
+			elseif(is_array($value))
 			{
-				$data[$key] = $value;
+                $ret = [];
+                foreach($value as $subKey => $subValue)
+                {
+                    if($subValue instanceof Lib_Model)
+                    {
+                        $ret[$subKey] = $subValue->serialize();
+                    }
+                    else
+                    {
+                        $ret[$subKey] = $subValue;
+                    }
+                }
+
+                $data[$key] = $ret;
 			}
 		}
 

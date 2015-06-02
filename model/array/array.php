@@ -33,10 +33,30 @@ class Lib_Model_Array extends Lib_Model
 	public function serializeContent()
 	{
 		return array_map_val($this->recordColumnsGet(), function($row){
-			if($row instanceof Lib_Model)
+
+            if($row instanceof Lib_Model)
 			{
 				return $row->serialize();
 			}
+
+            if(is_array($row))
+            {
+                $ret = [];
+                foreach($row as $subKey => $subValue)
+                {
+                    if($subValue instanceof Lib_Model)
+                    {
+                        $ret[$subKey] = $subValue->serialize();
+                    }
+                    else
+                    {
+                        $ret[$subKey] = $subValue;
+                    }
+                }
+
+                return $ret;
+            }
+
 			return $row;
 		});
 	}
