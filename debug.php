@@ -452,6 +452,20 @@ if( !function_exists('debug_compact') )
 	}
 }
 
+if( !function_exists('debug_wrap_dg') )
+{
+	function debug_wrap_dg($callable)
+	{
+		return function()use($callable)
+		{
+			$in = func_get_args();
+			$out = call_user_func_array($callable,$in);
+			debug(['in'=>$in,'out'=>$out]);
+			return $out;
+		};
+	}
+}
+
 if( !function_exists('get_call_stack') )
 {
 	/**

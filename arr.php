@@ -15,10 +15,31 @@ if( !function_exists('array_dg') )
 	 */
 	function array_dg()
 	{
-		$args = func_get_args();
-		return function()use($args)
+		$array = array_map_val(
+			func_get_args(),
+			function($arg)
+			{
+				if( !is_callable($arg) )
+				{
+					$ret = return_dg($arg);
+				}
+				else
+				{
+					$ret = $arg;
+				}
+				return $ret;
+			}
+		);
+		return function()use($array)
 		{
-			return $args;
+			$args = func_get_args();
+			return array_map_val(
+				$array,
+				function($val)use($args)
+				{
+					return call_user_func_array( $val, $args );
+				}
+			);
 		};
 	}
 }
