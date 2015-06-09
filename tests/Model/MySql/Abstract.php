@@ -53,7 +53,7 @@ abstract class Abstract_ extends \Lib_Model_Db_Mysql
 
         $this->_db->exec("DROP TABLE IF EXISTS {$this->_table};");
 
-        $filePath = sprintf('./resources/sql/%s.sql', $this->_table);
+        $filePath = sprintf('./resources/model/mysql/%s.sql', $this->_table);
         assertTrue(file_exists($filePath), "SQL file '$filePath' does not exist");
 
         $this->_db->exec(file_get_contents($filePath));

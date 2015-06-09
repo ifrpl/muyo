@@ -192,8 +192,9 @@ if( !function_exists('printfb') )
 
 if( !function_exists('backtrace') )
 {
+
     /**
-     * Retrieve minimal backtrace without first ($startIndex + 1) rows.
+     * Retrieve minimal backtrace without first ($startIndex + 1) rows
      *
      * Parameters $startIndex and $limit are values relative to caller's stacktrace
      *
@@ -203,17 +204,71 @@ if( !function_exists('backtrace') )
      * @return array
      */
 	function backtrace($startIndex = 0, $limit = 0)
-	{
+    {
         $startIndex += 1;
 
-        if(0 != $limit)
+        if (0 != $limit)
         {
             $limit += 2;
         }
 
-        $ret = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit);
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit);
+        $backtrace = array_splice($backtrace, $startIndex);
 
-        return array_splice($ret, $startIndex);
+        return $backtrace;
+    }
+
+    function blame(&$backtrace)
+    {
+        return;
+
+        static $GIT_BLAME_AUTHOR_KEYS = [
+            'author',
+            'author-mail',
+            'author-time',
+        ];
+
+        foreach($backtrace as & $value)
+        {
+            $git = array_combine($GIT_BLAME_AUTHOR_KEYS, array_pad([], count($GIT_BLAME_AUTHOR_KEYS), null));
+
+            if(isset($value['file']) && isset($value['line']))
+            {
+                $cmd = sprintf('git blame -p -L%d,+1 %s', intval($value['line']), $value['file']);
+
+                $retval = 0;
+                $output = [];
+
+                proc_exec($cmd, $output, $retval);
+
+                if(0 == $retval)
+                {
+                    foreach($output as $line)
+                    {
+                        $cols = explode(' ', $line);
+                        $key = $cols[0];
+
+                        if(!in_array($key, $GIT_BLAME_AUTHOR_KEYS))
+                        {
+                            continue;
+                        }
+
+                        $subValue = trim(str_replace($key, '', $line));
+
+                        if('author-time' == $key)
+                        {
+                            $subValue = date('Y-m-d', $subValue);
+                        }
+
+                        $git[$key] = $subValue;
+                    }
+                }
+            }
+
+            $value['git'] = $git;
+        }
+
+        return $backtrace;
 	}
 }
 
@@ -346,6 +401,8 @@ if( !function_exists('backtrace_string') )
 			$backtrace = backtrace($ignore_depth+1);
 		}
 
+        blame($backtrace);
+
 		$max_len_file = 0;
 		foreach( $backtrace as &$val )
 		{
@@ -355,12 +412,12 @@ if( !function_exists('backtrace_string') )
 				$len = strlen($val['file']);
 
 				$line = isset($val['line']) ? $val['line'] : '';
-				if ( !empty($file) && !empty($line) )
+				if ( !empty($val['file']) && !empty($line) )
 				{
 					$len += strlen((string)$line)+1;
 				}
 
-				$max_len_file = max($max_len_file,$len);
+				$max_len_file = max($max_len_file, $len);
 			}
 		}
 		$max_len_file += 2;
@@ -370,10 +427,13 @@ if( !function_exists('backtrace_string') )
 		{
 			$file = isset($val['file']) ? $val['file'] : '';
 			$line = isset($val['line']) ? $val['line'] : '';
+            $blame = isset($val['git']['author']) && isset($val['git']['author-time']) ? sprintf('%s %s', $val['git']['author'], $val['git']['author-time']) : '-';
 			$function = isset($val['function']) ? $val['function'] : '';
 			$args = isset($val['args']) && is_array($val['args']) ? implode(',',array_map_val($val['args'],function($v){ return var_dump_human_compact($v); })) : '';
 
-			$append = !empty($file) ? $file : '???';
+            $append = $blame . ' ';
+
+			$append .= !empty($file) ? $file : '???';
 
 			if ( !empty($file) && !empty($line) )
 			{
@@ -429,12 +489,15 @@ if( !function_exists('debug_full') )
         $trace = backtrace(1);
 		if( !isCLI() )
 		{
+            blame($backtrace);
+
 			write("<pre style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>");
 
 			$traceFile = reset($trace);
+            $fBlame = $blame = isset($val['git']['author']) && isset($val['git']['author-time']) ? sprintf('%s %s', $val['git']['author'], $val['git']['author-time']) : '-';
 			$fFile = array_key_exists( 'file', $traceFile[0] ) ? $traceFile[0]['file'] : '???';
 			$fLine = array_key_exists( 'line', $traceFile[0] ) ? $traceFile[0]['line'] : '???';
-			$f = "{$fFile}:{$fLine}";
+			$f = "$fBlame} {$fFile}:{$fLine}";
 			write("<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'><a href='http://localhost:8091?message=$f'>$f</a></div>");
 
 			write("<hr>");

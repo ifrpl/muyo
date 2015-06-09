@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\TestCase\Model;
+namespace Tests\TestCase\Model\MySql;
 
 require_once 'autoload.php';
 
@@ -95,7 +95,7 @@ class C00 extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Serialization
+     * From / To array
      */
     public function test02()
 	{

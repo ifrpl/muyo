@@ -104,43 +104,6 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
-	 * @return array
-	 */
-	public function serializeContent()
-	{
-		$data = parent::serializeContent();
-
-		foreach($data as $key => $value)
-		{
-			$value = $this->recordColumnGet($key);
-
-			if($value instanceof Lib_Model)
-			{
-				$data[$key] = $value->serialize();
-			}
-			elseif(is_array($value))
-			{
-                $ret = [];
-                foreach($value as $subKey => $subValue)
-                {
-                    if($subValue instanceof Lib_Model)
-                    {
-                        $ret[$subKey] = $subValue->serialize();
-                    }
-                    else
-                    {
-                        $ret[$subKey] = $subValue;
-                    }
-                }
-
-                $data[$key] = $ret;
-			}
-		}
-
-		return $data;
-	}
-
-	/**
 	 * @throws Exception
 	 * @return bool
 	 */

@@ -23,12 +23,15 @@ if( !class_exists('Logger') )
 			return self::_dump($obj, $message, $logLevel);
 		}
 
-		static public function dumpToFile($obj, $fileName = '')
+		static public function dumpToFile($obj, $fileName = '', $outputDirPath = null)
 		{
-			$id = buildIdFromCallstack(1);
+            if(null == $outputDirPath)
+            {
+                $id = buildIdFromCallstack(1);
 
-            $outputDirPath = defined('ROOT_PATH') ? ROOT_PATH : '';
-			$outputDirPath .= DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
+                $outputDirPath = defined('ROOT_PATH') ? ROOT_PATH : '';
+                $outputDirPath .= DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
+            }
 
 			if(!file_exists($outputDirPath))
 			{
