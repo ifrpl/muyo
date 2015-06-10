@@ -780,6 +780,7 @@ if( !function_exists('debug_handler') )
 		debug_handler_error($error_to_common);
 		debug_handler_assertion($assertion_to_common);
 	}
+
 }
 
 if( !function_exists('debug_handler_exception_default_dg') )
@@ -900,7 +901,6 @@ if( !function_exists('debug_handler_assertion') )
 	 */
 	function debug_handler_assertion($handler = null)
 	{
-		$env = getCurrentEnv();
 		if( null == $handler )
 		{
 			$handler = debug_handler_assertion_default_dg();
@@ -908,7 +908,7 @@ if( !function_exists('debug_handler_assertion') )
 		assert_options(ASSERT_ACTIVE, true);
 		assert_options(ASSERT_WARNING, false);
 		assert_options(ASSERT_BAIL, false);
-		assert_options(ASSERT_QUIET_EVAL, $env==='production');
+		assert_options(ASSERT_QUIET_EVAL, ENV_PRODUCTION == getCurrentEnv());
 		return assert_options(ASSERT_CALLBACK, $handler);
 	}
 }
