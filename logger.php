@@ -176,11 +176,18 @@ if( !function_exists('logger_log') )
 		}
 
         global $logger;
-        if(debug_assert(is_callable($logger)))
+
+        // Don't know why but when called from debug_handler_error_default_dg() $logger is null
+        if(!is_callable($logger))
+        {
+            $loggerTmp = logger_default();
+            $loggerTmp( $message, $level );
+
+        }
+        else
         {
             $logger( $message, $level );
         }
-
 
 		return null;
 	}
@@ -220,6 +227,40 @@ if( !function_exists('logger_set') )
 	}
 }
 
+if( !function_exists('logger_default') )
+{
+	/**
+	 * Returns default logger implementation
+	 *
+	 * @param $eol
+	 * @return callable
+	 */
+	function logger_default($eol="\n")
+	{
+		return function( $message, $level=LOG_INFO )use($eol)
+		{
+			$msg = '';
+			$now = now();
+			$level = log_level_str($level);
+
+			if( !is_array($message) )
+			{
+				$message = explode($eol, $message);
+			}
+
+			for($i = 0; $i<count($message); $i++)
+			{
+				$msg .= sprintf("[%s] [%7s] %s", $now, $level, $message[$i]);
+				if($i<count($message)-1)
+				{
+					$msg .= PHP_EOL;
+				}
+			}
+
+			printrlog($msg);
+		};
+	}
+}
 
 if( !function_exists('logger_rotate') )
 {
@@ -249,29 +290,6 @@ if( !function_exists('logger_rotate') )
 	}
 }
 
-if( !function_exists('get_default_log_level') )
-{
-    function get_default_log_level()
-    {
-        $env = getCurrentEnv();
-        switch ($env)
-        {
-            case ENV_DEVELOPMENT:
-                $log_level = LOG_DEBUG;
-                break;
-            case ENV_PRODUCTION:
-                $log_level = LOG_NOTICE;
-                break;
-            case 'testing':
-            default:
-                $log_level = LOG_INFO;
-                break;
-        }
-
-        return $log_level;
-    }
-}
-
 if( !function_exists('log_level_str') )
 {
 	/**
@@ -283,8 +301,8 @@ if( !function_exists('log_level_str') )
 		$map = array(
 			LOG_EMERG => 'EMERG',
 			LOG_ALERT => 'ALERT',
-			LOG_CRIT => 'CRITICAL',
-			LOG_ERR => 'ERROR',
+			LOG_CRIT => 'CRIT',
+			LOG_ERR => 'ERR',
 			LOG_WARNING => 'WARNING',
 			LOG_NOTICE => 'NOTICE',
 			LOG_INFO => 'INFO',
