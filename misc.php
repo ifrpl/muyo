@@ -6,6 +6,7 @@
 
 const ENV_PRODUCTION    = 'production';
 const ENV_DEVELOPMENT   = 'development';
+const ENV_TEST          = 'test';
 
 if( !function_exists('getCurrentEnv') )
 {
@@ -49,7 +50,7 @@ if( !function_exists('is_type') )
 	 */
 	function is_type( $var, $type )
 	{
-		if( is_callable($var) && $type === 'callable' )
+		if( $type === 'callable' && is_callable($var) )
 		{
 			$t = 'callable';
 		}

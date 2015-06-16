@@ -62,11 +62,11 @@ class Lib_Db_Mongo_Select
 			{
 				if(is_array($this->_query[$key]) && is_array($value))
 				{
-					$this->_query[$key] = array_merge_recursive($this->_query[$key], $val);
+					$this->_query[$key] = array_merge_recursive($this->_query[$key], $value);
 				}
 				elseif(is_array($this->_query[$key]))
 				{
-					$this->_query[$key] = $val;
+					$this->_query[$key] = $value;
 				}
 				//else do nothing, because already present condition is stronger than added
 			}

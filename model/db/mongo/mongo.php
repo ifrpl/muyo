@@ -104,30 +104,6 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
-	 * @return array
-	 */
-	public function serializeContent()
-	{
-		$data = parent::serializeContent();
-
-		foreach($data as $key => $value)
-		{
-			$value = $this->recordColumnGet($key);
-
-			if($value instanceof Lib_Model)
-			{
-				$data[$key] = $value->serialize();
-			}
-			if(is_array($value))
-			{
-				$data[$key] = $value;
-			}
-		}
-
-		return $data;
-	}
-
-	/**
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -261,20 +237,34 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 		if(is_array($item))
 		{
-			if(isset($item['condition']) && isset($item['value']))
+			if(array_key_exists('condition', $item) && array_key_exists('value', $item))
 			{
 				$condition = $item['condition'];
+				$value = $item['value'];
+
 				switch($condition)
 				{
 					case "IN":
 						$condition = '$in';
+						$value = array_values($value);
+						break;
+					case "!=":
+						$condition = '$ne';
+						if(is_null($value))
+						{
+							$value = null;
+						}
+						break;
+					case "REGEX":
+						$condition = '$regex';
+						$value = new MongoRegex("/{$value}/");
 						break;
 					default:
 						throw new Exception('Mongo condition "'.$condition.'" not implemented');
 				}
 
 				$this->_buildCondutions[$key] = array(
-					$condition => $item['value']
+					$condition => $value
 				);
 			}
 			else
@@ -701,6 +691,8 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 */
 	public function getRow()
 	{
+		debug_assert( false, 'Function getRow is scheduled for deletion, replace with Model::getById( $id )' );
+
 		$alias = $this->getAlias();
 		$rows = static::findById( $this->id )->loadArray();
 		$row = array_shift( $rows );

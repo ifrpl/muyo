@@ -20,26 +20,18 @@ if( !function_exists('debug_allow') )
 			 */
 			function is_debug_host()
 			{
-				$allowedSubNet = array(
-					'127.',
-					'10.10.',
-					'192.168.'
-				);
-
-				$allowedHosts = array(
-					'10.0.2.2',
-					'89.191.162.220', //Lukasz home
-					'87.206.45.163',
-					'84.10.100.73',
-					'89.69.131.15' //IFResearch Chello
-				);
-
-				if((isCLI() && getCurrentEnv() !== 'production'))
+                if((isCLI() && getCurrentEnv() !== ENV_PRODUCTION))
 				{
 					return true;
 				}
 				elseif(!isCLI() && isset($_SERVER['REMOTE_ADDR']))
 				{
+                    $allowedSubNet = array(
+                        '127.',
+                        '10.10.',
+                        '192.168.'
+                    );
+
 					foreach($allowedSubNet as $subNet)
 					{
 						if(strpos($_SERVER['REMOTE_ADDR'], $subNet) === 0)
@@ -47,11 +39,20 @@ if( !function_exists('debug_allow') )
 							return true;
 						}
 					}
-					if(in_array($_SERVER['REMOTE_ADDR'], $allowedHosts))
-					{
-						return true;
-					}
+
+                    $allowedHosts = array(
+                        '89.191.162.220', //Lukasz home
+                        '87.206.45.163',
+                        '84.10.100.73',
+                        '89.69.131.15' //IFResearch Chello
+                    );
+
+                    if(debug_assert(!in_array($_SERVER['REMOTE_ADDR'], $allowedHosts), 'Remove this trash and use a conf file instead'))
+                    {
+                        return false;
+                    }
 				}
+
 				return false;
 			}
 		}
@@ -59,8 +60,11 @@ if( !function_exists('debug_allow') )
 
 		if(
 			!is_debug_host() ||
-			($env === 'production' && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))
-		) return false;
+			($env == ENV_PRODUCTION && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))
+		)
+        {
+            return false;
+        }
 
 		return true;
 	}
@@ -188,18 +192,97 @@ if( !function_exists('printfb') )
 
 if( !function_exists('backtrace') )
 {
-	/**
-	 * @param int $ignore_depth
-	 * @return array
-	 */
-	function backtrace($ignore_depth = 0)
-	{
-		$ignore_depth++;
-		$ret = array_map(
-			function($row){unset($row['object']); return $row;},
-			debug_backtrace()
-		);
-		return array_splice($ret, $ignore_depth);
+
+    /**
+     * Retrieve minimal backtrace without first ($startIndex + 1) rows
+     *
+     * Parameters $startIndex and $limit are values relative to caller's stacktrace
+     *
+     * @param int $startIndex
+     * @param int $limit
+     *
+     * @return array
+     */
+	function backtrace($startIndex = 0, $limit = 0)
+    {
+        $startIndex += 1;
+
+        if (0 != $limit)
+        {
+            $limit += 2;
+        }
+
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit);
+        $backtrace = array_splice($backtrace, $startIndex);
+
+        foreach($backtrace as & $val)
+        {
+            if(!isset($val['file']))
+            {
+                continue;
+            }
+
+            $val['file'] = trim_application_path($val['file']);
+        }
+
+
+        return $backtrace;
+    }
+
+    function blame(&$backtrace)
+    {
+        static $GIT_BLAME_AUTHOR_KEYS = [
+            'author',
+            'author-mail',
+            'author-time',
+        ];
+
+        foreach($backtrace as & $value)
+        {
+            $git = array_combine($GIT_BLAME_AUTHOR_KEYS, array_pad([], count($GIT_BLAME_AUTHOR_KEYS), null));
+
+            if(isset($value['file']) && isset($value['line']))
+            {
+                $cmd = sprintf('git blame -p -L%d,+1 %s', intval($value['line']), $value['file']);
+
+                $retval = 0;
+                $output = [];
+
+                proc_exec($cmd, $output, $retval, true);
+
+                if(0 == $retval)
+                {
+                    foreach($output as $line)
+                    {
+                        $cols = explode(' ', $line);
+                        $key = $cols[0];
+
+                        if(!in_array($key, $GIT_BLAME_AUTHOR_KEYS))
+                        {
+                            continue;
+                        }
+
+                        $subValue = trim(str_replace($key, '', $line));
+
+                        if('author-time' == $key)
+                        {
+                            $subValue = date('Y-m-d', $subValue);
+                        }
+
+                        $git[$key] = $subValue;
+                    }
+
+                    if(!isset($git['author']) || 'Not Committed Yet' == $git['author'])
+                    {
+                        $git = [];
+                    }
+                }
+            }
+
+            $value['git'] = $git;
+        }
+
+        return $backtrace;
 	}
 }
 
@@ -332,45 +415,70 @@ if( !function_exists('backtrace_string') )
 			$backtrace = backtrace($ignore_depth+1);
 		}
 
-		$max_len_file = 0;
-		foreach( $backtrace as &$val )
+        blame($backtrace);
+
+        $clbs = [
+            'time' => function($val)
+            {
+                return isset($val['git']['author-time']) ? $val['git']['author-time'] : '';
+            },
+            'author' => function($val)
+            {
+                static $MAX_AUTHOR_LENGTH = 15;
+
+                $ret = isset($val['git']['author']) ? $val['git']['author'] : '';
+
+                if(strlen($ret) > $MAX_AUTHOR_LENGTH)
+                {
+                    $ret = substr($ret, 0, $MAX_AUTHOR_LENGTH - 3) . '...';
+                }
+
+                return $ret;
+            },
+            'file' => function($val)
+            {
+                return isset($val['file']) ? trim_application_path($val['file']) : '';
+            },
+            'line' => function($val)
+            {
+                return isset($val['line']) ? (string)$val['line'] : '';
+            },
+            'function' => function($val)
+            {
+                return isset($val['function']) ? $val['function'] : '';
+            },
+            'args' => function($val)
+            {
+                return isset($val['args']) && is_array($val['args']) ? implode(',',array_map_val($val['args'],function($v){ return var_dump_human_compact($v); })) : '';
+            }
+        ];
+
+        $keys = array_keys($clbs);
+        unset($keys[array_search('args', $keys)]);
+
+		$max_len = array_combine(
+            $keys,
+            array_pad([], count($keys), 0)
+        );
+
+		foreach( $backtrace as & $val0 )
 		{
-			if ( isset($val['file']) )
-			{
-				$val['file'] = trim_application_path($val['file']);
-				$len = strlen($val['file']);
-
-				$line = isset($val['line']) ? $val['line'] : '';
-				if ( !empty($file) && !empty($line) )
-				{
-					$len += strlen((string)$line)+1;
-				}
-
-				$max_len_file = max($max_len_file,$len);
-			}
+            foreach($max_len as $key => $max)
+            {
+                $val0[$key] = $clbs[$key]($val0);
+                $max_len[$key] = max($max, strlen($val0[$key]));
+            }
 		}
-		$max_len_file += 2;
 
 		$ret = '';
-		foreach( $backtrace as $val )
+		foreach( $backtrace as $val1 )
 		{
-			$file = isset($val['file']) ? $val['file'] : '';
-			$line = isset($val['line']) ? $val['line'] : '';
-			$function = isset($val['function']) ? $val['function'] : '';
-			$args = isset($val['args']) && is_array($val['args']) ? implode(',',array_map_val($val['args'],function($v){ return var_dump_human_compact($v); })) : '';
+            foreach($max_len as $key => $max)
+            {
+                $ret .= str_pad($val1[$key], $max_len[$key] + 1);
+            }
 
-			$append = !empty($file) ? $file : '???';
-
-			if ( !empty($file) && !empty($line) )
-			{
-				$append .= ":$line";
-			}
-			if ( strlen($append) < $max_len_file )
-			{
-				$append = str_pad($append, $max_len_file+1);
-			}
-			$append .= "  $function($args)\n";
-			$ret .= $append;
+            $ret .= sprintf("(%s)\n", $clbs['args']($val1));
 		}
 		return $ret;
 	}
@@ -412,15 +520,18 @@ if( !function_exists('debug_full') )
 	{
 		if(!debug_allow()) return;
 
-		$trace = backtrace(1);
+        $trace = backtrace(1);
 		if( !isCLI() )
 		{
+            blame($backtrace);
+
 			write("<pre style='background-color: #efefef; border: 1px solid #aaaaaa; color:#000;'>");
 
-			$traceFile = backtrace();
+			$traceFile = reset($trace);
+            $fBlame = $blame = isset($val['git']['author']) && isset($val['git']['author-time']) ? sprintf('%s %s', $val['git']['author'], $val['git']['author-time']) : '-';
 			$fFile = array_key_exists( 'file', $traceFile[0] ) ? $traceFile[0]['file'] : '???';
 			$fLine = array_key_exists( 'line', $traceFile[0] ) ? $traceFile[0]['line'] : '???';
-			$f = "{$fFile}:{$fLine}";
+			$f = "$fBlame} {$fFile}:{$fLine}";
 			write("<div style='font-weight: bold; background-color: #FFF15F; border-bottom: 1px solid #aaaaaa;'><a href='http://localhost:8091?message=$f'>$f</a></div>");
 
 			write("<hr>");
@@ -557,9 +668,12 @@ if( !function_exists('debug_assert') )
 				}
 				/** @var Callable $handler */
 
-				$trace = backtrace(1);
+				$traces = backtrace(1, 1);
+                $trace = reset($traces);
+
 				$file = isset($trace['file']) ? $trace['file'] : '';
 				$line = isset($trace['line']) ? $trace['line'] : '';
+
 				$handler($file, $line, $message);
 			}
 			return $assertion;
@@ -714,6 +828,7 @@ if( !function_exists('debug_handler') )
 		debug_handler_error($error_to_common);
 		debug_handler_assertion($assertion_to_common);
 	}
+
 }
 
 if( !function_exists('debug_handler_exception_default_dg') )
@@ -766,22 +881,42 @@ if( !function_exists('debug_handler_error_default_dg') )
 				case E_USER_ERROR:
 				case E_RECOVERABLE_ERROR:
 					throw $e;
-				break;
+				    break;
 				case E_WARNING:
 				case E_CORE_WARNING:
 				case E_COMPILE_WARNING:
 				case E_USER_WARNING:
-					logger_log( $e, LOG_WARNING );
-				break;
+
+                    if( ENV_PRODUCTION == getCurrentEnv() )
+                    {
+                        logger_log( $e, LOG_WARNING );
+                    }
+                    else
+                    {
+                        throw $e;
+                    }
+
+				    break;
+
 				case E_NOTICE:
 				case E_USER_NOTICE:
 				case E_DEPRECATED:
 				case E_USER_DEPRECATED:
-					logger_log( $e, LOG_NOTICE );
-				break;
+
+                    if( ENV_PRODUCTION == getCurrentEnv() )
+                    {
+                        logger_log( $e, LOG_NOTICE );
+                    }
+                    else
+                    {
+                        throw $e;
+                    }
+
+				    break;
+
 				default:
 					debug_assert(false,"Unknown value");
-				break;
+				    break;
 			}
 		};
 	}
@@ -834,7 +969,6 @@ if( !function_exists('debug_handler_assertion') )
 	 */
 	function debug_handler_assertion($handler = null)
 	{
-		$env = getCurrentEnv();
 		if( null == $handler )
 		{
 			$handler = debug_handler_assertion_default_dg();
@@ -842,7 +976,7 @@ if( !function_exists('debug_handler_assertion') )
 		assert_options(ASSERT_ACTIVE, true);
 		assert_options(ASSERT_WARNING, false);
 		assert_options(ASSERT_BAIL, false);
-		assert_options(ASSERT_QUIET_EVAL, $env==='production');
+		assert_options(ASSERT_QUIET_EVAL, ENV_PRODUCTION == getCurrentEnv());
 		return assert_options(ASSERT_CALLBACK, $handler);
 	}
 }
