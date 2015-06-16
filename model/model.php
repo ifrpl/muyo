@@ -12,19 +12,6 @@ abstract class Lib_Model implements Iterator
 	const SETTING_SET = 'set';
 	const SETTING_GET = 'get';
 
-    public static function getConstants($prefix){
-
-        $r = new ReflectionClass(get_called_class());
-
-        $constants = $r->getConstants();
-
-        $keys = array_filter(array_keys($constants), function($key) use($prefix){
-            return 0 === strpos($key, $prefix);
-        });
-
-        return array_join($keys, $constants);
-    }
-
 	/**
 	 * @var array field type identifiers
 	 * @see $this->settingEmptyEqNull after modification
