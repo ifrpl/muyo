@@ -215,22 +215,13 @@ if( !function_exists('backtrace') )
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit);
         $backtrace = array_splice($backtrace, $startIndex);
 
-        foreach($backtrace as & $val)
-        {
-            if(!isset($val['file']))
-            {
-                continue;
-            }
-
-            $val['file'] = trim_application_path($val['file']);
-        }
-
-
         return $backtrace;
     }
 
     function blame(&$backtrace)
     {
+        return;
+
         static $GIT_BLAME_AUTHOR_KEYS = [
             'author',
             'author-mail',
@@ -248,7 +239,7 @@ if( !function_exists('backtrace') )
                 $retval = 0;
                 $output = [];
 
-                proc_exec($cmd, $output, $retval, true);
+                proc_exec($cmd, $output, $retval);
 
                 if(0 == $retval)
                 {
@@ -270,11 +261,6 @@ if( !function_exists('backtrace') )
                         }
 
                         $git[$key] = $subValue;
-                    }
-
-                    if(!isset($git['author']) || 'Not Committed Yet' == $git['author'])
-                    {
-                        $git = [];
                     }
                 }
             }
@@ -417,68 +403,48 @@ if( !function_exists('backtrace_string') )
 
         blame($backtrace);
 
-        $clbs = [
-            'time' => function($val)
-            {
-                return isset($val['git']['author-time']) ? $val['git']['author-time'] : '';
-            },
-            'author' => function($val)
-            {
-                static $MAX_AUTHOR_LENGTH = 10;
-
-                $ret = isset($val['git']['author']) ? $val['git']['author'] : '';
-
-                if(strlen($ret) > $MAX_AUTHOR_LENGTH)
-                {
-                    $ret = substr($ret, 0, $MAX_AUTHOR_LENGTH) . '...';
-                }
-
-                return $ret;
-            },
-            'file' => function($val)
-            {
-                return isset($val['file']) ? trim_application_path($val['file']) : '';
-            },
-            'line' => function($val)
-            {
-                return isset($val['line']) ? (string)$val['line'] : '';
-            },
-            'function' => function($val)
-            {
-                return isset($val['function']) ? $val['function'] : '';
-            },
-            'args' => function($val)
-            {
-                return isset($val['args']) && is_array($val['args']) ? implode(',',array_map_val($val['args'],function($v){ return var_dump_human_compact($v); })) : '';
-            }
-        ];
-
-        $keys = array_keys($clbs);
-        unset($keys[array_search('args', $keys)]);
-
-		$max_len = array_combine(
-            $keys,
-            array_pad([], count($keys), 0)
-        );
-
-		foreach( $backtrace as & $val0 )
+		$max_len_file = 0;
+		foreach( $backtrace as &$val )
 		{
-            foreach($max_len as $key => $max)
-            {
-                $val0[$key] = $clbs[$key]($val0);
-                $max_len[$key] = max($max, strlen($val0[$key]));
-            }
+			if ( isset($val['file']) )
+			{
+				$val['file'] = trim_application_path($val['file']);
+				$len = strlen($val['file']);
+
+				$line = isset($val['line']) ? $val['line'] : '';
+				if ( !empty($val['file']) && !empty($line) )
+				{
+					$len += strlen((string)$line)+1;
+				}
+
+				$max_len_file = max($max_len_file, $len);
+			}
 		}
+		$max_len_file += 2;
 
 		$ret = '';
-		foreach( $backtrace as $val1 )
+		foreach( $backtrace as $val )
 		{
-            foreach($max_len as $key => $max)
-            {
-                $ret .= str_pad($val1[$key], $max_len[$key] + 1);
-            }
+			$file = isset($val['file']) ? $val['file'] : '';
+			$line = isset($val['line']) ? $val['line'] : '';
+            $blame = isset($val['git']['author']) && isset($val['git']['author-time']) ? sprintf('%s %s', $val['git']['author'], $val['git']['author-time']) : '-';
+			$function = isset($val['function']) ? $val['function'] : '';
+			$args = isset($val['args']) && is_array($val['args']) ? implode(',',array_map_val($val['args'],function($v){ return var_dump_human_compact($v); })) : '';
 
-            $ret .= sprintf("(%s)\n", $clbs['args']($val1));
+            $append = $blame . ' ';
+
+			$append .= !empty($file) ? $file : '???';
+
+			if ( !empty($file) && !empty($line) )
+			{
+				$append .= ":$line";
+			}
+			if ( strlen($append) < $max_len_file )
+			{
+				$append = str_pad($append, $max_len_file+1);
+			}
+			$append .= "  $function($args)\n";
+			$ret .= $append;
 		}
 		return $ret;
 	}
