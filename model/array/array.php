@@ -30,6 +30,17 @@ class Lib_Model_Array extends Lib_Model
 		];
 	}
 
+	public function serializeContent()
+	{
+		return array_map_val($this->recordColumnsGet(), function($row){
+			if($row instanceof Lib_Model)
+			{
+				return $row->serialize();
+			}
+			return $row;
+		});
+	}
+
 	/**
 	 * @return $this
 	 */

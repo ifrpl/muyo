@@ -7,6 +7,7 @@ class M00 extends Abstract_
 	public function getColumnsDefinition()
 	{
 		return [
+
             'field_00' => [
 				'type'    => 'int',
 			],

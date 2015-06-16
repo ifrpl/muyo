@@ -7,14 +7,13 @@
 
 if( !function_exists('proc_exec') )
 {
-    /**
-     * @param $command
-     * @param array $output
-     * @param null $retval
-     * @param bool $silent
-     * @return string
-     */
-	function proc_exec($command, &$output=array(), &$retval=null, $silent = false)
+	/**
+	 * @param string $command
+	 * @param array|null &$output
+	 * @param int|null &$retval
+	 * @return string
+	 */
+	function proc_exec($command, &$output=array(), &$retval=null)
 	{
 		$descriptors = array(
 			0 => array("pipe","r"),
@@ -32,18 +31,17 @@ if( !function_exists('proc_exec') )
 		$output = explode(PHP_EOL,$stdout);
 
 		$retval = proc_close($res);
-		if(!$silent)
+		if( 0 !== $retval)
 		{
-			$str = "Process returned error." . PHP_EOL
+			logger_log("Process returned error." . PHP_EOL
 				. " * Cli: " . $command          . PHP_EOL
 				. " * Return value: " . $retval  . PHP_EOL
 				. " * Stderr: "                  . PHP_EOL
 				. str_indent($stderr,1)          . PHP_EOL
 				. " * Stdout: "                  . PHP_EOL
 				. str_indent($stdout,1)          . PHP_EOL
-			;
-
-			debug_assert(0 == $retval, $str);
+			);
+			debug_assert(false); // FIXME: should be enforce but i wont risk it now
 		}
 
 		$ol = count($output);

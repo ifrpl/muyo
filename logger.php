@@ -23,15 +23,12 @@ if( !class_exists('Logger') )
 			return self::_dump($obj, $message, $logLevel);
 		}
 
-		static public function dumpToFile($obj, $fileName = '', $outputDirPath = null)
+		static public function dumpToFile($obj, $fileName = '')
 		{
-            if(null == $outputDirPath)
-            {
-                $id = buildIdFromCallstack(1);
+			$id = buildIdFromCallstack(1);
 
-                $outputDirPath = defined('ROOT_PATH') ? ROOT_PATH : '';
-                $outputDirPath .= DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
-            }
+            $outputDirPath = defined('ROOT_PATH') ? ROOT_PATH : '';
+			$outputDirPath .= DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
 
 			if(!file_exists($outputDirPath))
 			{
@@ -143,8 +140,11 @@ if( !function_exists('logger_log') )
 	 */
 	function logger_log($message, $level = LOG_INFO)
 	{
+		global $logger;
 		$eol = "\n";
 		$indent = "\t";
+
+		debug_assert(is_callable($logger), "Logger is not callable. Type: " . gettype($logger));
 
 		if( $message instanceof \Exception )
 		{
@@ -175,13 +175,7 @@ if( !function_exists('logger_log') )
 			}
 		}
 
-        global $logger;
-        if(debug_assert(is_callable($logger)))
-        {
-            $logger( $message, $level );
-        }
-
-
+		$logger( $message, $level );
 		return null;
 	}
 }
@@ -220,6 +214,43 @@ if( !function_exists('logger_set') )
 	}
 }
 
+if( !function_exists('logger_default') )
+{
+	/**
+	 * Returns default logger implementation
+	 *
+	 * @param $eol
+	 * @return callable
+	 */
+	function logger_default($eol="\n")
+	{
+		return function( $message, $level=LOG_INFO )use($eol)
+		{
+			$msg = '';
+			$now = now();
+			$level = log_level_str($level);
+
+			if( !is_array($message) )
+			{
+				$message = explode($eol, $message);
+			}
+
+			for($i = 0; $i<count($message); $i++)
+			{
+				$msg .= sprintf("[%s] [%7s] %s", $now, $level, $message[$i]);
+				if($i<count($message)-1)
+				{
+					$msg .= PHP_EOL;
+				}
+			}
+
+			printrlog($msg);
+		};
+	}
+}
+
+// Set default logger
+logger_set();
 
 if( !function_exists('logger_rotate') )
 {
@@ -246,6 +277,32 @@ if( !function_exists('logger_rotate') )
 			exec("gzip -c {$file} > {$file}.{$count}.gz");
 			exec("> {$file}");
 		}
+	}
+}
+
+if( !function_exists('log_level_str') )
+{
+	/**
+	 * @param int $level
+	 * @return string
+	 */
+	function log_level_str($level)
+	{
+		$map = array(
+			LOG_EMERG => 'EMERG',
+			LOG_ALERT => 'ALERT',
+			LOG_CRIT => 'CRIT',
+			LOG_ERR => 'ERR',
+			LOG_WARNING => 'WARNING',
+			LOG_NOTICE => 'NOTICE',
+			LOG_INFO => 'INFO',
+			LOG_DEBUG => 'DEBUG',
+		);
+		if( debug_assert( array_key_exists( $level, $map ), 'Unknown log level' ) )
+		{
+			$level = $map[ $level ];
+		}
+		return $level;
 	}
 }
 
