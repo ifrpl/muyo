@@ -424,13 +424,13 @@ if( !function_exists('backtrace_string') )
             },
             'author' => function($val)
             {
-                static $MAX_AUTHOR_LENGTH = 15;
+                static $MAX_AUTHOR_LENGTH = 10;
 
                 $ret = isset($val['git']['author']) ? $val['git']['author'] : '';
 
                 if(strlen($ret) > $MAX_AUTHOR_LENGTH)
                 {
-                    $ret = substr($ret, 0, $MAX_AUTHOR_LENGTH - 3) . '...';
+                    $ret = substr($ret, 0, $MAX_AUTHOR_LENGTH) . '...';
                 }
 
                 return $ret;
@@ -872,34 +872,14 @@ if( !function_exists('debug_handler_error_default_dg') )
 				case E_CORE_WARNING:
 				case E_COMPILE_WARNING:
 				case E_USER_WARNING:
-
-                    if( ENV_PRODUCTION == getCurrentEnv() )
-                    {
-                        logger_log( $e, LOG_WARNING );
-                    }
-                    else
-                    {
-                        throw $e;
-                    }
-
+					logger_log( $e, LOG_WARNING );
 				    break;
-
 				case E_NOTICE:
 				case E_USER_NOTICE:
 				case E_DEPRECATED:
 				case E_USER_DEPRECATED:
-
-                    if( ENV_PRODUCTION == getCurrentEnv() )
-                    {
-                        logger_log( $e, LOG_NOTICE );
-                    }
-                    else
-                    {
-                        throw $e;
-                    }
-
+					logger_log( $e, LOG_NOTICE );
 				    break;
-
 				default:
 					debug_assert(false,"Unknown value");
 				    break;
