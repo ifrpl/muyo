@@ -249,55 +249,6 @@ if( !function_exists('logger_rotate') )
 	}
 }
 
-if( !function_exists('get_default_log_level') )
-{
-    function get_default_log_level()
-    {
-        $env = getCurrentEnv();
-        switch ($env)
-        {
-            case ENV_DEVELOPMENT:
-                $log_level = LOG_DEBUG;
-                break;
-            case ENV_PRODUCTION:
-                $log_level = LOG_NOTICE;
-                break;
-            case 'testing':
-            default:
-                $log_level = LOG_INFO;
-                break;
-        }
-
-        return $log_level;
-    }
-}
-
-if( !function_exists('log_level_str') )
-{
-	/**
-	 * @param int $level
-	 * @return string
-	 */
-	function log_level_str($level)
-	{
-		$map = array(
-			LOG_EMERG => 'EMERG',
-			LOG_ALERT => 'ALERT',
-			LOG_CRIT => 'CRITICAL',
-			LOG_ERR => 'ERROR',
-			LOG_WARNING => 'WARNING',
-			LOG_NOTICE => 'NOTICE',
-			LOG_INFO => 'INFO',
-			LOG_DEBUG => 'DEBUG',
-		);
-		if( debug_assert( array_key_exists( $level, $map ), 'Unknown log level' ) )
-		{
-			$level = $map[ $level ];
-		}
-		return $level;
-	}
-}
-
 if( !function_exists('logger_log_compact') )
 {
 	/**
