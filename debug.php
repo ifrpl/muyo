@@ -193,7 +193,7 @@ if( !function_exists('printfb') )
 if( !function_exists('backtrace') )
 {
     /**
-     * Retrieve minimal backtrace without first ($startIndex + 1) rows.
+     * Retrieve minimal backtrace without first ($ignore + 2) rows.
      *
      * Parameters $startIndex and $limit are values relative to caller's stacktrace
      *
@@ -204,12 +204,13 @@ if( !function_exists('backtrace') )
      */
 	function backtrace($startIndex = 0, $limit = 0)
 	{
-        $startIndex += 1;
-
+        // If limit
         if(0 != $limit)
         {
             $limit += 2;
         }
+
+        $startIndex += 1;
 
         $ret = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit);
 
