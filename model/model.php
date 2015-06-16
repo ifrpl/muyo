@@ -12,26 +12,6 @@ abstract class Lib_Model implements Iterator
 	const SETTING_SET = 'set';
 	const SETTING_GET = 'get';
 
-    public static function getConstants($prefix){
-
-        $r = new ReflectionClass(get_called_class());
-
-        $constants = $r->getConstants();
-
-        $keys = array_filter(
-            array_keys($constants),
-            function($key) use($prefix)
-            {
-                return 0 === strpos($key, $prefix);
-            }
-        );
-
-        return array_combine(
-            $keys,
-            array_join($keys, $constants)
-        );
-    }
-
 	/**
 	 * @var array field type identifiers
 	 * @see $this->settingEmptyEqNull after modification
@@ -1309,56 +1289,44 @@ abstract class Lib_Model implements Iterator
 			}
 		}
 
-        return array_map_val($array, function($value, $key){
-            return $this->_serializeValue($key, $value);
-        });
+		$data = array();
+		foreach($array as $key => $value)
+		{
+			if($value instanceof Lib_Model)
+			{
+				$value = $value->serialize();
+			}
+
+			if(is_array($value) || is_object($value))
+			{
+				$value = serialize($value);
+			}
+
+			if( $this->settingExists($key) ? $setting = $this->getSetting($key) : false )
+			{
+				$type = 'text';
+				if( isset($setting['type']) )
+				{
+					$type = $setting['type'];
+				}
+
+				$value = $this->_getValueByType($value, $type);
+
+				if( isset($setting['unique']) && $setting['unique'] == true && empty($value) )
+				{
+					$value = null;
+				}
+
+				if(is_null($value) && isset($setting['default']))
+				{
+					$value = $setting['default'];
+				}
+			}
+
+			$data[$key] = $value;
+		}
+		return $data;
 	}
-
-    protected function _serializeValue($key, $value)
-    {
-        if($value instanceof Lib_Model)
-        {
-            $value = $value->serialize();
-        }
-
-        if(is_array($value))
-        {
-            $ret = [];
-            foreach($value as $subKey => $subValue)
-            {
-                $ret[$subKey] = $this->_serializeValue($subKey, $subValue);
-            }
-
-            $value = $ret;
-        }
-        elseif(is_object($value))
-        {
-            $value = serialize($value);
-        }
-
-        if( $this->settingExists($key) ? $setting = $this->getSetting($key) : false )
-        {
-            $type = 'text';
-            if( isset($setting['type']) )
-            {
-                $type = $setting['type'];
-            }
-
-            $value = $this->_getValueByType($value, $type);
-
-            if( isset($setting['unique']) && $setting['unique'] == true && empty($value) )
-            {
-                $value = null;
-            }
-
-            if(is_null($value) && isset($setting['default']))
-            {
-                $value = $setting['default'];
-            }
-        }
-
-        return $value;
-    }
 
 	/**
 	 * @param $value
@@ -1893,9 +1861,6 @@ abstract class Lib_Model implements Iterator
 							'searchType' => '='
 						)), true);
 
-						break;
-					case "hidden":
-						//noting to set
 						break;
 					default:
 						debug_assert(false !== array_search($optionValue->type, self::$types), "Unknown Grid Cell Type `{$optionValue->type}`");

@@ -973,13 +973,9 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 		$db = $this->getDb();
 		$this->preLoad();
-
-		$result = [];
 		try
 		{
-			array_each($db->fetchAll($q), function($row) use(&$result){
-				$result[ $row[ $this->getPrimaryKey() ] ] = $row;
-			});
+			$result = $db->fetchAll($q);
 		}
 		catch( Exception $e )
 		{
@@ -1320,8 +1316,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function getRow()
 	{
-// 		removed, cause it is to big change to do it in one simple step.
-//		debug_assert( false, 'Function getRow is scheduled for deletion, replace with Model::getById( $id )' );
+		debug_assert( false, 'Function getRow is scheduled for deletion, replace with Model::getById( $id )' );
 
 		$key = $this->getPrimaryKey();
 		if( null !== $key )
