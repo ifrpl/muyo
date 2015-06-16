@@ -143,8 +143,11 @@ if( !function_exists('logger_log') )
 	 */
 	function logger_log($message, $level = LOG_INFO)
 	{
+		global $logger;
 		$eol = "\n";
 		$indent = "\t";
+
+		debug_assert(is_callable($logger), "Logger is not callable. Type: " . gettype($logger));
 
 		if( $message instanceof \Exception )
 		{
@@ -175,20 +178,7 @@ if( !function_exists('logger_log') )
 			}
 		}
 
-        global $logger;
-
-        // Don't know why but when called from debug_handler_error_default_dg() $logger is null
-        if(!is_callable($logger))
-        {
-            $loggerTmp = logger_default();
-            $loggerTmp( $message, $level );
-
-        }
-        else
-        {
-            $logger( $message, $level );
-        }
-
+		$logger( $message, $level );
 		return null;
 	}
 }
@@ -261,6 +251,9 @@ if( !function_exists('logger_default') )
 		};
 	}
 }
+
+// Set default logger
+logger_set();
 
 if( !function_exists('logger_rotate') )
 {
