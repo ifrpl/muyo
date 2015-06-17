@@ -36,6 +36,17 @@ if( !function_exists('add_include_path') )
 	}
 }
 
+if( !function_exists('include_path_get') )
+{
+	/**
+	 * @return array
+	 */
+	function include_path_get()
+	{
+		return explode(PATH_SEPARATOR,get_include_path());
+	}
+}
+
 if( !function_exists('autoload') )
 {
 	function autoload()

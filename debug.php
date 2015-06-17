@@ -766,7 +766,7 @@ if( !function_exists('debug_handler_error_default_dg') )
 					logger_log( $e, LOG_NOTICE );
 				break;
 				default:
-					debug_assert(false,"Unknown value");
+					debug_assert( false, "Unknown errno value ".var_dump_human_compact($errno) );
 				break;
 			}
 		};
@@ -939,7 +939,7 @@ if( !function_exists('debug_enforce_key_exists') )
 			{
 				return array_key_exists( $key, $arr );
 			}),
-			"Expected key(s) '".implode(',',$key)."' does not exists."
+			"Expected key(s) '".var_dump_human_compact($key)."' does not exists in ".var_dump_human_compact(array_keys($arr))
 		);
 	}
 }
