@@ -900,46 +900,48 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			throw new Exception('Error while loading: '.$e->getMessage().' | SQL: '.$this->getSQL());
 		}
 
-		if(self::LOAD_ARRAY_MODE_RAW == $mode)
+		if( self::LOAD_ARRAY_MODE_RAW==$mode )
 		{
-			return $rows;
+			$ret = $rows;
 		}
-
-		$ret = [];
-		foreach( $rows as $row )
+		else
 		{
-			$record = [];
-
-			foreach( $row as $idx=>$column )
+			$ret = [];
+			foreach( $rows as $row )
 			{
-				$descriptor = $descriptors[ $idx ];
-				$colalias = strval( zend_column_name( $descriptor ) );
+				$record = [];
 
-
-				if(self::LOAD_ARRAY_MODE_NESTED_TABLE == $mode)
+				foreach( $row as $idx=>$column )
 				{
-					$tblalias = zend_column_table( $descriptor );
-					if( !array_key_exists( $tblalias, $record ) )
-					{
-						$record[ $tblalias ] = [];
-					}
+					$descriptor = $descriptors[ $idx ];
+					$colalias = strval( zend_column_name( $descriptor ) );
 
-					$record[$tblalias][$colalias] = $column;
+
+					if(self::LOAD_ARRAY_MODE_NESTED_TABLE == $mode)
+					{
+						$tblalias = zend_column_table( $descriptor );
+						if( !array_key_exists( $tblalias, $record ) )
+						{
+							$record[ $tblalias ] = [];
+						}
+
+						$record[$tblalias][$colalias] = $column;
+					}
+					else
+					{
+						$record[$colalias] = $column;
+					}
+				}
+
+				if( $collection )
+				{
+					$ret []= $record;
 				}
 				else
 				{
-					$record[$colalias] = $column;
+					$key = $row[ $key_idx ];
+					$ret[ $key ] = $record;
 				}
-			}
-
-			if( $collection )
-			{
-				$ret []= $record;
-			}
-			else
-			{
-				$key = $row[ $key_idx ];
-				$ret[ $key ] = $record;
 			}
 		}
 		return $ret;
