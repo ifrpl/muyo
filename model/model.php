@@ -1362,9 +1362,9 @@ abstract class Lib_Model implements Iterator
 				break;
 				case "object":
 				case "array":
-					if(is_object($value) || !is_array($value))
+					if(is_object($value) || is_array($value))
 					{
-						$value = unserialize($value);
+						$value = serialize($value);
 					}
 				break;
 				case "date":
