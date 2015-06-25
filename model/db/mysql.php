@@ -890,10 +890,15 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$key_idx = null;
 		}
 
+		if( $q===null )
+		{
+			$q = $this->getSQL();
+		}
+
 		$db = $this->getDb();
 		try
 		{
-			$rows = $db->fetchAll( $this->getSQL(), [], Zend_Db::FETCH_NUM );
+			$rows = $db->fetchAll( $q, [], Zend_Db::FETCH_NUM );
 		}
 		catch( Exception $e )
 		{
