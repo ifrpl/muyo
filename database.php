@@ -121,3 +121,45 @@ if( !function_exists('mysql_close_dg') )
 		}
 	}
 }
+
+/**
+ * @param string $exprBody
+ * @param string $term
+ * @param bool   $all
+ * @param string|null $corresponding
+ * @return string
+ */
+function sql_union($exprBody, $term, $all=false, $corresponding=null )
+{
+	return $exprBody.' UNION'.($all ? ' ALL' : '').($corresponding!==null ? ' '.$corresponding : '').$term;
+}
+
+/**
+ * @param string $exprBody
+ * @param string $term
+ * @param bool   $all
+ * @param string|null $corresponding
+ * @return string
+ */
+function sql_except($exprBody, $term, $all=false, $corresponding=null )
+{
+	return $exprBody.' EXCEPT'.($all?' ALL':'').($corresponding!==null?' '.$corresponding:'').$term;
+}
+
+/**
+ * @param string $exprBody
+ * @param string $term
+ * @param bool $all
+ * @param string|array|null $order
+ * @param int|null $limit
+ *
+ * @return string
+ */
+function mysql_union($exprBody, $term, $all=false, $order=null, $limit=null)
+{
+	if( is_array($order) )
+	{
+		$order = implode(',',$order);
+	}
+	return sql_union( $exprBody, $term, $all ).($order!==null?'ORDER BY '.$order :'').($limit!==null?'LIMIT '.$limit:'');
+}
