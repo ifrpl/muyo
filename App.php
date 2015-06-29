@@ -2,10 +2,17 @@
 
 namespace IFR\Main;
 
-class App{
+class App
+{
 
+	/**
+	 * @var App
+	 */
 	static private $_instance = null;
 
+	/**
+	 * @return App
+	 */
 	public static function get()
 	{
 		if(null == self::$_instance)
@@ -16,11 +23,28 @@ class App{
 		return self::$_instance;
 	}
 
+	/**
+	 * @return bool
+	 */
     public static function isProd()
     {
         return ENV_PRODUCTION == getCurrentEnv();
     }
 
+	/**
+	 * @return bool
+	 */
+    public static function isDebug()
+    {
+        return !self::isProd();
+    }
+
+	/**
+	 * @param string $filePath
+	 *
+	 * @return Zend_Config|Zend_Config_Ini|Zend_Config_Xml
+	 * @throws Zend_Config_Exception
+	 */
     public function loadConfig($filePath)
     {
         $config = $this->_loadConfig($filePath, true);
@@ -32,6 +56,9 @@ class App{
         return $config;
     }
 
+	/**
+	 * @param string $filePath
+	 */
     public function loadFile($filePath)
     {
         foreach([$filePath, $filePath . '.local'] as $filePath)
@@ -43,6 +70,13 @@ class App{
         }
     }
 
+	/**
+	 * @param string $fullpath
+	 * @param bool $write
+	 *
+	 * @return Zend_Config|Zend_Config_Ini|Zend_Config_Xml
+	 * @throws Zend_Config_Exception
+	 */
     private function _loadConfig($fullpath, $write = false)
     {
         if (!file_exists($fullpath))
@@ -176,6 +210,9 @@ SQL
 		return $dbMongo;
 	}
 
+	/**
+	 * @param null $msg
+	 */
 	public function fail($msg=null)
 	{
 		logger_log( 'Error:' );
