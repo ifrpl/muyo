@@ -1862,6 +1862,9 @@ abstract class Lib_Model implements Iterator
 						)), true);
 
 						break;
+					case "hidden":
+						//noting to set
+						break;
 					default:
 						debug_assert(false !== array_search($optionValue->type, self::$types), "Unknown Grid Cell Type `{$optionValue->type}`");
 				}

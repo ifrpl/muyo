@@ -20,26 +20,18 @@ if( !function_exists('debug_allow') )
 			 */
 			function is_debug_host()
 			{
-				$allowedSubNet = array(
-					'127.',
-					'10.10.',
-					'192.168.'
-				);
-
-				$allowedHosts = array(
-					'10.0.2.2',
-					'89.191.162.220', //Lukasz home
-					'87.206.45.163',
-					'84.10.100.73',
-					'89.69.131.15' //IFResearch Chello
-				);
-
-				if((isCLI() && getCurrentEnv() !== 'production'))
+                if((isCLI() && getCurrentEnv() !== ENV_PRODUCTION))
 				{
 					return true;
 				}
 				elseif(!isCLI() && isset($_SERVER['REMOTE_ADDR']))
 				{
+                    $allowedSubNet = array(
+                        '127.',
+                        '10.10.',
+                        '192.168.'
+                    );
+
 					foreach($allowedSubNet as $subNet)
 					{
 						if(strpos($_SERVER['REMOTE_ADDR'], $subNet) === 0)
@@ -47,11 +39,20 @@ if( !function_exists('debug_allow') )
 							return true;
 						}
 					}
-					if(in_array($_SERVER['REMOTE_ADDR'], $allowedHosts))
-					{
-						return true;
-					}
+
+                    $allowedHosts = array(
+                        '89.191.162.220', //Lukasz home
+                        '87.206.45.163',
+                        '84.10.100.73',
+                        '89.69.131.15' //IFResearch Chello
+                    );
+
+                    if(debug_assert(!in_array($_SERVER['REMOTE_ADDR'], $allowedHosts), 'Remove this trash and use a conf file instead'))
+                    {
+                        return false;
+                    }
 				}
+
 				return false;
 			}
 		}
@@ -59,8 +60,11 @@ if( !function_exists('debug_allow') )
 
 		if(
 			!is_debug_host() ||
-			($env === 'production' && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))
-		) return false;
+			($env == ENV_PRODUCTION && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))
+		)
+        {
+            return false;
+        }
 
 		return true;
 	}
@@ -452,6 +456,20 @@ if( !function_exists('debug_compact') )
 	}
 }
 
+if( !function_exists('debug_wrap_dg') )
+{
+	function debug_wrap_dg($callable)
+	{
+		return function()use($callable)
+		{
+			$in = func_get_args();
+			$out = call_user_func_array($callable,$in);
+			debug(['in'=>$in,'out'=>$out]);
+			return $out;
+		};
+	}
+}
+
 if( !function_exists('get_call_stack') )
 {
 	/**
@@ -820,7 +838,6 @@ if( !function_exists('debug_handler_assertion') )
 	 */
 	function debug_handler_assertion($handler = null)
 	{
-		$env = getCurrentEnv();
 		if( null == $handler )
 		{
 			$handler = debug_handler_assertion_default_dg();
@@ -828,7 +845,7 @@ if( !function_exists('debug_handler_assertion') )
 		assert_options(ASSERT_ACTIVE, true);
 		assert_options(ASSERT_WARNING, false);
 		assert_options(ASSERT_BAIL, false);
-		assert_options(ASSERT_QUIET_EVAL, $env==='production');
+		assert_options(ASSERT_QUIET_EVAL, ENV_PRODUCTION == getCurrentEnv());
 		return assert_options(ASSERT_CALLBACK, $handler);
 	}
 }

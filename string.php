@@ -1166,14 +1166,31 @@ if( !function_exists('str_prepend') )
 if( !function_exists('str_prepend_dg') )
 {
 	/**
-	 * @param string $what
+	 * @param string|callable $what
+	 * @param string|callable|null $string
 	 * @return callable
 	 */
-	function str_prepend_dg( $what )
+	function str_prepend_dg( $what, $string=null )
 	{
-		return function( $string )use( $what )
+		if( !is_callable($what) )
 		{
-			return str_prepend( $string, $what );
+			$what = return_dg($what);
+		}
+		if( is_null($string) )
+		{
+			$string = tuple_get(0);
+		}
+		elseif( !is_callable( $string ) )
+		{
+			$string = return_dg($string);
+		}
+		return function()use( $what, $string )
+		{
+			$args = func_get_args();
+			return str_prepend(
+				call_user_func_array( $string, $args ),
+				call_user_func_array( $what, $args )
+			);
 		};
 	}
 }

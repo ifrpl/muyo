@@ -975,6 +975,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 		$db = $this->getDb();
 		$this->preLoad();
+
 		try
 		{
 			$result = $db->fetchAll($q);
@@ -982,6 +983,16 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		catch( Exception $e )
 		{
 			throw new Exception('Error while loading: '.$e->getMessage().' | SQL: '.$q->assemble());
+		}
+		if( !$collection )
+		{
+			$result = array_map_key(
+				$result,
+				function($row)
+				{
+					return $row[ $this->getPrimaryKey() ];
+				}
+			);
 		}
 		$this->postLoad();
 
@@ -1389,8 +1400,6 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function getRow()
 	{
-		debug_assert( false, 'Function getRow is scheduled for deletion, replace with Model::getById( $id )' );
-
 		$key = $this->getPrimaryKey();
 		if( null !== $key )
 		{
