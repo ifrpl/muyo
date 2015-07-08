@@ -456,21 +456,12 @@ if( !function_exists('array_group') )
 	/**
 	 * @param array $array
 	 * @param callable $iterator
-	 * @param array|null $keyspace
 	 *
 	 * @return array
 	 */
-	function array_group($array, $iterator, $keyspace = null)
+	function array_group($array, $iterator)
 	{
-		$ret = array();
-
-		if( !is_null($keyspace) )
-		{
-			foreach( $keyspace as $key )
-			{
-				$ret[$key] = array();
-			}
-		}
+		$ret = [];
 
 		foreach( $array as $origKey=>$value )
 		{
@@ -481,12 +472,27 @@ if( !function_exists('array_group') )
 			}
 			if( !array_key_exists($key,$ret) )
 			{
-				$ret[$key] = array();
+				$ret[$key] = [];
 			}
 			$ret[$key][$origKey] = $value;
 		}
 
 		return $ret;
+	}
+}
+
+if( !function_exists('array_group_dg') )
+{
+	/**
+	 * @param callable $callable
+	 * @return callable
+	 */
+	function array_group_dg( $callable )
+	{
+		return function( $array )use($callable)
+		{
+			return array_group( $array, $callable );
+		};
 	}
 }
 
@@ -561,6 +567,23 @@ if( !function_exists('array_map_val') )
 	}
 }
 
+if( !function_exists('array_map_val_dg') )
+{
+	/**
+	 * @param callable $iterator
+	 * @return callable
+	 */
+	function array_map_val_dg($iterator)
+	{
+		return function()use($iterator)
+		{
+			$array = func_get_args();
+			$array = array_shift( $array );
+			return array_map_val( $array, $iterator );
+		};
+	}
+}
+
 if( !function_exists('array_map_val_recursive') )
 {
 	/**
@@ -592,23 +615,6 @@ if( !function_exists('array_map_val_recursive') )
 				return $args[0];
 			}
 		);
-	}
-}
-
-if( !function_exists('array_map_val_dg') )
-{
-	/**
-	 * @param callable $iterator
-	 * @return callable
-	 */
-	function array_map_val_dg($iterator)
-	{
-		return function()use($iterator)
-		{
-			$array = func_get_args();
-			$array = array_shift( $array );
-			return array_map_val( $array, $iterator );
-		};
 	}
 }
 
@@ -1372,22 +1378,6 @@ if( !function_exists('array_implode_dg') )
 				call_user_func_array($separator,$args),
 				call_user_func_array($array,$args)
 			);
-		};
-	}
-}
-
-if( !function_exists('array_group_dg') )
-{
-	/**
-	 * @param callable $callable
-	 * @param null|mixed $keyspace
-	 * @return callable
-	 */
-	function array_group_dg( $callable, $keyspace=null )
-	{
-		return function( $array )use($callable,$keyspace)
-		{
-			return array_group( $array, $callable, $keyspace );
 		};
 	}
 }
