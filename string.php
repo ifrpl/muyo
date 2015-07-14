@@ -4,6 +4,40 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
+if( !function_exists('str') )
+{
+	function str()
+	{
+		$ret = '';
+		array_each(
+			func_get_args(),
+			function($string)use(&$ret)
+			{
+				$ret .= strval($string);
+			}
+		);
+		return $ret;
+	}
+}
+
+if( !function_exists('str_dg') )
+{
+	function str_dg()
+	{
+		$arguments = array_map_val(
+			func_get_args(),
+			callablize_dg(tuple_get(0))
+		);
+		return function()use($arguments)
+		{
+			$args = func_get_args();
+			return call_user_func_array(
+				'str',
+				$args
+			);
+		};
+	}
+}
 
 if( !function_exists('str_endswith') )
 {

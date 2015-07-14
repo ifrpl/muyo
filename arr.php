@@ -866,6 +866,21 @@ if( !function_exists('array_get_dg') )
 	}
 }
 
+if( !function_exists('array_get_default') )
+{
+	/**
+	 * @param array $array
+	 * @param string $key
+	 * @param mixed|null $default
+	 *
+	 * @return null
+	 */
+	function array_get_default( $array, $key, $default=null )
+	{
+		return array_key_exists( $key, $array ) ? $array[ $key ] : $default;
+	}
+}
+
 if( !function_exists('array_set') )
 {
 	/**

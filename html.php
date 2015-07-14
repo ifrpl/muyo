@@ -87,11 +87,44 @@ if( !function_exists('html_tag') )
 {
 	/**
 	 * @param string $name
-	 * @param array $attr
+	 * @param array $attribute
 	 * @param string $content
 	 * @return string
 	 */
-	function html_tag( $name, $attr, $content )
+	function html_tag( $name, $attribute, $content )
+	{
+		$attr = array_chain(
+			$attribute,
+			array_map_val_dg( html_attribute_dg( tuple_get(1), tuple_get(0) ) ),
+			array_implode_dg(' ')
+		);
+		if( empty($content) )
+		{
+			if( Doctype::isXhtml() )
+			{
+				$ret = "<{$name}{$attr}/>";
+			}
+			else
+			{
+				$ret = "<{$name}{$attr}>";
+			}
+		}
+		else
+		{
+			$ret = "<{$name}{$attr}>{$content}</{$name}>";
+		}
+		return $ret;
+	}
+}
+
+if( !function_exists('html_attribute') )
+{
+	/**
+	 * @param string $name
+	 * @param mixed $value
+	 * @return string|null
+	 */
+	function html_attribute( $name, $value )
 	{
 		$attrChain = array(
 			array_filter_key_dg(function( $val, $key )
@@ -121,24 +154,56 @@ if( !function_exists('html_tag') )
 			$val = str_wrap( htmlspecialchars( $val, ENT_QUOTES|$flags ), '"' );
 			return " {$key}={$val}";
 		});
-		$attrChain []= array_implode_dg('');
-		$attr = call_user_func_array( 'array_chain', array_merge( array($attr), $attrChain ) );
-		if( empty($content) )
+		$ret = call_user_func_array( 'array_chain', array_merge( [[$name=>$value]], $attrChain ) );
+		if( empty($ret) )
 		{
-			if( Doctype::isXhtml() )
-			{
-				$ret = "<{$name}{$attr}/>";
-			}
-			else
-			{
-				$ret = "<{$name}{$attr}>";
-			}
+			$ret = null;
 		}
 		else
 		{
-			$ret = "<{$name}{$attr}>{$content}</{$name}>";
+			$ret = array_shift($ret);
 		}
 		return $ret;
+	}
+}
+
+if( !function_exists('html_attribute_dg') )
+{
+	/**
+	 * @param string $name
+	 * @param string $value
+	 * @return callable
+	 */
+	function html_attribute_dg( $name, $value )
+	{
+		if( is_string($name) )
+		{
+			$name = return_dg($name);
+		}
+		elseif( is_null($name) )
+		{
+			$name = tuple_get(1);
+		}
+		else
+		{
+			debug_enforce_type( $name, 'callable' );
+		}
+		if( is_null($value) )
+		{
+			$value = tuple_get(0);
+		}
+		elseif( !is_callable($value) )
+		{
+			$value = return_dg($value);
+		}
+		return function()use($name,$value)
+		{
+			$args = func_get_args();
+			return html_attribute(
+				call_user_func_array( $name, $args ),
+				call_user_func_array( $value, $args )
+			);
+		};
 	}
 }
 
