@@ -64,7 +64,7 @@ if( !class_exists('Archiver') )
 
 			if(!$found)
 			{
-				throw new Exception("Backup file '$fileName' doesn't exists");
+				throw new \Exception("Backup file '$fileName' doesn't exists");
 			}
 
 			foreach(self::$_config as $type=>$archConf)
