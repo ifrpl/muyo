@@ -8,15 +8,11 @@ if( !function_exists('str') )
 {
 	function str()
 	{
-		$ret = '';
-		array_each(
+		return array_chain(
 			func_get_args(),
-			function($string)use(&$ret)
-			{
-				$ret .= strval($string);
-			}
+			array_map_val_dg( strval_dg() ),
+			array_implode_dg('')
 		);
-		return $ret;
 	}
 }
 
@@ -26,14 +22,31 @@ if( !function_exists('str_dg') )
 	{
 		$arguments = array_map_val(
 			func_get_args(),
-			callablize_dg(tuple_get(0))
+			function($arg)
+			{
+				if( !is_callable($arg) )
+				{
+					$ret = return_dg($arg);
+				}
+				else
+				{
+					$ret = $arg;
+				}
+				return $ret;
+			}
 		);
 		return function()use($arguments)
 		{
 			$args = func_get_args();
 			return call_user_func_array(
 				'str',
-				$args
+				array_map_val(
+					$arguments,
+					function($arg)use($args)
+					{
+						return call_user_func_array( $arg, $args );
+					}
+				)
 			);
 		};
 	}
