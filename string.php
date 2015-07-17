@@ -120,14 +120,41 @@ if( !function_exists('str_startswith') )
 if( !function_exists('str_startswith_dg') )
 {
 	/**
-	 * @param string $needle
+	 * @param string|callable $needle
+	 * @param string|callable|null $haystack
 	 * @return callable
 	 */
-	function str_startswith_dg( $needle )
+	function str_startswith_dg( $needle, $haystack=null )
 	{
-		return function( $haystack )use( $needle )
+		if( is_string($needle) )
 		{
-			return str_startswith( $haystack, $needle );
+			$needle = return_dg($needle);
+		}
+		else
+		{
+			debug_enforce_type( $needle, 'callable' );
+		}
+
+		if( is_null($haystack) )
+		{
+			$haystack = tuple_get(0);
+		}
+		elseif( is_string($haystack) )
+		{
+			$haystack = return_dg($haystack);
+		}
+		else
+		{
+			debug_enforce_type( $haystack, 'callable' );
+		}
+
+		return function()use( $needle, $haystack )
+		{
+			$args = func_get_args();
+			return str_startswith(
+				call_user_func_array( $haystack, $args ),
+				call_user_func_array( $needle, $args )
+			);
 		};
 	}
 }
