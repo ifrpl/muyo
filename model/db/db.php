@@ -2,7 +2,7 @@
 
 if( !class_exists( 'Lib_Model' ) )
 {
-	require_once( implode( DIRECTORY_SEPARATOR, array(__DIR__, '..','model.php') ) );
+	require_once( implode( DIRECTORY_SEPARATOR, [__DIR__, '..','model.php'] ) );
 }
 
 /**
@@ -18,6 +18,9 @@ abstract class Lib_Model_Db extends Lib_Model
 	protected $_primaryKey = 'id';
 	protected $_alias;
 
+	const LOAD_ARRAY_MODE_NESTED_TABLE  = 0;
+	const LOAD_ARRAY_MODE_NESTED_COLUMN = 1;
+	const LOAD_ARRAY_MODE_RAW           = 2;
 
 
 	/** @return mixed */
@@ -28,13 +31,14 @@ abstract class Lib_Model_Db extends Lib_Model
 	abstract public function save();
 	abstract public function delete();
 	abstract public function load($q = null, $collection = false);
+
 	/**
 	 * @param mixed $q
-	 * @param bool $collection
-	 * @return array [ string $tableAlias => [ string $columnAlias => mixed $columnValue ] ]
-	 * @throws Exception
+	 * @param bool  $collection
+	 * @param int   $mode
+	 * @return array
 	 */
-	abstract public function loadArray( $q=null, $collection=false );
+	abstract public function loadArray( $q=null, $collection=false, $mode=self::LOAD_ARRAY_MODE_NESTED_TABLE );
 
 	/**
 	 * @return Lib_Model_Set
@@ -114,7 +118,7 @@ abstract class Lib_Model_Db extends Lib_Model
 		}
 		else
 		{
-			$this->setColumns(array($alias=>$name), $this->getAlias());
+			$this->setColumns([$alias=>$name], $this->getAlias());
 		}
 		$this->addSetting($alias,self::settingDefaultGet($name));
 		return $this;
@@ -126,7 +130,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	public function normalizeColumns()
 	{
 		$model_alias = $this->getAlias();
-		$ret = array();
+		$ret = [];
 
 		foreach( $this->getColumns() as $descriptor )
 		{
@@ -137,7 +141,7 @@ abstract class Lib_Model_Db extends Lib_Model
 				{
 					foreach( array_keys($this->schemaColumnsGet()) as $column_name )
 					{
-						$ret []= array($alias, $column_name, null);
+						$ret []= [$alias, $column_name, null];
 					}
 				}
 				else
@@ -165,7 +169,7 @@ abstract class Lib_Model_Db extends Lib_Model
 		foreach( $newColumns as $descriptor )
 		{
 			if ( $descriptor[2] )
-				$this->setColumns(array($descriptor[2] => $descriptor[1]), $descriptor[0]);
+				$this->setColumns([$descriptor[2] => $descriptor[1]], $descriptor[0]);
 			else
 				$this->setColumns($descriptor[1], $descriptor[0]);
 		}
@@ -243,7 +247,7 @@ abstract class Lib_Model_Db extends Lib_Model
 				$from[$value] = $descriptor;
 			}
 		}
-		$select->from( array( $value => $this->getTable() ), array() );
+		$select->from( [ $value => $this->getTable() ], [] );
 
 		return $this
 			->setAlias( $value )
@@ -308,7 +312,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	{
 		$alias = $this->getAlias();
 		$key = $this->getPrimaryKey();
-		return $this->filterBy(array("{$alias}.{$key}"=>$id));
+		return $this->filterBy(["{$alias}.{$key}"=>$id]);
 	}
 
 	/**
@@ -458,12 +462,12 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public static function __callStatic($name, $args)
 	{
-		$matches = array();
+		$matches = [];
 		if( preg_match('/^get(List|Set)*By([a-zA-Z]+)$/', $name, $matches) )
 		{
 			/** @var Lib_Model $model */
 			$model = new static;
-			$cond = array();
+			$cond = [];
 			$list = false;
 			$set = false;
 			if( !empty($matches[1]) )
@@ -546,7 +550,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public function countById($id)
 	{
-		return $this->countBy(array($this->getPrimaryKey()=>$id));
+		return $this->countBy([$this->getPrimaryKey()=>$id]);
 	}
 
 	/**
@@ -565,85 +569,77 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public function loadOne($q = null)
 	{
-		$ret = $this->load($q,true);
-		$count = count($ret);
+		$collection = $this->load($q,true);
 
-		if( $count === 0 )
-		{
-			return new static();
-		}
-		else
-		{
-			return current($ret);
-		}
-	}
-
-	/**
-	 * @return int
-	 */
-	public function loadInt()
-	{
-		$alias = $this->getAlias();
-		$array = $this->loadArray( null,true );
-		debug_enforce_count_gte( $array, 1 );
-		debug_assert_count_eq( $array, 1 );
-		$record = array_shift( $array );
-		debug_enforce_count_gte( $record[ $alias ], 1 );
-		debug_assert_count_eq( $record[ $alias ], 1 );
-		$ret=array_shift( $record[ $alias ] );
-		return intval($ret);
-	}
-
-	/**
-	 * @return float
-	 */
-	public function loadFloat()
-	{
-		$alias = $this->getAlias();
-		$array = $this->loadArray( null,true );
-		debug_enforce_count_gte( $array, 1 );
-		debug_assert_count_eq( $array, 1 );
-		$record = array_shift( $array );
-		debug_enforce_count_gte( $record[ $alias ], 1 );
-		debug_assert_count_eq( $record[ $alias ], 1 );
-		$ret=array_shift( $record[ $alias ] );
-		return floatval($ret);
-	}
-
-	/**
-	 * @return string
-	 */
-	public function loadString()
-	{
-		$array = $this->loadArray( null,true );
-		debug_enforce_count_gte( $array, 1 );
-		debug_assert_count_eq( $array, 1 );
-		$record = array_shift( $array );
-		$columns = array_flatten( $record );
-		debug_enforce_count_gte( $columns, 1 );
-		debug_assert_count_eq( $columns, 1 );
-		$ret=array_shift( $columns );
-		return $ret;
+		debug_enforce_count_gte( $collection, 1 );
+		debug_assert_count_eq( $collection, 1 );
+		return current($ret);
 	}
 
 	/**
 	 * @param Zend_Db_Select|null $q
-	 * @return static
+	 * @return $this
 	 */
-	public function loadNullable( $q=null )
+	public function loadOneNullable( $q = null )
 	{
-		$array = $this->loadArray( $q, true );
-		if( empty($array) )
+		$collection = $this->load( $q, true );
+
+		if( empty($collection) )
 		{
-			$record = [];
+			$model = $this->modelFactory( [] );
 		}
 		else
 		{
-			debug_assert_count_eq( $array, 1 );
-			$nestedRecord = array_shift( $array );
-			$record = array_flatten( $nestedRecord );
+			debug_assert_count_eq( $collection, 1 );
+			$model = reset($collection);
 		}
-		return static::modelFactory_s( $record );
+		return $model;
+	}
+
+	/**
+	 * @param Zend_Db_Select|null $q
+	 * @param bool                $collection
+	 * @param int                 $mode
+	 * @return array
+	 */
+	public function loadOneArray( $q=null, $collection=false, $mode=self::LOAD_ARRAY_MODE_NESTED_COLUMN )
+	{
+		$collection = $this->loadArray( $q, $collection, $mode );
+		debug_enforce_count_gte( $collection, 1 );
+		debug_assert_count_eq( $collection, 1 );
+		return reset($collection);
+	}
+
+	/**
+	 * @param Zend_Db_Select|null $q
+	 * @param mixed|null $null
+	 * @return array|null
+	 */
+	public function loadOneArrayNullable( $q=null, $null=null )
+	{
+		$collection = $this->loadArray( $q, true );
+		if( empty($collection) )
+		{
+			$row = $null;
+		}
+		else
+		{
+			$row = reset($collection);
+		}
+		return $row;
+	}
+
+	/**
+	 * @param Zend_Db_Select|null $q
+	 * @return mixed
+	 */
+	public function loadColumn( $q = null )
+	{
+		$record = $this->loadOneArray( $q, true );
+		$columns = array_flatten( $record );
+		debug_enforce_count_gte( $columns, 1 );
+		debug_assert_count_eq( $columns, 1 );
+		return array_shift( $columns );
 	}
 
 	/**
@@ -653,21 +649,74 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public function loadColumnNullable( $q=null, $null=null )
 	{
-		$array = $this->loadArray( $q,true );
-		if( empty($array) )
+		$record = $this->loadOneArrayNullable( $q, $null );
+		if( $record===$null )
 		{
 			$ret = $null;
 		}
 		else
 		{
-			debug_assert_count_eq( $array, 1 );
-			$record = array_shift( $array );
 			$columns = array_flatten( $record );
-			debug_enforce_count_gte( $columns, 1 );
-			debug_assert_count_eq( $columns, 1 );
-			$ret=array_shift( $columns );
+			if( empty($columns) )
+			{
+				$ret = $null;
+			}
+			else
+			{
+				debug_assert_count_eq( $columns, 1 );
+				$ret = array_shift($columns);
+			}
 		}
 		return $ret;
+	}
+
+	/**
+	 * @param Zend_Db_Select|null $q
+	 * @return int
+	 */
+	public function loadInt( $q=null )
+	{
+		return intval( $this->loadColumn( $q ) );
+	}
+
+	/**
+	 * @param Zend_Db_Select|null $q
+	 * @return float
+	 */
+	public function loadFloat( $q=null )
+	{
+		return floatval( $this->loadColumn( $q ) );
+	}
+
+	/**
+	 * @param Zend_Db_Select|null $q
+	 * @return string
+	 */
+	public function loadString( $q=null )
+	{
+		return strval( $this->loadColumn( $q ) );
+	}
+
+	/**
+	 * @param Zend_Db_Select|null $q
+	 * @param mixed $null
+	 * @return int|null
+	 */
+	public function loadIntNullable( $q=null, $null=null )
+	{
+		$ret = $this->loadColumnNullable( $q, $null );
+		return $ret===$null ? $ret : intval($ret);
+	}
+
+	/**
+	 * @param Zend_Db_Select|null $q
+	 * @param mixed $null
+	 * @return float|null
+	 */
+	public function loadFloatNullable( $q=null, $null=null )
+	{
+		$ret = $this->loadColumnNullable( $q, $null );
+		return $ret===$null ? $ret : floatval($ret);
 	}
 
 	/**
@@ -678,7 +727,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	public function loadStringNullable( $q=null, $null=null )
 	{
 		$ret = $this->loadColumnNullable( $q, $null );
-		return is_null($ret) ? $ret : (string)$ret;
+		return $ret===$null ? $ret : strval($ret);
 	}
 
 	protected function preLoad()
@@ -687,11 +736,6 @@ abstract class Lib_Model_Db extends Lib_Model
 
 	protected function postLoad()
 	{
-	}
-
-	protected function clearAfterLoad()
-	{
-		$this->setSelect(null);
 	}
 
 	/**
@@ -705,28 +749,12 @@ abstract class Lib_Model_Db extends Lib_Model
 	}
 
 	/**
-	 * @param callable $iterator
-	 */
-	public function each($iterator)
-	{
-		array_each(
-			$this->load(),
-			$iterator
-		);
-	}
-
-	/**
 	 * Returns result keys (aliases).
 	 * @return array
 	 */
 	public function getColumnAliases( )
 	{
-		return array_map_val( $this->getColumns(), function()
-		{
-			$column = func_get_arg( 0 );
-			$alias = $column[2] === null ? $column[1] : $column[2];
-			return $alias;
-		} );
+		return array_map_val( $this->getColumns(), zend_column_name_dg() );
 	}
 
 	/**
@@ -745,6 +773,27 @@ abstract class Lib_Model_Db extends Lib_Model
 	public function storeId( $value )
 	{
 		return $this->store( $this->getPrimaryKey(), $value );
+	}
+
+	/**
+	 * @deprecated
+	 * @param Zend_Db_Select|null $q
+	 * @return static
+	 */
+	public function loadNullable( $q=null )
+	{
+		debug_assert( false, 'loadNullable is deprecated in favor of loadOneNullable' );
+		return $this->loadOneNullable( $q );
+	}
+
+	/**
+	 * @deprecated
+	 * @param callable $iterator
+	 */
+	public function each($iterator)
+	{
+		debug_assert( false, 'direct each() call is deprecated in favor use of loadSet()->each()');
+		return $this->loadSet()->each( $iterator );
 	}
 	
 }

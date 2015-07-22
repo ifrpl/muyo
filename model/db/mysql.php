@@ -13,10 +13,6 @@ if( !class_exists('Lib_Model_Db') )
  */
 abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 {
-	const LOAD_ARRAY_MODE_NESTED_TABLE  = 0;
-	const LOAD_ARRAY_MODE_NESTED_COLUMN = 1;
-	const LOAD_ARRAY_MODE_RAW           = 2;
-
 	/**
 	 * @var Zend_Db_Select
 	 */
