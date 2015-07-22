@@ -84,61 +84,6 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
-	 * @param Zend_Db_Select|null $q
-	 * @param bool $collection do not index by id
-	 * @return array[static]
-	 * @throws Exception
-	 */
-	public function load($q = null, $collection = false)
-	{
-		if( is_null($q) )
-		{
-			$q = $this->getSelect();
-		}
-
-		$pkey = $this->getPrimaryKey();
-
-		if( count($q->getPart('columns')) == 0 )
-		{
-			$q->columns(['*']);
-		}
-		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
-		{
-			$this->setColumns($pkey);
-		}
-
-		$db = $this->getDb();
-		$this->preLoad();
-		try
-		{
-			$result = $db->fetchAll($q);
-		}
-		catch( Exception $e )
-		{
-			throw new Exception('Error while loading: '.$e->getMessage().' | SQL: '.$q->assemble());
-		}
-		$this->postLoad();
-
-		$data = [];
-		foreach( $result as $row )
-		{
-			$obj = $this->modelFactory($row);
-			$obj->changedColumnsReset();
-
-			if( !$collection && $obj->id )
-			{
-				$data[$obj->id] = $obj;
-			}
-			else
-			{
-				$data[] = $obj;
-			}
-		}
-
-		return $data;
-	}
-
-	/**
 	 * @param string $expr
 	 * @param string $bindAs
 	 * @return $this
@@ -340,34 +285,6 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		{
 			return $this;
 		}
-	}
-
-	/**
-	 * Load results as CSV-like file on database server.
-	 * @param string $path
-	 * @param string $fieldsTerminator
-	 * @param string $fieldsEncloser
-	 * @param string $linesTerminator
-	 */
-	public function loadFile( $path, $fieldsTerminator=',', $fieldsEncloser='"', $linesTerminator="\n" )
-	{
-		debug_enforce_string( $path );
-		debug_enforce_string( $fieldsTerminator );
-		debug_enforce_string( $fieldsEncloser );
-		debug_enforce_string( $linesTerminator );
-		$sql = $this->getSql();
-		$db = $this->getDb();
-		$path = $db->quote( $path, 'string' );
-		$linesTerminator = $db->quote( $linesTerminator, 'string' );
-		$fieldsEncloser = $db->quote( $fieldsEncloser, 'string' );
-		$fieldsTerminator = $db->quote( $fieldsTerminator, 'string' );
-		$db->exec(
-			$sql."\n"
-			. "INTO OUTFILE $path"
-			. " FIELDS TERMINATED BY $fieldsTerminator"
-			. " ENCLOSED BY $fieldsEncloser"
-			. " LINES TERMINATED BY $linesTerminator"
-		);
 	}
 
 	/**
@@ -853,6 +770,89 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
+	 * @param Zend_Db_Select|null $q
+	 * @param bool $collection do not index by id
+	 * @return array[static]
+	 * @throws Exception
+	 */
+	public function load($q = null, $collection = false)
+	{
+		if( is_null($q) )
+		{
+			$q = $this->getSelect();
+		}
+
+		$pkey = $this->getPrimaryKey();
+
+		if( count($q->getPart('columns')) == 0 )
+		{
+			$q->columns(['*']);
+		}
+		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
+		{
+			$this->setColumns($pkey);
+		}
+
+		$db = $this->getDb();
+		$this->preLoad();
+		try
+		{
+			$result = $db->fetchAll($q);
+		}
+		catch( Exception $e )
+		{
+			throw new Exception('Error while loading: '.$e->getMessage().' | SQL: '.$q->assemble());
+		}
+		$this->postLoad();
+
+		$data = [];
+		foreach( $result as $row )
+		{
+			$obj = $this->modelFactory($row);
+			$obj->changedColumnsReset();
+
+			if( !$collection && $obj->id )
+			{
+				$data[$obj->id] = $obj;
+			}
+			else
+			{
+				$data[] = $obj;
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Load results as CSV-like file on database server.
+	 * @param string $path
+	 * @param string $fieldsTerminator
+	 * @param string $fieldsEncloser
+	 * @param string $linesTerminator
+	 */
+	public function loadFile( $path, $fieldsTerminator=',', $fieldsEncloser='"', $linesTerminator="\n" )
+	{
+		debug_enforce_string( $path );
+		debug_enforce_string( $fieldsTerminator );
+		debug_enforce_string( $fieldsEncloser );
+		debug_enforce_string( $linesTerminator );
+		$sql = $this->getSql();
+		$db = $this->getDb();
+		$path = $db->quote( $path, 'string' );
+		$linesTerminator = $db->quote( $linesTerminator, 'string' );
+		$fieldsEncloser = $db->quote( $fieldsEncloser, 'string' );
+		$fieldsTerminator = $db->quote( $fieldsTerminator, 'string' );
+		$db->exec(
+			$sql."\n"
+			. "INTO OUTFILE $path"
+			. " FIELDS TERMINATED BY $fieldsTerminator"
+			. " ENCLOSED BY $fieldsEncloser"
+			. " LINES TERMINATED BY $linesTerminator"
+		);
+	}
+
+	/**
 	 * WARNING: do not use if don't know internals (partially implemented)
 	 * Load model from SQL query to an array with joined columns as arrays
 	 * @param mixed $q
@@ -1001,77 +1001,6 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$set->setModel($this);
 
 		return $set;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function loadInt()
-	{
-		$alias = $this->getAlias();
-		$array = $this->loadArray( null,true );
-		debug_enforce_count_gte( $array, 1 );
-		debug_assert_count_eq( $array, 1 );
-		$record = array_shift( $array );
-		debug_enforce_count_gte( $record[ $alias ], 1 );
-		debug_assert_count_eq( $record[ $alias ], 1 );
-		$ret=array_shift( $record[ $alias ] );
-		return intval($ret);
-	}
-
-	/**
-	 * @return float
-	 */
-	public function loadFloat()
-	{
-		$alias = $this->getAlias();
-		$array = $this->loadArray( null,true );
-		debug_enforce_count_gte( $array, 1 );
-		debug_assert_count_eq( $array, 1 );
-		$record = array_shift( $array );
-		debug_enforce_count_gte( $record[ $alias ], 1 );
-		debug_assert_count_eq( $record[ $alias ], 1 );
-		$ret=array_shift( $record[ $alias ] );
-		return floatval($ret);
-	}
-
-	/**
-	 * @return string
-	 */
-	public function loadString()
-	{
-		$array = $this->loadArray( null,true );
-		debug_enforce_count_gte( $array, 1 );
-		debug_assert_count_eq( $array, 1 );
-		$record = array_shift( $array );
-		$columns = array_flatten( $record );
-		debug_enforce_count_gte( $columns, 1 );
-		debug_assert_count_eq( $columns, 1 );
-		$ret=array_shift( $columns );
-		return $ret;
-	}
-
-	/**
-	 * @param mixed $null
-	 * @return mixed
-	 */
-	public function loadStringNullable( $null=null )
-	{
-		$array = $this->loadArray( null,true );
-		if( count($array)===0 )
-		{
-			$ret = $null;
-		}
-		else
-		{
-			debug_assert_count_eq( $array, 1 );
-			$record = array_shift( $array );
-			$columns = array_flatten( $record );
-			debug_enforce_count_gte( $columns, 1 );
-			debug_assert_count_eq( $columns, 1 );
-			$ret=array_shift( $columns );
-		}
-		return $ret;
 	}
 
 	/**
