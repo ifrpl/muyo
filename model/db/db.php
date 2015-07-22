@@ -579,23 +579,6 @@ abstract class Lib_Model_Db extends Lib_Model
 	}
 
 	/**
-	 * @param Zend_Db_Select|null $q
-	 * @param bool $collection
-	 * @return Lib_Model_Db
-	 *
-	 * @deprecated
-	 * @see loadOne
-	 */
-	public function getOne( $q = null, $collection = false )
-	{
-		$ret = $this->load( $q, $collection );
-		$count = count($ret);
-
-		debug_enforce( 1 === $count, "getOne expects single result, but $count given" );
-		return array_shift($ret);
-	}
-
-	/**
 	 * @return int
 	 */
 	public function loadInt()
