@@ -28,11 +28,11 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 	private $_timeout = null;
 
-	protected $_settings = array(
-		'_id' => array(
+	protected $_settings = [
+		'_id' => [
 			'hidden' => true
-		)
-	);
+		]
+	];
 
 	/**
 	 * @param string $name
@@ -64,7 +64,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			{
 				$id = new MongoId($id);
 			}
-			$where = array($this->_primaryKey => $id);
+			$where = [$this->_primaryKey => $id];
 
 			unset($data[$this->_primaryKey]);
 			$collection->update($where, $data);
@@ -144,7 +144,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			$pkval = new MongoId($pkval);
 		};
 
-		$ret = $this->getCollection()->remove(array($pkey => $pkval), array('justOne' => true));
+		$ret = $this->getCollection()->remove([$pkey => $pkval], ['justOne' => true]);
 
 		$this->{$pkey} = null;
 
@@ -158,9 +158,9 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		$this->getSelect()->clearFields();
 		if( !$clearPK )
 		{
-			$this->setColumns(array(
+			$this->setColumns([
 				'id' => $this->getPrimaryKey()
-			));
+			]);
 		}
 		return $this;
 	}
@@ -204,7 +204,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		$ret = array_map_val( $fieldsSet, function()use($alias)
 		{
 			$name = func_get_arg(1);
-			return array( $alias, $name, null );
+			return [ $alias, $name, null ];
 		});
 		return $ret;
 	}
@@ -221,10 +221,10 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			$cond[$this->_primaryKey] = new MongoId($cond[$this->_primaryKey]);
 		}
 
-		array_walk($cond, array(
+		array_walk($cond, [
 			$this,
 			'filterByWalk'
-		));
+		]);
 
 		$cond = $this->_buildCondutions;
 
@@ -239,11 +239,11 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 */
 	public function filterFalse()
 	{
-		return $this->filterBy(array(
-			self::getPrimaryKey() => array(
+		return $this->filterBy([
+			self::getPrimaryKey() => [
 				'$exists' => 0
-			),
-		));
+			],
+		]);
 	}
 
 	/**
@@ -287,16 +287,16 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 						throw new Exception('Mongo condition "'.$condition.'" not implemented');
 				}
 
-				$this->_buildCondutions[$key] = array(
+				$this->_buildCondutions[$key] = [
 					$condition => $value
-				);
+				];
 			}
 			else
 			{
-				array_walk($item, array(
+				array_walk($item, [
 					$this,
 					'filterByWalk'
-				), $prefix . $key . '.');
+				], $prefix . $key . '.');
 			}
 		}
 		else
@@ -327,12 +327,14 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 	/**
 	 * @param null|Lib_Db_Mongo_Select $q
-	 * @param bool $collection
+	 * @param bool                     $collection
+	 * @param int                      $mode
+	 *
 	 * @return array
 	 * @fixme support for multiple result collections
 	 * @fixme $q needs relation with model
 	 */
-	public function loadArray( $q=null, $collection=false )
+	public function loadArray( $q = null, $collection = false, $mode=self::LOAD_ARRAY_MODE_NESTED_COLUMN )
 	{
 		$pkey = $this->getPrimaryKey();
 		if( !array_some( $this->getColumns(), function($arr)use($pkey){ return $arr[2]===$pkey; } ) )
@@ -340,11 +342,11 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			$this->setColumns($pkey);
 		}
 
-		$data = array();
+		$data = [];
 		$select = null === $q ? $this->getSelect() : $q;
 
 		$groups = $select->getGroups();
-		$initial = array("items" => array());
+		$initial = ["items" => []];
 		$reduce = "function (obj, prev) { prev.items.push(obj); }";
 //		if(!empty($groups))
 //		{
@@ -383,7 +385,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			}
 		}
 		$alias = $this->getAlias();
-		return array( $alias => $data );
+		return [ $alias => $data ];
 	}
 
 	/**
@@ -439,10 +441,10 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 		if(!is_array($order))
 		{
-			$order = array($order);
+			$order = [$order];
 		}
 
-		$sort = array();
+		$sort = [];
 		foreach($order as $value)
 		{
 			$direction = 1;
