@@ -97,11 +97,17 @@ abstract class Lib_Model implements Iterator
 
 		$constants = $r->getConstants();
 
-		$keys = array_filter(array_keys($constants), function($key) use($prefix){
-			return 0 === strpos($key, $prefix);
-		});
+		$keys = array_flip(
+			array_filter(
+				array_keys($constants),
+				function($key) use($prefix)
+				{
+					return 0 === strpos($key, $prefix);
+				}
+			)
+		);
 
-		return array_join($keys, $constants);
+		return array_intersect_key($constants,$keys);
 	}
 
 	/**
