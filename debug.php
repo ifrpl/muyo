@@ -108,7 +108,7 @@ if( !function_exists('printr') )
 		{
 			$tmp = str_replace("\n",'',$tmp);
 		}
-		echo $tmp;
+		write( $tmp );
 		if(!$cli)
 		{
 			write( "</pre>\n" );
