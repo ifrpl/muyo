@@ -773,20 +773,24 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function load($q = null, $collection = false)
 	{
-		if( is_null($q) )
-		{
-			$q = $this->getSelect();
-		}
-
+		$alias = $this->getAlias();
 		$pkey = $this->getPrimaryKey();
 
-		if( count($q->getPart('columns')) == 0 )
+		$descriptors = $this->getColumns();
+		if( empty( $descriptors ) )
 		{
-			$q->columns(['*']);
+			$this->setColumns(array_keys($this->schemaColumnsGet()), $alias);
+			$descriptors = $this->getColumns();
 		}
-		elseif( !array_some( $this->getColumns(), function($arr)use($pkey){ return $pkey == zend_column_name($arr); } ) )
+
+		if( !array_some( $descriptors, eq_dg(return_dg($pkey),zend_column_name_dg()) ) )
 		{
 			$this->setColumns($pkey);
+		}
+
+		if( $q===null )
+		{
+			$q = $this->getSQL();
 		}
 
 		$db = $this->getDb();
@@ -875,7 +879,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$key_idx = array_find_key( $descriptors, zend_column_eq_dg( $alias, $key_name ) );
 			if( !debug_assert( !is_null($key_idx), "Key '$key_name' needs to be set to load hash-set of '$alias'") )
 			{
-				$this->setColumns( [$key_name] );
+				$this->setColumns( $key_name );
 				$descriptors = $this->getColumns();
 				$key_idx = array_find_key( $descriptors, zend_column_eq_dg( $alias, $key_name ) );
 				debug_enforce( !is_null($key_idx) );
