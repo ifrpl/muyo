@@ -782,7 +782,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public function loadNullable( $q=null )
 	{
-		debug_assert( false, 'loadNullable is deprecated in favor of loadOneNullable' );
+		//debug_assert( false, 'loadNullable is deprecated in favor of loadOneNullable' );
 		return $this->loadOneNullable( $q );
 	}
 
