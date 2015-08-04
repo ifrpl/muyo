@@ -292,6 +292,25 @@ if( !function_exists('intval_dg') )
 	}
 }
 
+if( !function_exists('floatval_dg') )
+{
+	/**
+	 * @param callable|null $getter
+	 * @return callable
+	 */
+	function floatval_dg($getter=null)
+	{
+		if( $getter===null )
+		{
+			$getter = tuple_get();
+		}
+		return function()use($getter)
+		{
+			return floatval( call_user_func_array( $getter, func_get_args() ) );
+		};
+	}
+}
+
 if( !function_exists('key_eq_dg') )
 {
 	/**
