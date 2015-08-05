@@ -1042,7 +1042,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		{
 			if(
 				debug_assert(
-					preg_match( '/^(OR|AND|) ?\((.*)\)$/', $string, $matches ),
+					preg_match( '/^(OR|AND|) ?\((.*)\)$/s', $string, $matches ),
 					"Not recognized where expression `$string"
 				)
 			)
