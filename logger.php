@@ -4,11 +4,6 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-
-/** @var callable $logger */
-$logger = null;
-
-
 if( !class_exists('Logger') )
 {
 	class Logger
@@ -140,7 +135,7 @@ if( !function_exists('logger_log') )
 	 */
 	function logger_log($message, $level = LOG_INFO)
 	{
-		global $logger;
+		$logger = logger_get();
 		$eol = "\n";
 		$indent = "\t";
 
@@ -188,7 +183,7 @@ if( !function_exists('logger_get') )
 	function logger_get()
 	{
 		global $logger;
-		return $logger;
+		return $logger===null ? logger_default() : $logger;
 	}
 }
 
@@ -201,13 +196,9 @@ if( !function_exists('logger_set') )
 	{
 		global $logger;
 
-		if( null !== $val )
+		if( $val!==null && !debug_assert_type( $val, 'callable' ) )
 		{
-			debug_assert(is_callable($val), $val);
-		}
-		else
-		{
-			$val = logger_default();
+			$val = null;
 		}
 
 		$logger = $val;
@@ -248,9 +239,6 @@ if( !function_exists('logger_default') )
 		};
 	}
 }
-
-// Set default logger
-logger_set();
 
 if( !function_exists('logger_rotate') )
 {

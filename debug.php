@@ -26,11 +26,11 @@ if( !function_exists('debug_allow') )
 				}
 				elseif(!isCLI() && isset($_SERVER['REMOTE_ADDR']))
 				{
-                    $allowedSubNet = array(
+                    $allowedSubNet = [
                         '127.',
                         '10.10.',
                         '192.168.'
-                    );
+                    ];
 
 					foreach($allowedSubNet as $subNet)
 					{
@@ -40,12 +40,12 @@ if( !function_exists('debug_allow') )
 						}
 					}
 
-                    $allowedHosts = array(
+                    $allowedHosts = [
                         '89.191.162.220', //Lukasz home
                         '87.206.45.163',
                         '84.10.100.73',
                         '89.69.131.15' //IFResearch Chello
-                    );
+                    ];
 
                     if(debug_assert(!in_array($_SERVER['REMOTE_ADDR'], $allowedHosts), 'Remove this trash and use a conf file instead'))
                     {
@@ -140,7 +140,10 @@ if( !function_exists('printrlog') )
 			mkdir($logdir, 0777, true);
 		}
 		file_put_contents($logdir . DIRECTORY_SEPARATOR . 'log', $msg, FILE_APPEND);
-		writeln($tab);
+		if( debug_allow() )
+		{
+			writeln($tab);
+		}
 	}
 }
 
@@ -261,7 +264,7 @@ if( !function_exists('var_dump_human_compact') )
 			}
 			else
 			{
-				$tmp = array();
+				$tmp = [];
 				foreach( $var as $k=>$v )
 				{
 
@@ -480,7 +483,7 @@ if( !function_exists('get_call_stack') )
 		$dbg = debug_backtrace();
 
 		array_shift($dbg);
-		$calls = array();
+		$calls = [];
 		foreach($dbg as $b)
 		{
 			array_push($calls, $b['file'].':'.$b['line'].' | '.$b['class'].'::'.$b['function']);
@@ -519,15 +522,18 @@ if( !function_exists('debug_assert') )
 		 */
 		function debug_assert( $assertion, $message = null )
 		{
-			if( is_callable($assertion) )
+			if( assert_options( ASSERT_ACTIVE ) )
 			{
-				$validAssertion = $assertion();
+				if( is_callable( $assertion ) )
+				{
+					$validAssertion = $assertion();
+				}
+				else
+				{
+					$validAssertion = $assertion;
+				}
+				assert( $validAssertion, is_string( $message ) ? $message : var_dump_human_compact( $message ) );
 			}
-			else
-			{
-				$validAssertion = $assertion;
-			}
-			assert( $validAssertion, is_string($message) ? $message : var_dump_human_compact($message) );
 			return $assertion;
 		}
 	}
@@ -541,30 +547,37 @@ if( !function_exists('debug_assert') )
 		 */
 		function debug_assert($assertion, $message = null)
 		{
-			if( is_callable($assertion) )
+			if( assert_options( ASSERT_ACTIVE ) )
 			{
-				$assertion = $assertion();
-			}
-			if( is_string($assertion) )
-			{
-				$assertion = eval($assertion);
-			}
-
-			if( !$assertion )
-			{
-				$handler = assert_options(ASSERT_CALLBACK);
-				$message = var_dump_human_compact($message);
-
-				if( null === $handler )
+				if( is_callable($assertion) )
 				{
-					$handler = debug_handler_assertion_default_dg();
+					$ok = $assertion();
 				}
-				/** @var Callable $handler */
+				elseif( is_string($assertion) )
+				{
+					$ok = eval($assertion);
+				}
+				else
+				{
+					$ok = $assertion;
+				}
 
-				$trace = backtrace(1);
-				$file = isset($trace['file']) ? $trace['file'] : '';
-				$line = isset($trace['line']) ? $trace['line'] : '';
-				$handler($file, $line, $message);
+				if( !boolval($ok) )
+				{
+					$handler = assert_options(ASSERT_CALLBACK);
+					$message = var_dump_human_compact($message);
+
+					if( null === $handler )
+					{
+						$handler = debug_handler_assertion_default_dg();
+					}
+					/** @var Callable $handler */
+
+					$trace = backtrace(1);
+					$file = isset($trace['file']) ? $trace['file'] : '';
+					$line = isset($trace['line']) ? $trace['line'] : '';
+					$handler($file, $line, $message);
+				}
 			}
 			return $assertion;
 		}
@@ -611,13 +624,13 @@ if( !function_exists('debug_trace_func_call') )
 	function debug_trace_func_call($stack_index = 0, $options = 0)
 	{
 		$stack_index+=2; //ignore myself
-		$backtrace_args = array($options);
+		$backtrace_args = [$options];
 		if( version_compare(PHP_VERSION, '5.4.0', '>=') )
 		{
 			$backtrace_args []= $stack_index+1;
 		}
 		$tmp = call_user_func_array('debug_backtrace', $backtrace_args);
-		return array( $tmp[$stack_index] );
+		return [ $tmp[$stack_index] ];
 	}
 }
 
@@ -703,15 +716,15 @@ if( !function_exists('debug_handler') )
 			$exception_to_common = function($e) use($handler)
 			{
 				/** @var Exception $e */
-				return $handler($e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), 'exception', array( 'exception' => $e ));
+				return $handler($e->getMessage(), $e->getFile(), $e->getLine(), $e->getTrace(), 'exception', [ 'exception' => $e ]);
 			};
 			$error_to_common = function($number, $message, $script, $line) use($handler)
 			{
-				return $handler( $message, $script, $line, array(), 'php_error', array( 'php_error' => $number ) );
+				return $handler( $message, $script, $line, [], 'php_error', [ 'php_error' => $number ] );
 			};
 			$assertion_to_common = function($script, $line, $message) use ($handler)
 			{
-				return $handler( $message, $script, $line, array(), 'assertion', array() );
+				return $handler( $message, $script, $line, [], 'assertion', [] );
 			};
 		}
 		debug_handler_exception($exception_to_common);
@@ -818,13 +831,13 @@ if( !function_exists('debug_handler_assertion_default_dg') )
 		return function ($script, $line, $message)
 		{
 			$e = new Exception("{$script}:{$line} Assertion failed. {$message}");
-			if( ENV_PRODUCTION == getCurrentEnv() )
+			if( assert_options( ASSERT_BAIL ) )
 			{
-				Logger::error( $e );
+				throw $e;
 			}
 			else
 			{
-				throw $e;
+				Logger::error( $e );
 			}
 		};
 	}
