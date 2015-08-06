@@ -190,23 +190,6 @@ if( !function_exists('printfb') )
 	}
 }
 
-if( !function_exists('backtrace') )
-{
-	/**
-	 * @param int $ignore_depth
-	 * @return array
-	 */
-	function backtrace($ignore_depth = 0)
-	{
-		$ignore_depth++;
-		$ret = array_map(
-			function($row){unset($row['object']); return $row;},
-			debug_backtrace()
-		);
-		return array_splice($ret, $ignore_depth);
-	}
-}
-
 if( !function_exists('var_dump_human_full') )
 {
 	/**
@@ -306,6 +289,141 @@ if( !function_exists('var_dump_human_compact') )
 	}
 }
 
+if( !function_exists('write') )
+{
+	/**
+	 * @param mixed $text variables to print
+	 * @param mixed ... more variables to print
+	 */
+	function write($text /**, $more_text **/)
+	{
+		$output = implode(
+			',',
+			array_map(
+				function($arg)
+				{
+					if ( !is_string($arg) )
+					{
+						$arg = var_dump_human_compact($arg);
+					}
+
+					if( !isCLI() )
+					{
+						$arg = str_replace("\n", "<br/>", $arg);
+					}
+
+					return $arg;
+				},
+				func_get_args()
+			)
+		);
+
+		if( !isCLI() )
+		{
+			ob_start();
+			echo $output;
+			ob_end_flush();
+
+		}
+		else
+		{
+			fwrite(STDOUT, $output);
+		}
+	}
+}
+
+if( !function_exists('writeln') )
+{
+	/**
+	 * @param mixed $text variables to print
+	 * @param mixed ... more variables to print
+	 */
+	function writeln($text /**, $more_text **/)
+	{
+		$args = func_get_args();
+		call_user_func_array('write', $args);
+
+		if( !isCLI() )
+		{
+			write("<br/>");
+		}
+		else
+		{
+			write("\n");
+		}
+	}
+}
+
+if( !function_exists('exception_str') )
+{
+	/**
+	 * @param \Exception $exception
+	 * @param string $eol
+	 * @return string
+	 */
+	function exception_str( $exception, $eol=null )
+	{
+		if( $eol===null )
+		{
+			$eol="\n";
+		}
+		$ret = '';
+		$prefix="Uncaught";
+		if( debug_assert( $exception instanceof \Exception ) )
+		{
+			do
+			{
+				$class = get_class( $exception );
+				$msg   = $exception->getMessage();
+				$file  = $exception->getFile();
+				$line  = $exception->getLine();
+				$trace = backtrace_string( 0, $exception->getTrace() );
+				$ret  .= "$prefix $class in $file:$line".$eol.
+					str_indent( "Message:".$eol.
+						implode(
+							$eol,
+							array_map_val(
+								explode( $eol, $msg ),
+								function($val,$key){ return str_indent( $val, 1 ); }
+							)
+						)
+					, 1 ).$eol
+				;
+				if( !empty($trace) )
+				{
+					$ret  .=
+						str_indent( "Backtrace:".$eol.
+							str_indent( $trace, 1 )
+						, 1 ).$eol
+					;
+				}
+
+				$prefix="Caused by";
+				$exception = $exception->getPrevious();
+			}
+			while( $exception !== null );
+		}
+		return $ret;
+	}
+}
+
+if( !function_exists('backtrace') )
+{
+	/**
+	 * @param int $ignore_depth
+	 * @return array
+	 */
+	function backtrace($ignore_depth = 0)
+	{
+		$ignore_depth++;
+		$ret = array_map(
+			function($row){unset($row['object']); return $row;},
+			debug_backtrace()
+		);
+		return array_splice($ret, $ignore_depth);
+	}
+}
+
 if( !function_exists('backtrace_print') )
 {
 	/**
@@ -391,6 +509,14 @@ if( !function_exists('backtrace_html') )
 	function backtrace_html($ignore_depth = 0, $backtrace = null)
 	{
 		return "<pre>\n".backtrace_string($ignore_depth,$backtrace)."\n</pre>";
+	}
+}
+
+if( !function_exists('debug_print_backtrace_alt') )
+{
+	function debug_print_backtrace_alt($callstackDepth = 0)
+	{
+		Logger::dump(debug_backtrace (DEBUG_BACKTRACE_IGNORE_ARGS, $callstackDepth));
 	}
 }
 
@@ -553,7 +679,6 @@ if( !function_exists('debug_assert') )
 			if( !$assertion )
 			{
 				$handler = assert_options(ASSERT_CALLBACK);
-				$message = var_dump_human_compact($message);
 
 				if( null === $handler )
 				{
@@ -618,71 +743,6 @@ if( !function_exists('debug_trace_func_call') )
 		}
 		$tmp = call_user_func_array('debug_backtrace', $backtrace_args);
 		return array( $tmp[$stack_index] );
-	}
-}
-
-if( !function_exists('write') )
-{
-	/**
-	 * @param mixed $text variables to print
-	 * @param mixed ... more variables to print
-	 */
-	function write($text /**, $more_text **/)
-	{
-		$output = implode(
-			',',
-			array_map(
-				function($arg)
-				{
-					if ( !is_string($arg) )
-					{
-						$arg = var_dump_human_compact($arg);
-					}
-
-					if( !isCLI() )
-					{
-						$arg = str_replace("\n", "<br/>", $arg);
-					}
-
-					return $arg;
-				},
-				func_get_args()
-			)
-		);
-
-		if( !isCLI() )
-		{
-			ob_start();
-			echo $output;
-			ob_end_flush();
-
-		}
-		else
-		{
-			fwrite(STDOUT, $output);
-		}
-	}
-}
-
-if( !function_exists('writeln') )
-{
-	/**
-	 * @param mixed $text variables to print
-	 * @param mixed ... more variables to print
-	 */
-	function writeln($text /**, $more_text **/)
-	{
-		$args = func_get_args();
-		call_user_func_array('write', $args);
-
-		if( !isCLI() )
-		{
-			write("<br/>");
-		}
-		else
-		{
-			write("\n");
-		}
 	}
 }
 
@@ -817,10 +877,33 @@ if( !function_exists('debug_handler_assertion_default_dg') )
 	{
 		return function ($script, $line, $message)
 		{
-			$e = new Exception("{$script}:{$line} Assertion failed. {$message}");
+			if( !empty($script) )
+			{
+				if( !empty($line) )
+				{
+					$location = "{$script}:{$line} ";
+				}
+				else
+				{
+					$location = "{$script} ";
+				}
+			}
+			else
+			{
+				$location = '';
+			}
+			if( $message===null )
+			{
+				$message = "Assertion failed.";
+			}
+			elseif( !is_string($message) )
+			{
+				$message = var_dump_human_compact( $message );
+			}
+			$e = new Exception($location.$message);
 			if( ENV_PRODUCTION == getCurrentEnv() )
 			{
-				Logger::error( $e );
+				logger_log( exception_str($e), LOG_WARNING );
 			}
 			else
 			{
@@ -961,56 +1044,19 @@ if( !function_exists('debug_enforce_key_exists') )
 	}
 }
 
-if( !function_exists('exception_str') )
+if( !function_exists('debug_enforce_eq') )
 {
 	/**
-	 * @param \Exception $exception
-	 * @param string $eol
-	 * @return string
+	 * @param mixed $a
+	 * @param mixed $b
+	 * @param bool $strong typing
+	 * @return mixed
 	 */
-	function exception_str( $exception, $eol=null )
+	function debug_enforce_eq( $a, $b, $strong=false )
 	{
-		if( $eol===null )
-		{
-			$eol="\n";
-		}
-		$ret = '';
-		$prefix="Uncaught";
-		if( debug_assert( $exception instanceof \Exception ) )
-		{
-			do
-			{
-				$class = get_class( $exception );
-				$msg   = $exception->getMessage();
-				$file  = $exception->getFile();
-				$line  = $exception->getLine();
-				$trace = backtrace_string( 0, $exception->getTrace() );
-				$ret  .= "$prefix $class in $file:$line".$eol.
-					str_indent( "Message:".$eol.
-						implode(
-							$eol,
-							array_map_val(
-								explode( $eol, $msg ),
-								function($val,$key){ return str_indent( $val, 1 ); }
-							)
-						)
-					, 1 ).$eol
-				;
-				if( !empty($trace) )
-				{
-					$ret  .=
-						str_indent( "Backtrace:".$eol.
-							str_indent( $trace, 1 )
-						, 1 ).$eol
-					;
-				}
-
-				$prefix="Caused by";
-				$exception = $exception->getPrevious();
-			}
-			while( $exception !== null );
-		}
-		return $ret;
+		return debug_enforce( $strong ? ($a===$b) : ($a==$b),
+			var_dump_human_compact( $a )." doesn't equals to ".var_dump_human_compact( $b )
+		);
 	}
 }
 
@@ -1054,30 +1100,6 @@ if( !function_exists('debug_assert_array_contains') )
 	function debug_assert_array_contains( $array, $value )
 	{
 		return debug_assert( array_contains( $array, $value ), "Parameter {$value} is not one of ".implode( ',', $array) );
-	}
-}
-
-if( !function_exists('debug_enforce_eq') )
-{
-	/**
-	 * @param mixed $a
-	 * @param mixed $b
-	 * @param bool $strong typing
-	 * @return mixed
-	 */
-	function debug_enforce_eq( $a, $b, $strong=false )
-	{
-		return debug_enforce( $strong ? ($a===$b) : ($a==$b),
-			var_dump_human_compact( $a )." doesn't equals to ".var_dump_human_compact( $b )
-		);
-	}
-}
-
-if( !function_exists('debug_print_backtrace_alt') )
-{
-	function debug_print_backtrace_alt($callstackDepth = 0)
-	{
-		Logger::dump(debug_backtrace (DEBUG_BACKTRACE_IGNORE_ARGS, $callstackDepth));
 	}
 }
 
