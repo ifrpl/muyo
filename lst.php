@@ -97,3 +97,87 @@ if( !function_exists('list_filter_key_dg') )
 		};
 	}
 }
+
+if( !function_exists('list_prepend') )
+{
+	/**
+	 * @param array $list
+	 * @param mixed $element
+	 * @return array
+	 */
+	function list_prepend( $list, $element )
+	{
+		array_unshift( $list, $element );
+		return $list;
+	}
+}
+
+if( !function_exists('list_prepend_dg') )
+{
+	/**
+	 * @param callable $element
+	 * @param array|null $list
+	 * @return callable
+	 */
+	function list_prepend_dg( $element, $list=null )
+	{
+		if( $list===null )
+		{
+			$list = tuple_get(0);
+		}
+		else
+		{
+			$list = callablize($list);
+		}
+		return function()use($list,$element)
+		{
+			$args = func_get_args();
+			return list_prepend(
+				call_user_func_array( $list, $args ),
+				call_user_func_array( $element, $args )
+			);
+		};
+	}
+}
+
+if( !function_exists('list_append') )
+{
+	/**
+	 * @param array $list
+	 * @param mixed $element
+	 * @return array
+	 */
+	function list_append( $list, $element )
+	{
+		array_push( $list, $element );
+		return $list;
+	}
+}
+
+if( !function_exists('list_append_dg') )
+{
+	/**
+	 * @param callable $element
+	 * @param array|null $list
+	 * @return callable
+	 */
+	function list_append_dg( $element, $list=null )
+	{
+		if( $list===null )
+		{
+			$list = tuple_get(0);
+		}
+		else
+		{
+			$list = callablize($list);
+		}
+		return function()use($list,$element)
+		{
+			$args = func_get_args();
+			return list_append(
+				call_user_func_array( $list, $args ),
+				call_user_func_array( $element, $args )
+			);
+		};
+	}
+}
