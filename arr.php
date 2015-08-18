@@ -116,8 +116,8 @@ if( !function_exists('array_qsort') )
 	 */
 	function array_qsort(&$array, $column=0, $order=SORT_ASC)
 	{
-		$dst = array();
-		$sort = array();
+		$dst = [];
+		$sort = [];
 
 		foreach($array as $key => $value)
 		{
@@ -189,7 +189,7 @@ if( !function_exists('arrayize') )
 	{
 		if( !is_array($var) )
 		{
-			$var = array($var);
+			$var = [$var];
 		}
 		return $var;
 	}
@@ -353,6 +353,26 @@ if( !function_exists('array_some') )
 			}
 		}
 		return false;
+	}
+}
+
+if( !function_exists('array_some_dg') )
+{
+	/**
+	 * @param array|callable $array
+	 * @param callable $iterator
+	 * @return callable
+	 */
+	function array_some_dg( $array, $iterator )
+	{
+		return function () use ( $array, $iterator )
+		{
+			$args = func_get_args();
+			return array_some(
+				call_user_func_array( $array, $args ),
+				$iterator
+			);
+		};
 	}
 }
 
@@ -534,7 +554,7 @@ if( !function_exists('array_chain_dg') )
 		{
 			$args = func_get_args();
 			$array = call_user_func_array( $array_getter, $args );
-			$ret = call_user_func_array( 'array_chain', array_merge( array($array), $iterators_getters ) );
+			$ret = call_user_func_array( 'array_chain', array_merge( [$array], $iterators_getters ) );
 			return $ret;
 		};
 	}
@@ -562,7 +582,7 @@ if( !function_exists('array_map_val') )
 		}
 		else
 		{
-			return array();
+			return [];
 		}
 	}
 }
@@ -636,7 +656,7 @@ if( !function_exists('array_map_key') )
 		}
 		else
 		{
-			return array();
+			return [];
 		}
 	}
 }
@@ -754,7 +774,7 @@ if( !function_exists('array_filter_key') )
 		}
 		else
 		{
-			return array();
+			return [];
 		}
 	}
 }
@@ -967,7 +987,7 @@ if( !function_exists('array_zip') )
 	function array_zip( /*$args*/ )
 	{
 		$args = func_get_args();
-		$zipped = call_user_func_array('array_map', array_merge(array(null), $args));
+		$zipped = call_user_func_array('array_map', array_merge([null], $args));
 		$trimmed = array_slice($zipped, 0, min(array_map('count', $args)));
 		return $trimmed;
 	}
@@ -1153,7 +1173,7 @@ if( !function_exists('array_flatten') )
 			$array = array_shift( $array );
 			return arrayize( $array );
 		});
-		return array_reduce($array,'array_merge',array());
+		return array_reduce($array,'array_merge',[]);
 	}
 }
 
@@ -1543,14 +1563,15 @@ if( !function_exists('array_join') )
 {
 	/**
 	 *
-	 * @param $array0
-	 * @param $array1
+	 * @param      $array0
+	 * @param      $array1
+	 * @param bool $preserveKey
 	 *
 	 * @return array
 	 */
 	function array_join($array0, $array1, $preserveKey = true)
 	{
-		$ret = array();
+		$ret = [];
 
 		foreach($array0 as $key0 => $value0)
 		{
