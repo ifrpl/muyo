@@ -92,8 +92,8 @@ if( !function_exists('is_type_dg') )
 		{
 			$args = func_get_args();
 			return is_type(
-				call_user_func_array( $type, $args ),
-				call_user_func_array( $var, $args )
+				call_user_func_array( $var, $args ),
+				call_user_func_array( $type, $args )
 			);
 		};
 	}
@@ -644,6 +644,101 @@ if( !function_exists('if_dg') )
 				$ret = call_user_func_array( $false, $args );
 			}
 			return $ret;
+		};
+	}
+}
+
+if( !function_exists('match') )
+{
+	/**
+	 * @param mixed $subject
+	 * @param array,.. $option [$match($subject)=>$bool,$response($subject)=>$mixed]
+	 * @return mixed
+	 * @see ensure
+	 */
+	function match( $subject, $option )
+	{
+		$options = array_chain(
+			func_get_args(),
+			array_rest_dg(1),
+			array_map_val_dg( if_dg( is_type_dg('array'), tuple_get(0), array_dg(return_dg(return_dg(true)),tuple_get(0)) ) )
+		);
+		foreach( $options as $pair )
+		{
+			list($match,$project) = $pair;
+			if( is_callable($match) ? $match( $subject ) : $match===$subject )
+			{
+				return is_callable($project) ? $project( $subject ) : $project;
+			}
+		}
+		debug_assert( false, 'Cannot find match for '.var_dump_human_compact($subject).' out of '.var_dump_human_compact($options) );
+		return $subject;
+	}
+}
+
+if( !function_exists('match_dg') )
+{
+	/**
+	 * @param mixed|callable|null $subject
+	 * @param array,.. $option [$match($subject)=>$bool,$response($subject)=>$mixed]
+	 * @return mixed
+	 * @see ensure_dg
+	 */
+	function match_dg( $subject, $option )
+	{
+		if( $subject===null )
+		{
+			$subject = tuple_get(0);
+		}
+		else
+		{
+			$subject = callablize( $subject );
+		}
+		$options = array_rest( func_get_args(), 1 );
+		return function () use ( $subject, $options )
+		{
+			$args = $options;
+			array_unshift( $args, call_user_func_array( $subject, func_get_args() ) );
+			return call_user_func_array( 'match', $args );
+		};
+	}
+}
+
+if( !function_exists('switch_dg') )
+{
+	/**
+	 * @param mixed|callable $subject
+	 * @param callable|mixed $option
+	 * @return callable
+	 */
+	function switch_dg( $subject, $option )
+	{
+		$subject = callablize($subject);
+		$options = array_chain(
+			func_get_args(),
+			array_rest_dg(1),
+			array_map_val_dg(
+				if_dg(
+					is_type_dg('array'),
+					function($array){ return [eq_dg(tuple_get(0),callablize(array_get($array,0))),callablize(array_get($array,1))]; }, //FIXME
+					array_dg( return_dg(return_dg(true)), tuple_get(0,'callablize') )
+				)
+			)
+		);
+		return function()use($subject,$options)
+		{
+			$args = func_get_args();
+			$subject = call_user_func_array( $subject, $args );
+			foreach( $options as $pair )
+			{
+				list($match,$result) = $pair;
+				if( call_user_func( $match, $subject ) )
+				{
+					return call_user_func_array( $result, $args );
+				}
+			}
+			debug_assert( false, 'Cannot switch from '.var_dump_human_compact($subject).' to '.var_dump_human_compact($options) );
+			return $subject;
 		};
 	}
 }
