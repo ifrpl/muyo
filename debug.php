@@ -699,6 +699,31 @@ if( !function_exists('writeln') )
 	}
 }
 
+if( !function_exists('writeln_dg') )
+{
+	/**
+	 * @param string|callable|null $text
+	 * @return callable
+	 */
+	function writeln_dg($text=null)
+	{
+		if( $text===null )
+		{
+			$text = tuple_get(0);
+		}
+		elseif( !is_callable($text) )
+		{
+			$text = return_dg($text);
+		}
+		return function()use($text)
+		{
+			$args = func_get_args();
+			$arg = call_user_func_array( $text, $args );
+			return call_user_func_array( 'writeln', arrayize($arg) );
+		};
+	}
+}
+
 if( !function_exists('debug_handler') )
 {
 	/**
