@@ -24,7 +24,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 	/** @var Lib_Db_Mongo_Select */
 	private $_select;
-	private $_buildCondutions;
+	private $_buildConditions;
 
 	private $_timeout = null;
 
@@ -226,9 +226,9 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			'filterByWalk'
 		));
 
-		$cond = $this->_buildCondutions;
+		$cond = $this->_buildConditions;
 
-		$this->_buildCondutions = null;
+		$this->_buildConditions = null;
 
 		$this->getSelect()->setConditions($cond);
 		return $this;
@@ -287,7 +287,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 						throw new Exception('Mongo condition "'.$condition.'" not implemented');
 				}
 
-				$this->_buildCondutions[$key] = array(
+				$this->_buildConditions[$key] = array(
 					$condition => $value
 				);
 			}
@@ -301,7 +301,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		}
 		else
 		{
-			$this->_buildCondutions[$prefix . $key] = $item;
+			$this->_buildConditions[$prefix . $key] = $item;
 		}
 	}
 
@@ -414,8 +414,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	public function loadSet()
 	{
 		$alias = $this->getAlias();
-		$array = $this->loadArray( );
-		$t = $this;
+		$array = $this->loadArray();
 
 		$set = new Lib_Model_Set;
 		$set->setResultSet($array[$alias]);

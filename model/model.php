@@ -7,10 +7,13 @@
  */
 abstract class Lib_Model implements Iterator
 {
-	const SETTING_TYPE='type';
+	const SETTING_TYPE  ='type';
 	const SETTING_VIRTUAL = 'virtual';
 	const SETTING_SET = 'set';
 	const SETTING_GET = 'get';
+
+    const TYPE_ID = 'id';
+
 
 	/**
 	 * @var array field type identifiers
@@ -20,7 +23,7 @@ abstract class Lib_Model implements Iterator
 		'select', //TODO: refactor to enum
 		'date','datetime','time',
 		'float',
-		'int','id',
+		'int',self::TYPE_ID,
 		'bool','boolean',
 		'currency','monetary',
 		'string','text','email','host',
@@ -1705,32 +1708,38 @@ abstract class Lib_Model implements Iterator
 		{
 			$config->merge(Zend_Registry::get('config')->dataGrid);
 		}
-		$config->merge(new Zend_Config($this->_settings));
 
-		foreach($config as $optionName => $optionValue)
+        $config->jqgParams->columnChooser = true;
+
+		foreach($this->_settings as $optionName => $optionValue)
 		{
+            $optionValue = new Zend_Config($optionValue, true);
+
 			if(!isset($optionValue->title) && isset($optionValue->label))
 			{
-				$config->$optionName->title = $optionValue->label;
-				unset($config->$optionName->label);
+                $optionValue->title = $optionValue->label;
+				unset($optionValue->label);
 			}
 			if(isset($optionValue->visible) && !$optionValue->visible)
 			{
-				$config->$optionName->hidden = true;
+                $optionValue->hidden = true;
 			}
+
+            $optionValue->escape = false;
 
 			if(isset($optionValue->type))
 			{
-				if(!isset($config->$optionName->jqg))
+				if(!isset($optionValue->jqg))
 				{
-					$config->$optionName->jqg = new Zend_Config(array(), true);
+                    $optionValue->jqg = new Zend_Config(array(), true);
 				}
+
 				switch($optionValue->type)
 				{
 					case "select":
 						$multiOptions = array();
 						$multiOptions[''] = 'LABEL_ALL';
-						$multiOptions += $config->$optionName->multiOptions->toArray();
+						$multiOptions += $optionValue->multiOptions->toArray();
 
 						$multiOptions = array_map(function($key, $row){
 							$translate = App_Translate::getInstance();
@@ -1740,7 +1749,7 @@ abstract class Lib_Model implements Iterator
 
 						$multiOptions = implode(';', $multiOptions);
 
-						$config->$optionName->jqg->merge(new Zend_Config(array(
+                        $optionValue->jqg->merge(new Zend_Config(array(
 							'stype' => 'select',
 							'searchoptions' => array(
 								'sopt' => array(
@@ -1752,7 +1761,7 @@ abstract class Lib_Model implements Iterator
 						)), true);
 						break;
 					case "date":
-						$config->$optionName->merge(new Zend_Config(array(
+                        $optionValue->merge(new Zend_Config(array(
 							'sorttype' => 'date',
 							'format'   => array(
 								'date',
@@ -1774,13 +1783,13 @@ abstract class Lib_Model implements Iterator
 							)
 						)), true);
 
-						if(!isset($config->$optionName->defaultvalue))
+						if(!isset($optionValue->defaultvalue))
 						{
-							$config->$optionName->defaultvalue = null;
+                            $optionValue->defaultvalue = null;
 						}
 						break;
 					case "datetime":
-						$config->$optionName->merge(new Zend_Config(array(
+                        $optionValue->merge(new Zend_Config(array(
 							'sorttype' => 'date',
 							'format'   => array(
 								'date',
@@ -1803,13 +1812,13 @@ abstract class Lib_Model implements Iterator
 							)
 						)), true);
 
-						if(!isset($config->$optionName->defaultvalue))
+						if(!isset($optionValue->defaultvalue))
 						{
-							$config->$optionName->defaultvalue = null;
+                            $optionValue->defaultvalue = null;
 						}
 						break;
 					case "time":
-						$config->$optionName->merge(new Zend_Config(array(
+                        $optionValue->merge(new Zend_Config(array(
 							'sorttype' => 'date',
 							'format'   => array(
 								'date',
@@ -1831,9 +1840,9 @@ abstract class Lib_Model implements Iterator
 							)
 						)), true);
 
-						if(!isset($config->$optionName->defaultvalue))
+						if(!isset($optionValue->defaultvalue))
 						{
-							$config->$optionName->defaultvalue = null;
+                            $optionValue->defaultvalue = null;
 						}
 						break;
 					case "boolean":
@@ -1850,7 +1859,7 @@ abstract class Lib_Model implements Iterator
 
 						$multiOptions = implode(';', $multiOptions);
 
-						$config->$optionName->merge(new Zend_Config(array(
+                        $optionValue->merge(new Zend_Config(array(
 							'width' => 30,
 							'align' => 'center',
 							'jqg' => array(
@@ -1865,9 +1874,9 @@ abstract class Lib_Model implements Iterator
 							'searchType' => '='
 						)), true);
 
-						if(!isset($config->$optionName->helper) && !isset($config->$optionName->callback))
+						if(!isset($optionValue->helper) && !isset($optionValue->callback))
 						{
-							$config->$optionName->merge(new Zend_Config(array(
+                            $optionValue->merge(new Zend_Config(array(
 								'jqg' => array(
 									'formatter' => 'checkbox'
 								)
@@ -1876,18 +1885,21 @@ abstract class Lib_Model implements Iterator
 
 						break;
 					case "int":
-						$config->$optionName->merge(new Zend_Config(array(
+                        $optionValue->merge(new Zend_Config(array(
 							'searchType' => '='
 						)), true);
 
 						break;
 					case "hidden":
-						//noting to set
-						break;
+                    case self::TYPE_ID:
+                        $optionValue->hidden = true;
+                        break;
 					default:
 						debug_assert(false !== array_search($optionValue->type, self::$types), "Unknown Grid Cell Type `{$optionValue->type}`");
 				}
 			}
+
+            $config->$optionName = $optionValue;
 
 		}
 
