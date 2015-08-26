@@ -1724,10 +1724,14 @@ abstract class Lib_Model implements Iterator
 				$config->$optionName->hidden = true;
 			}
 
-            $optionValue->escape = false;
+            if(null != $this->settingExists($optionName))
+            {
+                $optionValue->escape = false;
+            }
 
 			if(isset($optionValue->type))
 			{
+
 				if(!isset($optionValue->jqg))
 				{
 					$config->$optionName->jqg = new Zend_Config(array(), true);
