@@ -20,6 +20,7 @@ if( !function_exists('proc_exec') )
 			1 => array("pipe","w"),
 			2 => array("pipe","w"),
 		);
+
 		$res = proc_open($command, $descriptors, $pipes);
 
 		fclose($pipes[0]);
@@ -33,15 +34,25 @@ if( !function_exists('proc_exec') )
 		$retval = proc_close($res);
 		if( 0 !== $retval)
 		{
+            $commandStr = isProd() ?
+                preg_replace(
+                    "/^(.+) (--password=)(.*) (.*)$/",
+                    '$1 $2*** $4',
+                    $command
+                )
+                :
+                $command
+            ;
+
 			logger_log("Process returned error." . PHP_EOL
-				. " * Cli: " . $command          . PHP_EOL
+				. " * Cli: " . $commandStr       . PHP_EOL
 				. " * Return value: " . $retval  . PHP_EOL
 				. " * Stderr: "                  . PHP_EOL
 				. str_indent($stderr,1)          . PHP_EOL
 				. " * Stdout: "                  . PHP_EOL
 				. str_indent($stdout,1)          . PHP_EOL
 			);
-			debug_assert(false); // FIXME: should be enforce but i wont risk it now
+			debug_assert(false);
 		}
 
 		$ol = count($output);

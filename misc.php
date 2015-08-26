@@ -23,6 +23,16 @@ if( !function_exists('getCurrentEnv') )
 			return ENV_DEVELOPMENT;
 		}
 	}
+
+    function isDev()
+    {
+        return ENV_DEVELOPMENT == getCurrentEnv();
+    }
+
+    function isProd()
+    {
+        return ENV_DEVELOPMENT == getCurrentEnv();
+    }
 }
 
 if( !function_exists('is_iterable') )
