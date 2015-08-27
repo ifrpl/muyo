@@ -1714,6 +1714,11 @@ abstract class Lib_Model implements Iterator
 
 		foreach($config as $optionName => $optionValue)
 		{
+            if(!$optionValue instanceof Zend_Config)
+            {
+                continue;
+            }
+
 			if(!isset($optionValue->title) && isset($optionValue->label))
 			{
 				$config->$optionName->title = $optionValue->label;
