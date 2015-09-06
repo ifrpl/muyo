@@ -31,7 +31,7 @@ if( !function_exists('getCurrentEnv') )
 
     function isProd()
     {
-        return ENV_DEVELOPMENT == getCurrentEnv();
+        return ENV_PRODUCTION == getCurrentEnv();
     }
 }
 
