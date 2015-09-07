@@ -7,12 +7,14 @@
  */
 abstract class Lib_Model implements Iterator
 {
-	const SETTING_TYPE  ='type';
-	const SETTING_VIRTUAL = 'virtual';
-	const SETTING_SET = 'set';
-	const SETTING_GET = 'get';
+	const SETTING_TYPE      ='type';
+	const SETTING_VIRTUAL   = 'virtual';
+	const SETTING_SET       = 'set';
+	const SETTING_GET       = 'get';
+    const SETTING_LABEL     ='label';
+    const SETTING_HIDDEN    ='hidden';
 
-    const SETTING_LABEL  ='label';
+    const TYPE_HIDDEN       ='hidden';
 
     const TYPE_ID = 'id';
 
@@ -193,7 +195,7 @@ abstract class Lib_Model implements Iterator
 		if( $name === $this->getPrimaryKey() )
 		{
 			array_set_default($setting,'type','int');
-			array_set_default($setting,'hidden','true');
+			array_set_default($setting,self::SETTING_HIDDEN,'true');
 		}
 	}
 
@@ -787,7 +789,7 @@ abstract class Lib_Model implements Iterator
 	{
 		if( $this->settingExists($elementName) ? $settings = $this->getSetting($elementName) : false)
 		{
-			if(isset($settings['hidden']) && $settings['hidden'] == true)
+			if(isset($settings[self::SETTING_HIDDEN]) && $settings[self::SETTING_HIDDEN] == true)
 			{
 				return true;
 			}
@@ -1728,7 +1730,7 @@ abstract class Lib_Model implements Iterator
 			}
 			if(isset($optionValue->visible) && !$optionValue->visible)
 			{
-				$config->$optionName->hidden = true;
+				$config->$optionName->{self::SETTING_HIDDEN} = true;
 			}
 
             if(null != $this->settingExists($optionName))
@@ -1900,9 +1902,9 @@ abstract class Lib_Model implements Iterator
 						)), true);
 
 						break;
-					case "hidden":
+					case self::TYPE_HIDDEN:
                     case self::TYPE_ID:
-						$config->$optionName->hidden = true;
+						$config->$optionName->{self::SETTING_HIDDEN} = true;
                         break;
 					default:
 						debug_assert(false !== array_search($optionValue->type, self::$types), "Unknown Grid Cell Type `{$optionValue->type}`");
@@ -2095,7 +2097,7 @@ abstract class Lib_Model implements Iterator
 						$settingColumn['options']['decorators'] = $form->elementDecorators;
 					}
 					break;
-				case "hidden":
+				case self::TYPE_HIDDEN:
 					if(!isset($settingColumn['options']['decorators']))
 					{
 						$settingColumn['options']['decorators'] = $form->hiddenDecorators;
@@ -2137,30 +2139,44 @@ abstract class Lib_Model implements Iterator
 			if(isset($setting['multiOptions']))
 			{
 				$multiOptions = $setting['multiOptions'];
-				if($settingColumn['type'] == 'select' || (isset($settingColumn['formType']) && $settingColumn['formType'] == 'select'))
-				{
-					$multiOptions = array('' => 'LABEL_SELECT') + $multiOptions;
-				}
-				$settingColumn['options']['multiOptions'] = $multiOptions;
+                if($settingColumn['type'] == 'select' || (isset($settingColumn['formType']) && $settingColumn['formType'] == 'select'))
+                {
+                    if(empty($multiOptions))
+                    {
+                        $multiOptions = array('' => 'LABEL_FORM_SELECT_NO_VALUE') + $multiOptions;
 
-				if(isset($setting['otherMultioption']) && $setting['formType'] == 'multiCheckbox')
-				{
-					$settingColumn['options']['otherMultioption'] = $setting['otherMultioption'];
-				}
+                        if(!isset($settingColumn['options']['attribs']))
+                        {
+                            $settingColumn['options']['attribs'] = [];
+                        }
+
+                        $settingColumn['options']['attribs']['disabled'] = 'disabled';
+                    }
+                    else
+                    {
+                        $multiOptions = array('' => 'LABEL_SELECT') + $multiOptions;
+                    }
+
+                }
+                $settingColumn['options']['multiOptions'] = $multiOptions;
+
+                if(isset($setting['otherMultioption']) && $setting['formType'] == 'multiCheckbox')
+                {
+                    $settingColumn['options']['otherMultioption'] = $setting['otherMultioption'];
+                }
+
 			}
 
-			if(isset($setting['hidden']) && $setting['hidden'] == true)
+			if(isset($setting[self::SETTING_HIDDEN]) && $setting[self::SETTING_HIDDEN] == true)
 			{
 				$settingColumn['options']['decorators'] = $form->hiddenDecorators;
-				$settingColumn['type'] = 'hidden';
+				$settingColumn['type'] = self::TYPE_HIDDEN;
 			}
 
 			$elements[$column] = $settingColumn;
 		}
 
-		$form->setOptions([
-			'elements' => $elements
-		]);
+		$form->setElements($elements);
 		$form->setDisableLoadDefaultDecorators(true);
 
 		return $form;
@@ -2214,8 +2230,8 @@ abstract class Lib_Model implements Iterator
 			case "country":
 				$formType = 'country';
 				break;
-			case "hidden":
-				$formType = 'hidden';
+			case self::TYPE_HIDDEN:
+				$formType = self::TYPE_HIDDEN;
 				break;
 			default:
 				debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
