@@ -27,4 +27,9 @@ trait Singleton
 
         return self::$_instance;
     }
+
+    static public function getInstance()
+    {
+        return self::get();
+    }
 }

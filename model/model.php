@@ -19,6 +19,8 @@ abstract class Lib_Model implements Iterator
     const TYPE_ID = 'id';
 
 
+    const COL_ID      = 'id';
+
 	/**
 	 * @var array field type identifiers
 	 * @see $this->settingEmptyEqNull after modification
@@ -805,7 +807,7 @@ abstract class Lib_Model implements Iterator
 	public function propertySet( $column, $value )
 	{
 		debug_enforce( !empty($column), "Cannot set value of empty property" );
-		if( $column == 'id' && $this->getPrimaryKey())
+		if( $column == self::COL_ID && $this->getPrimaryKey())
 		{
 			$column = $this->getPrimaryKey();
 		}
@@ -872,7 +874,7 @@ abstract class Lib_Model implements Iterator
 	public function propertyGet( $column )
 	{
 		debug_enforce( !empty($column), "Cannot get name of empty property" );
-		if( $column == 'id' && $this->getPrimaryKey() )
+		if( $column == self::COL_ID && $this->getPrimaryKey() )
 		{
 			$column = $this->getPrimaryKey();
 		}
@@ -946,7 +948,7 @@ abstract class Lib_Model implements Iterator
 	public function propertyExists($column)
 	{
 		debug_enforce( !empty($column), "Cannot check if empty property exists" );
-		if( $column == 'id' && $this->getPrimaryKey())
+		if( $column == self::COL_ID && $this->getPrimaryKey())
 		{
 			$column = $this->getPrimaryKey();
 		}
@@ -1292,10 +1294,10 @@ abstract class Lib_Model implements Iterator
 			'model' => get_class($this),
 		);
 
-		$value = $this->_getValueByType($this->id, 'id');
+		$value = $this->_getValueByType($this->{self::COL_ID}, self::TYPE_ID);
 		if(!is_null($value))
 		{
-			$content['id'] = $value;
+			$content[self::COL_ID] = $value;
 		}
 
 		return $content;
@@ -1366,7 +1368,7 @@ abstract class Lib_Model implements Iterator
 		{
 			switch( $type )
 			{
-				case "id":
+				case self::TYPE_ID:
 					if( array_contains( array('',null), $value, true ) )
 					{
 						$value = null;
@@ -1508,10 +1510,10 @@ abstract class Lib_Model implements Iterator
 					$obj->unserializeContent($value['data']);
 					$value = $obj;
 				}
-				elseif(array_key_exists('id', $value))
+				elseif(array_key_exists(self::COL_ID, $value))
 				{
 					/** @var Lib_Model $value */
-					$value = $class::getById($value['id']);
+					$value = $class::getById($value[self::COL_ID]);
 				}
 
 			}
