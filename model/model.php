@@ -7,14 +7,14 @@
  */
 abstract class Lib_Model implements Iterator
 {
-	const SETTING_TYPE      ='type';
+	const SETTING_TYPE      = 'type';
 	const SETTING_VIRTUAL   = 'virtual';
 	const SETTING_SET       = 'set';
 	const SETTING_GET       = 'get';
-    const SETTING_LABEL     ='label';
-    const SETTING_HIDDEN    ='hidden';
+    const SETTING_LABEL     = 'label';
+    const SETTING_HIDDEN    = 'hidden';
 
-    const TYPE_HIDDEN       ='hidden';
+    const TYPE_HIDDEN       = 'hidden';
 
     const TYPE_ID = 'id';
 
