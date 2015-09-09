@@ -435,6 +435,61 @@ if( !function_exists('array_find_key') )
 	}
 }
 
+if( !function_exists('array_find_before') )
+{
+	/**
+	 * @param $array
+	 * @param $predicate
+	 * @return array|null
+	 */
+	function array_find_before( $array, $predicate )
+	{
+		debug_enforce_type( $array, 'array' );
+
+		$i = 0;
+		foreach( $array as $key => $element )
+		{
+			if( $predicate($element,$key) )
+			{
+				return array_first( $array, $i );
+			}
+			else
+			{
+				$i++;
+			}
+		}
+		return null;
+	}
+}
+
+if( !function_exists('array_find_before_dg') )
+{
+	/**
+	 * @param array|callable $array
+	 * @param callable $predicate (...)=>($element,$key)=>bool
+	 * @return Closure
+	 */
+	function array_find_before_dg( $array, $predicate )
+	{
+		if( is_array($array) )
+		{
+			$array = return_dg($array);
+		}
+		else
+		{
+			debug_enforce_type( $array, 'callable' );
+		}
+		return function()use($array,$predicate)
+		{
+			$args = func_get_args();
+			return array_find_before(
+				call_user_func_array( $array, $args ),
+				call_user_func_array( $predicate, $args )
+			);
+		};
+	}
+}
+
 if( !function_exists('array_all') )
 {
 	/**
@@ -1595,25 +1650,30 @@ if( !function_exists('array_join') )
 if( !function_exists('array_append') )
 {
 	/**
-	 * @param array $item
-	 * @param string|int $key
 	 * @param array $array
+	 * @param mixed $what
 	 * @return array
 	 */
-	function array_append(&$item, $key, $array)
+	function array_append( $array, $what )
 	{
-		if( is_array($item) )
-		{
-			if( isset($array[$key]) )
-			{
-				array_walk($item, "array_append", $array[$key]);
-			}
-		}
-		elseif( isset($array[$key]) )
-		{
-			$item = $array[$key];
-		}
-		return $item;
+		debug_enforce_type( $array, 'array' );
+		array_push( $array, $what );
+		return $array;
+	}
+}
+
+if( !function_exists('array_prepend') )
+{
+	/**
+	 * @param array $array
+	 * @param mixed $what
+	 * @return array
+	 */
+	function array_prepend( $array, $what )
+	{
+		debug_enforce_type( $array, 'array' );
+		array_unshift( $array, $what );
+		return $array;
 	}
 }
 

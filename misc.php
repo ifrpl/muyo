@@ -215,20 +215,40 @@ if( !function_exists('tuple_get') )
 if( !function_exists('tuple_carry') )
 {
 	/**
-	 * @param int  $n
+	 * @param callable|int|null $carry_setter
 	 * @param callable|null $apply
 	 * @param mixed $seed
 	 * @return callable
 	 */
-	function tuple_carry($n=0,$apply=null,$seed=null)
+	function tuple_carry($carry_setter=null,$apply=null,$seed=null)
 	{
 		$carry = $seed;
-		return function()use($n,$apply,&$carry)
+		if( $carry_setter===null )
+		{
+			$carry_setter = tuple_get(1);
+		}
+		elseif( is_int( $carry_setter ) )
+		{
+			$carry_setter = tuple_get( $carry_setter );
+		}
+		else
+		{
+			debug_enforce_type( $carry_setter, 'callable' );
+		}
+		if( $apply===null )
+		{
+			$apply = tuple_get(0);
+		}
+		else
+		{
+			debug_enforce_type( $apply, 'callable' );
+		}
+		return function()use($carry_setter,$apply,&$carry)
 		{
 			$args = func_get_args();
-			$ret = $apply ? $apply($carry) : $carry;
-			$carry = $args[$n];
-			return $ret;
+			$argsWithCarry = array_prepend( $args, $carry );
+			$carry = call_user_func_array( $carry_setter, $argsWithCarry );
+			return call_user_func_array( $apply, $argsWithCarry );
 		};
 	}
 }
@@ -1031,6 +1051,99 @@ if( !function_exists('max_execution_time_set_dg') )
 			$ret = ini_get( $key );
 			ini_set( $key, call_user_func_array( $seconds, $args ) );
 			return $ret;
+		};
+	}
+}
+
+if( !function_exists('tuple_add_dg') )
+{
+	/**
+	 * @param $arg1
+	 * @param $arg2
+	 * @return Closure
+	 */
+	function tuple_add_dg($arg1,$arg2)
+	{
+		$outerArgs = array_map_val( func_get_args(), function($arg){ return is_callable($arg) ? $arg : return_dg($arg); } );
+		return function()use($outerArgs)
+		{
+			$innerArgs = func_get_args();
+			return array_reduce_val(
+				$outerArgs,
+				function($carry, $outerArg)use( $innerArgs )
+				{
+					return $carry + call_user_func_array( $outerArg, $innerArgs );
+				},
+				0
+			);
+		};
+	}
+}
+
+if( !function_exists('eq_dg') )
+{
+	/**
+	 * @param callable $a
+	 * @param callable $b
+	 * @return callable
+	 */
+	function eq_dg($a,$b)
+	{
+		return function()use($a,$b)
+		{
+			$args = func_get_args();
+			return call_user_func_array($a,$args) == call_user_func_array($b,$args);
+		};
+	}
+}
+
+if( !function_exists('equals_dg') )
+{
+	/**
+	 * @param callable $a
+	 * @param callable $b
+	 * @return callable
+	 */
+	function equals_dg($a,$b)
+	{
+		return function()use($a,$b)
+		{
+			$args = func_get_args();
+			return call_user_func_array($a,$args) === call_user_func_array($b,$args);
+		};
+	}
+}
+
+if( !function_exists('lt_dg') )
+{
+	/**
+	 * @param callable $a
+	 * @param callable $b
+	 * @return callable
+	 */
+	function lt_dg($a,$b)
+	{
+		return function()use($a,$b)
+		{
+			$args = func_get_args();
+			return call_user_func_array($a,$args) < call_user_func_array($b,$args);
+		};
+	}
+}
+
+if( !function_exists('gt_dg') )
+{
+	/**
+	 * @param callable $a
+	 * @param callable $b
+	 * @return callable
+	 */
+	function gt_dg($a,$b)
+	{
+		return function()use($a,$b)
+		{
+			$args = func_get_args();
+			return call_user_func_array($a,$args) > call_user_func_array($b,$args);
 		};
 	}
 }
