@@ -928,4 +928,27 @@ if( !function_exists('max_execution_time_set_dg') )
 			return $ret;
 		};
 	}
+
+    /**
+     * @param $dt (ms)
+     */
+    function incrementMaxExecutionTime($dt)
+    {
+        $dt = floor($dt / 1000);
+
+        $limit = ini_get('max_execution_time');
+        if(0 == $limit)
+        {
+            $limit = 30;
+            Logger::debug("Discarding infinite execution time to default value: $limit (s)");
+        }
+
+        if(0 != $dt)
+        {
+            $limit += $dt;
+            Logger::debug("Increasing time limit by $dt to $limit (s)");
+        }
+
+        set_time_limit($limit);
+    }
 }

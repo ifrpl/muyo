@@ -11,6 +11,8 @@ abstract class Lib_Model implements Iterator
 	const SETTING_VIRTUAL   = 'virtual';
 	const SETTING_SET       = 'set';
 	const SETTING_GET       = 'get';
+    const SETTING_REQUIRED  = 'required';
+
     const SETTING_LABEL     = 'label';
     const SETTING_HIDDEN    = 'hidden';
 
@@ -1656,12 +1658,103 @@ abstract class Lib_Model implements Iterator
 		return '';
 	}
 
+    /**
+     * @param $formType
+     * @param $optionName
+     * @param array $options
+     * @return array|null
+     * @deprecated tmp, until grid logic is refactored
+     */
+    static public function getGridCallback($formType, $optionName, $options = [])
+    {
+        if('date' == $formType)
+        {
+            return [
+                'function' => function($value, $format, $part)
+                {
+                    if(null == $value)
+                    {
+                        return '';
+                    }
 
+                    return App_Date::localeStringDate($value, $format, $part);
+                },
+                'params' => ['{{'.$optionName.'}}', Zend_Date::DATE_MEDIUM, App_Date::DB_DATE]
+            ];
+        }
+
+        if('datetime' == $formType)
+        {
+            return  [
+                'function' => function($value, $format)
+                {
+                    if(null == $value)
+                    {
+                        return '';
+                    }
+
+                    return App_Date::localeStringDate($value, $format);
+                },
+                'params' => ['{{'.$optionName.'}}', Zend_Date::DATETIME_SHORT]
+            ];
+        }
+
+        if('time' == $formType)
+        {
+            return  [
+                'function' => function($value, $format, $part)
+                {
+                    if(null == $value)
+                    {
+                        return '';
+                    }
+
+                    return App_Date::localeStringDate($value, $format, $part);
+                },
+                'params' => ['{{'.$optionName.'}}', Zend_Date::TIME_SHORT, App_Date::DB_TIME]
+            ];
+        }
+
+        if('select' == $formType)
+        {
+            return  [
+                'function' => function ($value, $multiOptions, $type)
+                {
+                    if (empty($value))
+                    {
+                        return '';
+                    }
+
+                    if (!isset($multiOptions[$value]))
+                    {
+                        // To deal with improper model where key and value are the same or when multiOptions has groups
+                        $values = array_flatten($multiOptions);
+                        if(in_array($value, $values))
+                        {
+                            return $value;
+                        }
+
+                        return sprintf('%s (%s)', 'id' == $type ? self::INVALID_REF_LABEL : self::INVALID_SELECT_VALUE_LABEL, $value);
+                    }
+
+                    return App_Translate::_($multiOptions[$value]);
+                },
+                'params' => [
+                    '{{' . $optionName . '}}',
+                    isset($options['multiOptions']) ? $options['multiOptions'] : [],
+                    isset($options['type']) ? $options['type'] : null
+                ]
+            ];
+        }
+
+        return null;
+    }
 
 	/**
 	 * TODO: move to external class / trait
 	 * @param string $export Name of deploy
 	 * @param null|mixed $source
+     * @deprecated will be removed soon
 	 * @return Bvb_Grid
 	 */
 	public function getDataTable($export = 'JqGrid', $source = null)
@@ -1706,6 +1799,7 @@ abstract class Lib_Model implements Iterator
 	/**
 	 * TODO: move to external class / trait
 	 * @return Zend_Config
+     * @deprecated will be removed soon
 	 */
 	public function getGridConfig()
 	{
@@ -1742,7 +1836,6 @@ abstract class Lib_Model implements Iterator
 
 			if(isset($optionValue->type))
 			{
-
 				if(!isset($optionValue->jqg))
 				{
 					$config->$optionName->jqg = new Zend_Config(array(), true);
@@ -1783,6 +1876,7 @@ abstract class Lib_Model implements Iterator
 									'date_format' => Zend_Date::DATE_MEDIUM
 								)
 							),
+                            'callback' => self::getGridCallback($optionValue->type, $optionName),
 							'jqg'      => array(
 								'searchoptions' => array(
 									'dataInit' => new Zend_Json_Expr('function(el){
@@ -1811,6 +1905,7 @@ abstract class Lib_Model implements Iterator
 									'date_format' => Zend_Date::DATETIME_SHORT
 								)
 							),
+                            'callback' => self::getGridCallback($optionValue->type, $optionName),
 							'jqg'      => array(
 								'searchoptions' => array(
 									'dataInit' => new Zend_Json_Expr('function(el){
@@ -1840,6 +1935,7 @@ abstract class Lib_Model implements Iterator
 									'date_format' => Zend_Date::TIME_SHORT
 								)
 							),
+                            'callback' => self::getGridCallback($optionValue->type, $optionName),
 							'jqg'      => array(
 								'searchoptions' => array(
 									'dataInit' => new Zend_Json_Expr('function(el){
@@ -1954,6 +2050,7 @@ abstract class Lib_Model implements Iterator
 	/**
 	 * TODO: move to external class / trait
 	 * @return App_Form_New
+     * @deprecated will be removed soon
 	 */
 	public function getForm()
 	{
@@ -2188,6 +2285,7 @@ abstract class Lib_Model implements Iterator
 	 * TODO: move to external class / trait
 	 * @param $type
 	 * @return string
+     * @deprecated will be removed soon
 	 */
 	private function _getFormType($type)
 	{

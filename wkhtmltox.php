@@ -14,7 +14,7 @@ if( !defined('WK_EXECUTABLE_IMG') )
 {
 	define('WK_EXECUTABLE_IMG','wkhtmltoimage');
 }
-if( !defined('WK_EXECUTABLE_PDF') )
+if( !defined('WK_EXECUTABLE_PDF') && !defined('NO_OVERRIDE'))
 {
 	define('WK_EXECUTABLE_PDF','wkhtmltopdf.0.11.0_rc1');
 }
