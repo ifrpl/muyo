@@ -584,7 +584,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * @param string|array|Lib_Model $name
 	 * @return array|mixed
 	 */
-	private function prepareTableForJoin($name)
+	private function _prepareTableForJoin($name)
 	{
 		$alias = null;
 
@@ -624,7 +624,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function setJoin($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
-		$this->getSelect()->join($this->prepareTableForJoin($name), $cond, $cols, $schema);
+		$this->getSelect()->join($this->_prepareTableForJoin($name), $cond, $cols, $schema);
 		return $this;
 	}
 
@@ -637,7 +637,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function setJoinLeft($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
-		$this->getSelect()->joinLeft($this->prepareTableForJoin($name), $cond, $cols, $schema);
+		$this->getSelect()->joinLeft($this->_prepareTableForJoin($name), $cond, $cols, $schema);
 		return $this;
 	}
 
@@ -650,7 +650,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function setJoinRight($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
-		$this->getSelect()->joinRight($this->prepareTableForJoin($name), $cond, $cols, $schema);
+		$this->getSelect()->joinRight($this->_prepareTableForJoin($name), $cond, $cols, $schema);
 		return $this;
 	}
 
@@ -663,7 +663,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 */
 	public function setJoinInner($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
-		$this->getSelect()->joinInner($this->prepareTableForJoin($name), $cond, $cols, $schema);
+		$this->getSelect()->joinInner($this->_prepareTableForJoin($name), $cond, $cols, $schema);
 		return $this;
 	}
 

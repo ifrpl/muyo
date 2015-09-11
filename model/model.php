@@ -2341,4 +2341,12 @@ abstract class Lib_Model implements Iterator
 		return $formType;
 	}
 
+    public function getDereferencedSettingName($name)
+    {
+        $type = $this->getSetting($name, self::SETTING_TYPE);
+        debug_enforce(self::TYPE_ID == $type);
+
+        return str_replace('_id', '', $name);
+    }
+
 }
