@@ -23,7 +23,8 @@ if( !function_exists('debug_allow') )
 				$allowedSubNet = array(
 					'127.',
 					'10.10.',
-					'192.168.'
+					'192.168.',
+					'172.16.'
 				);
 
 				$allowedHosts = array(
