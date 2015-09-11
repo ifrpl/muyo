@@ -7,13 +7,21 @@
  */
 abstract class Lib_Model implements Iterator
 {
-	const SETTING_TYPE  ='type';
-	const SETTING_VIRTUAL = 'virtual';
-	const SETTING_SET = 'set';
-	const SETTING_GET = 'get';
+	const SETTING_TYPE      = 'type';
+	const SETTING_VIRTUAL   = 'virtual';
+	const SETTING_SET       = 'set';
+	const SETTING_GET       = 'get';
+    const SETTING_REQUIRED  = 'required';
+
+    const SETTING_LABEL     = 'label';
+    const SETTING_HIDDEN    = 'hidden';
+
+    const TYPE_HIDDEN       = 'hidden';
 
     const TYPE_ID = 'id';
 
+
+    const COL_ID      = 'id';
 
 	/**
 	 * @var array field type identifiers
@@ -191,7 +199,7 @@ abstract class Lib_Model implements Iterator
 		if( $name === $this->getPrimaryKey() )
 		{
 			array_set_default($setting,'type','int');
-			array_set_default($setting,'hidden','true');
+			array_set_default($setting,self::SETTING_HIDDEN,'true');
 		}
 	}
 
@@ -785,7 +793,7 @@ abstract class Lib_Model implements Iterator
 	{
 		if( $this->settingExists($elementName) ? $settings = $this->getSetting($elementName) : false)
 		{
-			if(isset($settings['hidden']) && $settings['hidden'] == true)
+			if(isset($settings[self::SETTING_HIDDEN]) && $settings[self::SETTING_HIDDEN] == true)
 			{
 				return true;
 			}
@@ -801,7 +809,7 @@ abstract class Lib_Model implements Iterator
 	public function propertySet( $column, $value )
 	{
 		debug_enforce( !empty($column), "Cannot set value of empty property" );
-		if( $column == 'id' && $this->getPrimaryKey())
+		if( $column == self::COL_ID && $this->getPrimaryKey())
 		{
 			$column = $this->getPrimaryKey();
 		}
@@ -868,7 +876,7 @@ abstract class Lib_Model implements Iterator
 	public function propertyGet( $column )
 	{
 		debug_enforce( !empty($column), "Cannot get name of empty property" );
-		if( $column == 'id' && $this->getPrimaryKey() )
+		if( $column == self::COL_ID && $this->getPrimaryKey() )
 		{
 			$column = $this->getPrimaryKey();
 		}
@@ -942,7 +950,7 @@ abstract class Lib_Model implements Iterator
 	public function propertyExists($column)
 	{
 		debug_enforce( !empty($column), "Cannot check if empty property exists" );
-		if( $column == 'id' && $this->getPrimaryKey())
+		if( $column == self::COL_ID && $this->getPrimaryKey())
 		{
 			$column = $this->getPrimaryKey();
 		}
@@ -1288,10 +1296,10 @@ abstract class Lib_Model implements Iterator
 			'model' => get_class($this),
 		);
 
-		$value = $this->_getValueByType($this->id, 'id');
+		$value = $this->_getValueByType($this->{self::COL_ID}, self::TYPE_ID);
 		if(!is_null($value))
 		{
-			$content['id'] = $value;
+			$content[self::COL_ID] = $value;
 		}
 
 		return $content;
@@ -1362,7 +1370,7 @@ abstract class Lib_Model implements Iterator
 		{
 			switch( $type )
 			{
-				case "id":
+				case self::TYPE_ID:
 					if( array_contains( array('',null), $value, true ) )
 					{
 						$value = null;
@@ -1504,10 +1512,10 @@ abstract class Lib_Model implements Iterator
 					$obj->unserializeContent($value['data']);
 					$value = $obj;
 				}
-				elseif(array_key_exists('id', $value))
+				elseif(array_key_exists(self::COL_ID, $value))
 				{
 					/** @var Lib_Model $value */
-					$value = $class::getById($value['id']);
+					$value = $class::getById($value[self::COL_ID]);
 				}
 
 			}
@@ -1650,12 +1658,103 @@ abstract class Lib_Model implements Iterator
 		return '';
 	}
 
+    /**
+     * @param $formType
+     * @param $optionName
+     * @param array $options
+     * @return array|null
+     * @deprecated tmp, until grid logic is refactored
+     */
+    static public function getGridCallback($formType, $optionName, $options = [])
+    {
+        if('date' == $formType)
+        {
+            return [
+                'function' => function($value, $format, $part)
+                {
+                    if(null == $value)
+                    {
+                        return '';
+                    }
 
+                    return App_Date::localeStringDate($value, $format, $part);
+                },
+                'params' => ['{{'.$optionName.'}}', Zend_Date::DATE_MEDIUM, App_Date::DB_DATE]
+            ];
+        }
+
+        if('datetime' == $formType)
+        {
+            return  [
+                'function' => function($value, $format)
+                {
+                    if(null == $value)
+                    {
+                        return '';
+                    }
+
+                    return App_Date::localeStringDate($value, $format);
+                },
+                'params' => ['{{'.$optionName.'}}', Zend_Date::DATETIME_SHORT]
+            ];
+        }
+
+        if('time' == $formType)
+        {
+            return  [
+                'function' => function($value, $format, $part)
+                {
+                    if(null == $value)
+                    {
+                        return '';
+                    }
+
+                    return App_Date::localeStringDate($value, $format, $part);
+                },
+                'params' => ['{{'.$optionName.'}}', Zend_Date::TIME_SHORT, App_Date::DB_TIME]
+            ];
+        }
+
+        if('select' == $formType)
+        {
+            return  [
+                'function' => function ($value, $multiOptions, $type)
+                {
+                    if (empty($value))
+                    {
+                        return '';
+                    }
+
+                    if (!isset($multiOptions[$value]))
+                    {
+                        // To deal with improper model where key and value are the same or when multiOptions has groups
+                        $values = array_flatten($multiOptions);
+                        if(in_array($value, $values))
+                        {
+                            return $value;
+                        }
+
+                        return sprintf('%s (%s)', 'id' == $type ? self::INVALID_REF_LABEL : self::INVALID_SELECT_VALUE_LABEL, $value);
+                    }
+
+                    return App_Translate::_($multiOptions[$value]);
+                },
+                'params' => [
+                    '{{' . $optionName . '}}',
+                    isset($options['multiOptions']) ? $options['multiOptions'] : [],
+                    isset($options['type']) ? $options['type'] : null
+                ]
+            ];
+        }
+
+        return null;
+    }
 
 	/**
 	 * TODO: move to external class / trait
 	 * @param string $export Name of deploy
 	 * @param null|mixed $source
+     * @deprecated will be removed soon
 	 * @return Bvb_Grid
 	 */
 	public function getDataTable($export = 'JqGrid', $source = null)
@@ -1700,6 +1799,7 @@ abstract class Lib_Model implements Iterator
 	/**
 	 * TODO: move to external class / trait
 	 * @return Zend_Config
+     * @deprecated will be removed soon
 	 */
 	public function getGridConfig()
 	{
@@ -1714,6 +1814,11 @@ abstract class Lib_Model implements Iterator
 
 		foreach($config as $optionName => $optionValue)
 		{
+            if(!$optionValue instanceof Zend_Config)
+            {
+                continue;
+            }
+
 			if(!isset($optionValue->title) && isset($optionValue->label))
 			{
 				$config->$optionName->title = $optionValue->label;
@@ -1721,10 +1826,13 @@ abstract class Lib_Model implements Iterator
 			}
 			if(isset($optionValue->visible) && !$optionValue->visible)
 			{
-				$config->$optionName->hidden = true;
+				$config->$optionName->{self::SETTING_HIDDEN} = true;
 			}
 
-            $optionValue->escape = false;
+            if(null != $this->settingExists($optionName))
+            {
+                $optionValue->escape = false;
+            }
 
 			if(isset($optionValue->type))
 			{
@@ -1768,6 +1876,7 @@ abstract class Lib_Model implements Iterator
 									'date_format' => Zend_Date::DATE_MEDIUM
 								)
 							),
+                            'callback' => self::getGridCallback($optionValue->type, $optionName),
 							'jqg'      => array(
 								'searchoptions' => array(
 									'dataInit' => new Zend_Json_Expr('function(el){
@@ -1796,6 +1905,7 @@ abstract class Lib_Model implements Iterator
 									'date_format' => Zend_Date::DATETIME_SHORT
 								)
 							),
+                            'callback' => self::getGridCallback($optionValue->type, $optionName),
 							'jqg'      => array(
 								'searchoptions' => array(
 									'dataInit' => new Zend_Json_Expr('function(el){
@@ -1825,6 +1935,7 @@ abstract class Lib_Model implements Iterator
 									'date_format' => Zend_Date::TIME_SHORT
 								)
 							),
+                            'callback' => self::getGridCallback($optionValue->type, $optionName),
 							'jqg'      => array(
 								'searchoptions' => array(
 									'dataInit' => new Zend_Json_Expr('function(el){
@@ -1889,9 +2000,9 @@ abstract class Lib_Model implements Iterator
 						)), true);
 
 						break;
-					case "hidden":
+					case self::TYPE_HIDDEN:
                     case self::TYPE_ID:
-						$config->$optionName->hidden = true;
+						$config->$optionName->{self::SETTING_HIDDEN} = true;
                         break;
 					default:
 						debug_assert(false !== array_search($optionValue->type, self::$types), "Unknown Grid Cell Type `{$optionValue->type}`");
@@ -1939,6 +2050,7 @@ abstract class Lib_Model implements Iterator
 	/**
 	 * TODO: move to external class / trait
 	 * @return App_Form_New
+     * @deprecated will be removed soon
 	 */
 	public function getForm()
 	{
@@ -2084,7 +2196,7 @@ abstract class Lib_Model implements Iterator
 						$settingColumn['options']['decorators'] = $form->elementDecorators;
 					}
 					break;
-				case "hidden":
+				case self::TYPE_HIDDEN:
 					if(!isset($settingColumn['options']['decorators']))
 					{
 						$settingColumn['options']['decorators'] = $form->hiddenDecorators;
@@ -2126,30 +2238,44 @@ abstract class Lib_Model implements Iterator
 			if(isset($setting['multiOptions']))
 			{
 				$multiOptions = $setting['multiOptions'];
-				if($settingColumn['type'] == 'select' || (isset($settingColumn['formType']) && $settingColumn['formType'] == 'select'))
-				{
-					$multiOptions = array('' => 'LABEL_SELECT') + $multiOptions;
-				}
-				$settingColumn['options']['multiOptions'] = $multiOptions;
+                if($settingColumn['type'] == 'select' || (isset($settingColumn['formType']) && $settingColumn['formType'] == 'select'))
+                {
+                    if(empty($multiOptions))
+                    {
+                        $multiOptions = array('' => 'LABEL_FORM_SELECT_NO_VALUE') + $multiOptions;
 
-				if(isset($setting['otherMultioption']) && $setting['formType'] == 'multiCheckbox')
-				{
-					$settingColumn['options']['otherMultioption'] = $setting['otherMultioption'];
-				}
+                        if(!isset($settingColumn['options']['attribs']))
+                        {
+                            $settingColumn['options']['attribs'] = [];
+                        }
+
+                        $settingColumn['options']['attribs']['disabled'] = 'disabled';
+                    }
+                    else
+                    {
+                        $multiOptions = array('' => 'LABEL_SELECT') + $multiOptions;
+                    }
+
+                }
+                $settingColumn['options']['multiOptions'] = $multiOptions;
+
+                if(isset($setting['otherMultioption']) && $setting['formType'] == 'multiCheckbox')
+                {
+                    $settingColumn['options']['otherMultioption'] = $setting['otherMultioption'];
+                }
+
 			}
 
-			if(isset($setting['hidden']) && $setting['hidden'] == true)
+			if(isset($setting[self::SETTING_HIDDEN]) && $setting[self::SETTING_HIDDEN] == true)
 			{
 				$settingColumn['options']['decorators'] = $form->hiddenDecorators;
-				$settingColumn['type'] = 'hidden';
+				$settingColumn['type'] = self::TYPE_HIDDEN;
 			}
 
 			$elements[$column] = $settingColumn;
 		}
 
-		$form->setOptions([
-			'elements' => $elements
-		]);
+		$form->setElements($elements);
 		$form->setDisableLoadDefaultDecorators(true);
 
 		return $form;
@@ -2159,6 +2285,7 @@ abstract class Lib_Model implements Iterator
 	 * TODO: move to external class / trait
 	 * @param $type
 	 * @return string
+     * @deprecated will be removed soon
 	 */
 	private function _getFormType($type)
 	{
@@ -2203,8 +2330,8 @@ abstract class Lib_Model implements Iterator
 			case "country":
 				$formType = 'country';
 				break;
-			case "hidden":
-				$formType = 'hidden';
+			case self::TYPE_HIDDEN:
+				$formType = self::TYPE_HIDDEN;
 				break;
 			default:
 				debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
