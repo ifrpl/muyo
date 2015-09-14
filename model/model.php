@@ -1870,12 +1870,6 @@ abstract class Lib_Model implements Iterator
 					case "date":
 						$config->$optionName->merge(new Zend_Config(array(
 							'sorttype' => 'date',
-							'format'   => array(
-								'date',
-								array(
-									'date_format' => Zend_Date::DATE_MEDIUM
-								)
-							),
                             'callback' => self::getGridCallback($optionValue->type, $optionName),
 							'jqg'      => array(
 								'searchoptions' => array(
@@ -1899,12 +1893,6 @@ abstract class Lib_Model implements Iterator
 					case "datetime":
 						$config->$optionName->merge(new Zend_Config(array(
 							'sorttype' => 'date',
-							'format'   => array(
-								'date',
-								array(
-									'date_format' => Zend_Date::DATETIME_SHORT
-								)
-							),
                             'callback' => self::getGridCallback($optionValue->type, $optionName),
 							'jqg'      => array(
 								'searchoptions' => array(
@@ -1929,12 +1917,6 @@ abstract class Lib_Model implements Iterator
 					case "time":
 						$config->$optionName->merge(new Zend_Config(array(
 							'sorttype' => 'date',
-							'format'   => array(
-								'date',
-								array(
-									'date_format' => Zend_Date::TIME_SHORT
-								)
-							),
                             'callback' => self::getGridCallback($optionValue->type, $optionName),
 							'jqg'      => array(
 								'searchoptions' => array(
