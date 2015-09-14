@@ -92,6 +92,11 @@ abstract class Lib_Model implements Iterator
 	private $_validationErrors = array();
 
 	/**
+	 * @var bool Unserilize models on load
+	 */
+	private $_unserilizeModels = true;
+
+	/**
 	 * Return row object for current id
 	 * @return $this
 	 */
@@ -1426,6 +1431,19 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
+	 * Unserlize models on load
+	 *
+	 * @param bool $value
+	 *
+	 * @return $this
+	 */
+	public function setUnserializeModels($value = true)
+	{
+		$this->_unserilizeModels = $value;
+		return $this;
+	}
+
+	/**
 	 * @param array $data
 	 */
 	public function unserializeContent($data)
@@ -1501,7 +1519,7 @@ abstract class Lib_Model implements Iterator
 				}
 			}
 
-			if(is_array($value) && array_key_exists('model', $value))
+			if($this->_unserilizeModels && is_array($value) && array_key_exists('model', $value))
 			{
 				$class = $value['model'];
 
