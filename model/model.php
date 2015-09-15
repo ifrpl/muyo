@@ -23,6 +23,17 @@ abstract class Lib_Model implements Iterator
 
     const COL_ID      = 'id';
 
+    /**
+     * @deprerated
+     */
+    const INVALID_SELECT_VALUE_LABEL = '#INVALID!';
+
+    /**
+     * @deprerated
+     */
+    const INVALID_REF_LABEL          = '#REF!';
+
+
 	/**
 	 * @var array field type identifiers
 	 * @see $this->settingEmptyEqNull after modification
@@ -1862,27 +1873,37 @@ abstract class Lib_Model implements Iterator
 				switch($optionValue->type)
 				{
 					case "select":
-						$multiOptions = array();
-						$multiOptions[''] = 'LABEL_ALL';
-						$multiOptions += $optionValue->multiOptions->toArray();
+						$multiOptions0 = array();
+						$multiOptions0[''] = 'LABEL_ALL';
+						$multiOptions0 += $optionValue->multiOptions->toArray();
 
 						$multiOptions = array_map(function($key, $row){
 							$translate = App_Translate::getInstance();
 							return $key.':'.$translate->translate($row);
-						}, array_keys($multiOptions), $multiOptions);
+						}, array_keys($multiOptions0), $multiOptions0);
 						ksort($multiOptions);
 
 						$multiOptions = implode(';', $multiOptions);
 
-						$config->$optionName->jqg->merge(new Zend_Config(array(
-							'stype' => 'select',
-							'searchoptions' => array(
-								'sopt' => array(
-									'eq'
-								),
-								'value' => $multiOptions
-							),
-							'searchType' => '='
+						$config->$optionName->merge(new Zend_Config(array(
+                            'callback' => self::getGridCallback(
+                                $optionValue->type,
+                                $optionName,
+                                [
+                                    'multiOptions' => $multiOptions0
+                                ]
+                            ),
+                            'jqg' =>
+                            [
+                                'stype' => 'select',
+                                'searchoptions' => array(
+                                    'sopt' => array(
+                                        'eq'
+                                    ),
+                                    'value' => $multiOptions
+                                ),
+                                'searchType' => '='
+                            ]
 						)), true);
 						break;
 					case "date":
