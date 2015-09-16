@@ -7,21 +7,25 @@
  */
 abstract class Lib_Model implements Iterator
 {
-	const SETTING_TYPE      = 'type';
-	const SETTING_VIRTUAL   = 'virtual';
 	const SETTING_SET       = 'set';
 	const SETTING_GET       = 'get';
-    const SETTING_REQUIRED  = 'required';
 
-    const SETTING_LABEL     = 'label';
+    const SETTING_DEFAULT   = 'default';
+    const SETTING_FORM_TYPE = 'formType';
     const SETTING_HIDDEN    = 'hidden';
+    const SETTING_LABEL     = 'label';
+    const SETTING_MULTI_OPTIONS = 'multiOptions';
+    const SETTING_REQUIRED  = 'required';
+    const SETTING_TYPE      = 'type';
+    const SETTING_VIRTUAL   = 'virtual';
 
-    const TYPE_HIDDEN       = 'hidden';
+    const TYPE_HIDDEN   = 'hidden';
+    const TYPE_ID       = 'id';
+    const TYPE_INT      = 'int';
 
-    const TYPE_ID = 'id';
+    const FORM_TYPE_SELECT = 'select';
 
-
-    const COL_ID      = 'id';
+    const COL_ID = 'id';
 
     /**
      * @deprerated
@@ -1770,7 +1774,7 @@ abstract class Lib_Model implements Iterator
                 },
                 'params' => [
                     '{{' . $optionName . '}}',
-                    isset($options['multiOptions']) ? $options['multiOptions'] : [],
+                    isset($options[self::SETTING_MULTI_OPTIONS]) ? $options[self::SETTING_MULTI_OPTIONS] : [],
                     isset($options['type']) ? $options['type'] : null
                 ]
             ];
@@ -1890,7 +1894,7 @@ abstract class Lib_Model implements Iterator
                                 $optionValue->type,
                                 $optionName,
                                 [
-                                    'multiOptions' => $multiOptions0
+                                    self::SETTING_MULTI_OPTIONS => $multiOptions0
                                 ]
                             ),
                             'jqg' =>
@@ -2228,14 +2232,15 @@ abstract class Lib_Model implements Iterator
 					break;
 			}
 
-			if(isset($setting['formType']))
+			if(isset($setting[self::SETTING_FORM_TYPE]))
 			{
-				$settingColumn['type'] = $setting['formType'];
+				$settingColumn['type'] = $setting[self::SETTING_FORM_TYPE];
 			}
 			else
 			{
 				$settingColumn['type'] = $this->_getFormType($type);
 			}
+
 			if(isset($setting['unique']) && $setting['unique'] == true)
 			{
 				if(!isset($settingColumn['options']['validators']))
@@ -2256,10 +2261,10 @@ abstract class Lib_Model implements Iterator
 				$settingColumn['options']['required'] = true;
 			}
 
-			if(isset($setting['multiOptions']))
+			if(isset($setting[self::SETTING_MULTI_OPTIONS]))
 			{
-				$multiOptions = $setting['multiOptions'];
-                if($settingColumn['type'] == 'select' || (isset($settingColumn['formType']) && $settingColumn['formType'] == 'select'))
+				$multiOptions = $setting[self::SETTING_MULTI_OPTIONS];
+                if($settingColumn['type'] == 'select' || (isset($settingColumn[self::SETTING_FORM_TYPE]) && $settingColumn['formType'] == 'select'))
                 {
                     if(empty($multiOptions))
                     {
@@ -2278,9 +2283,9 @@ abstract class Lib_Model implements Iterator
                     }
 
                 }
-                $settingColumn['options']['multiOptions'] = $multiOptions;
+                $settingColumn['options'][self::SETTING_MULTI_OPTIONS] = $multiOptions;
 
-                if(isset($setting['otherMultioption']) && $setting['formType'] == 'multiCheckbox')
+                if(isset($setting['otherMultioption']) && $setting[self::SETTING_FORM_TYPE] == 'multiCheckbox')
                 {
                     $settingColumn['options']['otherMultioption'] = $setting['otherMultioption'];
                 }
