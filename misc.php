@@ -950,5 +950,7 @@ if( !function_exists('max_execution_time_set_dg') )
         }
 
         set_time_limit($limit);
+
+		return $limit;
     }
 }

@@ -16,7 +16,7 @@ if( !class_exists('Archiver') )
 				'decompress'=>'unzip',
 				'pipe'=>'unzip -p',
 				'list'=>'unzip -l',
-				'list_options'=>['column'=>4,'skip'=>2],
+				'list_options'=>['column'=>4,'skip'=>4],
 				'target'=>'-d',
 				'ext'=>'zip'
 			],
