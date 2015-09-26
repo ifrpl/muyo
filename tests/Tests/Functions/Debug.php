@@ -6,7 +6,19 @@ require_once 'autoload.php';
 
 class Debug extends \PHPUnit_Framework_TestCase
 {
-    public function test()
+
+    /**
+     * variable as reference error handling
+     */
+    public function test01()
+    {
+        $sdaa = 0;
+
+        array_shift(array_keys([1, 2]));
+    }
+
+
+    public function test02()
     {
         try
         {

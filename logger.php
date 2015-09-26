@@ -13,44 +13,6 @@ if( !class_exists('Logger') )
 {
 	class Logger
 	{
-		static public function dump($obj, $message = null, $logLevel = LOG_DEBUG)
-		{
-			if(null == $message)
-			{
-				$message = buildIdFromCallstack(1);
-			}
-
-			return self::_dump($obj, $message, $logLevel);
-		}
-
-		static public function dumpToFile($obj, $fileName = '')
-		{
-			$id = buildIdFromCallstack(1);
-
-            $outputDirPath = defined('ROOT_PATH') ? ROOT_PATH : '';
-			$outputDirPath .= DIRECTORY_SEPARATOR . 'data/tmp/dump/' . $id;
-
-			if(!file_exists($outputDirPath))
-			{
-				mkdir($outputDirPath, 0777, true);
-			}
-
-			if(!empty($fileName))
-			{
-				$fileName .= '-';
-			}
-
-			$fileName .= IFR_Main_Time::udate('Ymd-His-u') . '.txt';
-
-			$dumpFilePath = $outputDirPath. DIRECTORY_SEPARATOR . $fileName;
-
-			$outputFile = fopen($dumpFilePath, 'wt');
-			self::_dump($obj, '', -1, $outputFile);
-			fclose($outputFile);
-
-			return $dumpFilePath;
-		}
-
 		static public function debug($message)
 		{
 			return logger_log($message, LOG_DEBUG);
@@ -75,56 +37,46 @@ if( !class_exists('Logger') )
 		{
 			return logger_log($message, LOG_NOTICE);
 		}
-
-		private static function _dump($obj, $message = null, $logLevel = LOG_DEBUG, $outputFile = null)
-		{
-			if(is_array($obj))
-			{
-				$collection = array_reduce_val(
-					$obj,
-					function($startValue, $val, $key){
-						return $startValue || ($val instanceof Lib_Model);
-					},
-					false
-				);
-
-				if($collection)
-				{
-					$message .= ' [collection]';
-
-					array_each(
-						$obj,
-						function($value, $key) use($message, $logLevel, $outputFile){
-							self::_dump($value, $message . "[$key]", $logLevel, $outputFile);
-						}
-					);
-
-					return;
-				}
-
-			}
-
-			if($obj instanceof Lib_Model)
-			{
-				$message .= sprintf(' %s->toArray()', get_class($obj));
-
-				/* @var Lib_Model $obj */
-				$obj = $obj->toArray();
-			}
-
-			$dump = var_export($obj, true);
-			if(null != $outputFile)
-			{
-				fwrite($outputFile, $message . ': ' . $dump);
-			}
-			else
-			{
-				logger_log($message . ': ' . $dump, $logLevel);
-			}
-		}
 	}
 }
 
+if( !function_exists('logger_format') )
+{
+	function logger_format($message)
+	{
+		if ($message instanceof \Exception)
+		{
+			$eol = "\n";
+			$indent = "\t";
+
+			$message = exception_str($message, $eol);
+			if (isset($_SERVER['REQUEST_URI']) && !empty($_SERVER['REQUEST_URI'])) {
+				$message .=
+					str_indent("REQUEST:" . $eol .
+						str_indent($_SERVER['REQUEST_URI'], 1, $indent)
+						, 1, $indent) . $eol;
+			}
+			if (isset($_POST) && !empty($_POST)) {
+				$message .=
+					str_indent("PARAMS POST:" . $eol .
+						str_indent(json_encode($_POST), 1, $indent)
+						, 1, $indent) . $eol;
+			}
+			if (isset($_SERVER) && !empty($_SERVER)) {
+				$message .=
+					str_indent("SERVER:" . $eol .
+						str_indent(json_encode($_SERVER), 1, $indent)
+						, 1, $indent) . $eol;
+			}
+		}
+		else
+		{
+			$message = trim($message);
+		}
+
+		return $message;
+	}
+}
 
 if( !function_exists('logger_log') )
 {
@@ -141,39 +93,10 @@ if( !function_exists('logger_log') )
 	function logger_log($message, $level = LOG_INFO)
 	{
 		global $logger;
-		$eol = "\n";
-		$indent = "\t";
 
 		debug_assert(is_callable($logger), "Logger is not callable. Type: " . gettype($logger));
 
-		if( $message instanceof \Exception )
-		{
-			$message = exception_str( $message, $eol );
-			if( isset( $_SERVER[ 'REQUEST_URI' ] ) && !empty( $_SERVER[ 'REQUEST_URI' ] ) )
-			{
-				$message .=
-					str_indent( "REQUEST:".$eol.
-						str_indent( $_SERVER[ 'REQUEST_URI' ], 1, $indent )
-					, 1, $indent ).$eol
-				;
-			}
-			if( isset( $_POST ) && !empty( $_POST ) )
-			{
-				$message .=
-					str_indent( "PARAMS POST:".$eol.
-						str_indent( json_encode( $_POST ), 1, $indent )
-					, 1, $indent ).$eol
-				;
-			}
-			if( isset( $_SERVER ) && !empty( $_SERVER ) )
-			{
-				$message .=
-					str_indent( "SERVER:".$eol.
-						str_indent( json_encode( $_SERVER ), 1, $indent )
-					, 1, $indent ).$eol
-				;
-			}
-		}
+		$message = logger_format($message);
 
 		$logger( $message, $level );
 		return null;

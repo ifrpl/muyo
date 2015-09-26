@@ -712,7 +712,7 @@ if( !function_exists('debug_handler_exception_default_dg') )
 	{
 		return function( $e )
 		{
-			logger_log( $e, LOG_ERR );
+			Logger::error( $e );
 			exit(1);
 		};
 	}
@@ -753,22 +753,22 @@ if( !function_exists('debug_handler_error_default_dg') )
 				case E_USER_ERROR:
 				case E_RECOVERABLE_ERROR:
 					throw $e;
-				break;
+					break;
 				case E_WARNING:
 				case E_CORE_WARNING:
 				case E_COMPILE_WARNING:
 				case E_USER_WARNING:
 					logger_log( $e, LOG_WARNING );
-				break;
+					break;
 				case E_NOTICE:
 				case E_USER_NOTICE:
 				case E_DEPRECATED:
 				case E_USER_DEPRECATED:
 					logger_log( $e, LOG_NOTICE );
-				break;
+					break;
 				default:
-					debug_assert(false,"Unknown value");
-				break;
+					logger_log( new ErrorException("Unknown error value ($errno)", 0, $e), LOG_NOTICE );
+					break;
 			}
 		};
 	}
