@@ -956,6 +956,34 @@ if( !function_exists('array_get_default') )
 	}
 }
 
+if( !function_exists('array_get_default_dg') )
+{
+	function array_get_default_dg( $key, $array, $default=null)
+	{
+		if( !is_callable($key) )
+		{
+			$key = return_dg($key);
+		}
+		if( !is_callable($array) )
+		{
+			$array = return_dg($array);
+		}
+		if( !is_callable($default) )
+		{
+			$default = return_dg($default);
+		}
+		return function()use($key,$array,$default)
+		{
+			$args = func_get_args();
+			return array_get_default(
+				call_user_func_array( $array, $args ),
+				call_user_func_array( $key, $args ),
+				call_user_func_array( $default, $args )
+			);
+		};
+	}
+}
+
 if( !function_exists('array_set') )
 {
 	/**

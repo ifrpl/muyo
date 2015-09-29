@@ -862,7 +862,7 @@ if( !function_exists('debug_handler_assertion_default_dg') )
 			}
 			else
 			{
-				Logger::error( $e );
+				logger_log( $e, LOG_ERR );
 			}
 		};
 	}
