@@ -12,6 +12,7 @@ abstract class Lib_Model implements Iterator
 
     const SETTING_DEFAULT   = 'default';
     const SETTING_FORM_TYPE = 'formType';
+    const SETTING_FORM_ATTRIBS = 'formAttribs';
     const SETTING_HIDDEN    = 'hidden';
     const SETTING_LABEL     = 'label';
     const SETTING_MULTI_OPTIONS = 'multiOptions';
@@ -2297,6 +2298,11 @@ abstract class Lib_Model implements Iterator
 			{
 				$settingColumn['options']['decorators'] = $form->hiddenDecorators;
 				$settingColumn['type'] = self::TYPE_HIDDEN;
+			}
+
+			if(isset($setting[self::SETTING_FORM_ATTRIBS]))
+			{
+				$settingColumn['options']['attribs'] = $setting[self::SETTING_FORM_ATTRIBS];
 			}
 
 			$elements[$column] = $settingColumn;
