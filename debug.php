@@ -767,7 +767,7 @@ if( !function_exists('debug_handler_error_default_dg') )
 					logger_log( $e, LOG_NOTICE );
 					break;
 				default:
-					logger_log( new ErrorException("Unknown error value ($errno)", 0, __FILE__, __LINE__, $e), LOG_NOTICE );
+					logger_log( new ErrorException("Unknown error value ($errno)", 0, 0, __FILE__, __LINE__, $e), LOG_NOTICE );
 					break;
 			}
 		};
