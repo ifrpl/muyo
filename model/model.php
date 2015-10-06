@@ -852,7 +852,7 @@ abstract class Lib_Model implements Iterator
 		}
 		if(
 			debug_assert(
-				$this->schemaColumnExists( $column ),
+				$this->settingExistsGlobally( $column ),
 				"Schema required to get ".var_dump_human_compact($column)." in ".var_dump_human_compact(get_called_class())
 			)
 		)
