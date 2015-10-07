@@ -2034,6 +2034,26 @@ abstract class Lib_Model implements Iterator
 					default:
 						debug_assert(false !== array_search($optionValue->type, self::$types), "Unknown Grid Cell Type `{$optionValue->type}`");
 				}
+
+                $formType = isset($optionValue->formType) ? $optionValue->formType : null;
+                switch ($formType)
+                {
+                    case 'select':
+
+                        if (!isset($optionValue->callback) && !isset($optionValue->helper))
+                        {
+                            $config->$optionName->callback = new Zend_Config(
+                                $this->getGridCallback(
+                                    $config->$optionName->formType,
+                                    $optionName,
+                                    $optionValue->toArray()
+                                )
+                            );
+                        }
+
+                        break;
+
+                }
 			}
 		}
 
