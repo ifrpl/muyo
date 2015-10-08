@@ -1600,3 +1600,22 @@ if( !function_exists('array_eq') )
 		return empty($diff);
 	}
 }
+
+function array_keys_recursive($array)
+{
+    $ret = [];
+
+    foreach($array as $key => $value)
+    {
+        if(is_array($value))
+        {
+            $ret = array_merge($ret, array_keys_recursive($value));
+        }
+        else
+        {
+            $ret[] = $key;
+        }
+    }
+
+    return $ret;
+}

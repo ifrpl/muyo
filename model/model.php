@@ -2285,33 +2285,12 @@ abstract class Lib_Model implements Iterator
 
 			if(isset($setting[self::SETTING_MULTI_OPTIONS]))
 			{
-				$multiOptions = $setting[self::SETTING_MULTI_OPTIONS];
-                if($settingColumn['type'] == 'select' || (isset($settingColumn[self::SETTING_FORM_TYPE]) && $settingColumn['formType'] == 'select'))
-                {
-                    if(empty($multiOptions))
-                    {
-                        $multiOptions = array('' => 'LABEL_FORM_SELECT_NO_VALUE') + $multiOptions;
-
-                        if(!isset($settingColumn['options']['attribs']))
-                        {
-                            $settingColumn['options']['attribs'] = [];
-                        }
-
-                        $settingColumn['options']['attribs']['disabled'] = 'disabled';
-                    }
-                    else
-                    {
-                        $multiOptions = array('' => 'LABEL_SELECT') + $multiOptions;
-                    }
-
-                }
-                $settingColumn['options'][self::SETTING_MULTI_OPTIONS] = $multiOptions;
+                $settingColumn['options'][self::SETTING_MULTI_OPTIONS] = $setting[self::SETTING_MULTI_OPTIONS];
 
                 if(isset($setting['otherMultioption']) && $setting[self::SETTING_FORM_TYPE] == 'multiCheckbox')
                 {
                     $settingColumn['options']['otherMultioption'] = $setting['otherMultioption'];
                 }
-
 			}
 
 			if(isset($setting[self::SETTING_HIDDEN]) && $setting[self::SETTING_HIDDEN] == true)
