@@ -516,7 +516,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		$this->getSelect()->columns($cols, $correlationName);
 		if( $cols === '*' )
 		{
-			if( debug_assert(null === $correlationName || $correlationName === $this->getAlias(),"* pseudo-column detected. Removing every occurrence of it will give us more power.") )
+			if( debug_assert(   null === $correlationName || $correlationName === $this->getAlias(),
+                                "* pseudo-column detected. Removing every occurrence of it will give us more power."))
 			{
 				$this->normalizeColumns();
 			}
@@ -1290,7 +1291,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor[ 'schema' ]
 						);
-					break;
+					    break;
 					case Zend_Db_Select::INNER_JOIN:
 						$this->_select->joinInner(
 							[$alias=>$descriptor['tableName']],
@@ -1298,7 +1299,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
-					break;
+					    break;
 					case Zend_Db_Select::LEFT_JOIN:
 						$this->_select->joinLeft(
 							[$alias=>$descriptor['tableName']],
@@ -1306,7 +1307,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
-					break;
+					    break;
 					case Zend_Db_Select::RIGHT_JOIN:
 						$this->_select->joinRight(
 							[$alias=>$descriptor['tableName']],
@@ -1314,7 +1315,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
-					break;
+					    break;
 					case Zend_Db_Select::FULL_JOIN:
 						$this->_select->joinFull(
 							[$alias=>$descriptor['tableName']],
@@ -1322,7 +1323,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
-					break;
+					    break;
 					case Zend_Db_Select::CROSS_JOIN:
 						$this->_select->joinCross(
 							[$alias=>$descriptor['tableName']],
@@ -1330,7 +1331,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
-					break;
+					    break;
 					case Zend_Db_Select::NATURAL_JOIN:
 						$this->_select->joinNatural(
 							[$alias=>$descriptor['tableName']],
@@ -1338,10 +1339,10 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor['schema']
 						);
-					break;
+					    break;
 					default:
 						debug_assert( false, "Unknown join type ".var_dump_human_compact($descriptor['joinType']));
-					break;
+					    break;
 				}
 			}
 		);

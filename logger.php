@@ -94,7 +94,10 @@ if( !function_exists('logger_log') )
 	{
 		global $logger;
 
-		debug_assert(is_callable($logger), "Logger is not callable. Type: " . gettype($logger));
+        if(!debug_assert(is_callable($logger), "Logger is not callable. Type: " . gettype($logger)))
+        {
+            return null;
+        }
 
 		$message = logger_format($message);
 
