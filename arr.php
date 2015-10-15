@@ -1139,13 +1139,21 @@ if( !function_exists('array_flatten_recursive') )
 	 */
 	function array_flatten_recursive($array)
 	{
-		$array = array_map_val($array,function()
-		{
-			$array = func_get_args();
-			$array = array_shift( $array );
-			return arrayize( $array );
-		});
-		return array_reduce($array,'array_merge_recursive');
+        $ret = [];
+
+        foreach($array as $key => $value)
+        {
+            if(is_array($value))
+            {
+                $ret = array_merge($ret, array_flatten_recursive_alt($value));
+            }
+            else
+            {
+                $ret[$key] = $value;
+            }
+        }
+
+        return $ret;
 	}
 }
 
@@ -1599,23 +1607,4 @@ if( !function_exists('array_eq') )
 		);
 		return empty($diff);
 	}
-}
-
-function array_flatten_recursive_alt($array)
-{
-    $ret = [];
-
-    foreach($array as $key => $value)
-    {
-        if(is_array($value))
-        {
-            $ret = array_merge($ret, array_flatten_recursive_alt($value));
-        }
-        else
-        {
-            $ret[$key] = $value;
-        }
-    }
-
-    return $ret;
 }
