@@ -1601,7 +1601,7 @@ if( !function_exists('array_eq') )
 	}
 }
 
-function array_keys_recursive($array)
+function array_flatten_recursive_alt($array)
 {
     $ret = [];
 
@@ -1609,11 +1609,11 @@ function array_keys_recursive($array)
     {
         if(is_array($value))
         {
-            $ret = array_merge($ret, array_keys_recursive($value));
+            $ret = array_merge($ret, array_flatten_recursive_alt($value));
         }
         else
         {
-            $ret[] = $key;
+            $ret[$key] = $value;
         }
     }
 
