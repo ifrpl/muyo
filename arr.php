@@ -1145,7 +1145,7 @@ if( !function_exists('array_flatten_recursive') )
         {
             if(is_array($value))
             {
-                $ret = array_merge($ret, array_flatten_recursive_alt($value));
+                $ret = array_merge($ret, array_flatten_recursive($value));
             }
             else
             {
