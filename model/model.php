@@ -1693,98 +1693,6 @@ abstract class Lib_Model implements Iterator
 		return '';
 	}
 
-    /**
-     * @param $formType
-     * @param $optionName
-     * @param array $options
-     * @return array|null
-     * @deprecated tmp, until grid logic is refactored
-     */
-    static public function getGridCallback($formType, $optionName, $options = [])
-    {
-        if('date' == $formType)
-        {
-            return [
-                'function' => function($value, $format, $part)
-                {
-                    if(null == $value)
-                    {
-                        return '';
-                    }
-
-                    return App_Date::localeStringDate($value, $format, $part);
-                },
-                'params' => ['{{'.$optionName.'}}', Zend_Date::DATE_MEDIUM, App_Date::DB_DATE]
-            ];
-        }
-
-        if('datetime' == $formType)
-        {
-            return  [
-                'function' => function($value, $format)
-                {
-                    if(null == $value)
-                    {
-                        return '';
-                    }
-
-                    return App_Date::localeStringDate($value, $format);
-                },
-                'params' => ['{{'.$optionName.'}}', Zend_Date::DATETIME_SHORT]
-            ];
-        }
-
-        if('time' == $formType)
-        {
-            return  [
-                'function' => function($value, $format, $part)
-                {
-                    if(null == $value)
-                    {
-                        return '';
-                    }
-
-                    return App_Date::localeStringDate($value, $format, $part);
-                },
-                'params' => ['{{'.$optionName.'}}', Zend_Date::TIME_SHORT, App_Date::DB_TIME]
-            ];
-        }
-
-        if('select' == $formType)
-        {
-            return  [
-                'function' => function ($value, $multiOptions, $type)
-                {
-                    if (empty($value))
-                    {
-                        return '';
-                    }
-
-                    if (!isset($multiOptions[$value]))
-                    {
-                        // To deal with improper model where key and value are the same or when multiOptions has groups
-                        $values = array_flatten($multiOptions);
-                        if(in_array($value, $values))
-                        {
-                            return $value;
-                        }
-
-                        return sprintf('%s (%s)', 'id' == $type ? self::INVALID_REF_LABEL : self::INVALID_SELECT_VALUE_LABEL, $value);
-                    }
-
-                    return App_Translate::_($multiOptions[$value]);
-                },
-                'params' => [
-                    '{{' . $optionName . '}}',
-                    isset($options[self::SETTING_MULTI_OPTIONS]) ? $options[self::SETTING_MULTI_OPTIONS] : [],
-                    isset($options['type']) ? $options['type'] : null
-                ]
-            ];
-        }
-
-        return null;
-    }
-
 	/**
 	 * TODO: move to external class / trait
 	 * @param string $export Name of deploy
@@ -1827,6 +1735,8 @@ abstract class Lib_Model implements Iterator
 			$config->disableExport = false;
 			Lib_Grid::prepareDeploy($grid, $config, $source);
 		}
+
+        $grid->setExecute('JqGrid' == $export ? isset($requestParams['q']) : true);
 
 		return $grid;
 	}
@@ -1879,148 +1789,23 @@ abstract class Lib_Model implements Iterator
 				switch($optionValue->type)
 				{
 					case "select":
-						$multiOptions0 = array();
-						$multiOptions0[''] = 'LABEL_ALL';
-						$multiOptions0 += $optionValue->multiOptions->toArray();
+                    case "date":
+                    case "datetime":
+                    case "time":
+                    case "boolean":
+                    case "bool":
 
-						$multiOptions = array_map(function($key, $row){
-							$translate = App_Translate::getInstance();
-							return $key.':'.$translate->translate($row);
-						}, array_keys($multiOptions0), $multiOptions0);
-						ksort($multiOptions);
-
-						$multiOptions = implode(';', $multiOptions);
-
-						$config->$optionName->merge(new Zend_Config(array(
-                            'callback' => self::getGridCallback(
+						$config->$optionName->merge(new Zend_Config(
+                            // Bad but this function will be removed anyway
+                            App_Grid::getGridCallback(
                                 $optionValue->type,
                                 $optionName,
-                                [
-                                    self::SETTING_MULTI_OPTIONS => $multiOptions0
-                                ]
-                            ),
-                            'jqg' =>
-                            [
-                                'stype' => 'select',
-                                'searchoptions' => array(
-                                    'sopt' => array(
-                                        'eq'
-                                    ),
-                                    'value' => $multiOptions
-                                ),
-                                'searchType' => '='
-                            ]
-						)), true);
-						break;
-					case "date":
-						$config->$optionName->merge(new Zend_Config(array(
-							'sorttype' => 'date',
-                            'callback' => self::getGridCallback($optionValue->type, $optionName),
-							'jqg'      => array(
-								'searchoptions' => array(
-									'dataInit' => new Zend_Json_Expr('function(el){
-											jQuery(el).datepicker({
-													dateFormat: "yy-mm-dd",
-													onSelect: function(dateText, inst){
-															jQuery(el).parents(".ui-jqgrid").find(".ui-jqgrid-btable").get(0).triggerToolbar();
-													}
-											});
-									}')
-								)
-							)
-						)), true);
-
-						if(!isset($optionValue->defaultvalue))
-						{
-							$config->$optionName->defaultvalue = null;
-						}
-						break;
-					case "datetime":
-						$config->$optionName->merge(new Zend_Config(array(
-							'sorttype' => 'date',
-                            'callback' => self::getGridCallback($optionValue->type, $optionName),
-							'jqg'      => array(
-								'searchoptions' => array(
-									'dataInit' => new Zend_Json_Expr('function(el){
-											jQuery(el).datetimepicker({
-													dateFormat: "yy-mm-dd",
-													timeFormat: "hh:mm",
-													onSelect: function(dateText, inst){
-															jQuery(el).parents(".ui-jqgrid").find(".ui-jqgrid-btable").get(0).triggerToolbar();
-													}
-											});
-									}')
-								)
-							)
-						)), true);
-
-						if(!isset($optionValue->defaultvalue))
-						{
-							$config->$optionName->defaultvalue = null;
-						}
-						break;
-					case "time":
-						$config->$optionName->merge(new Zend_Config(array(
-							'sorttype' => 'date',
-                            'callback' => self::getGridCallback($optionValue->type, $optionName),
-							'jqg'      => array(
-								'searchoptions' => array(
-									'dataInit' => new Zend_Json_Expr('function(el){
-											jQuery(el).timepicker({
-													timeFormat: "hh:mm",
-													onSelect: function(dateText, inst){
-															jQuery(el).parents(".ui-jqgrid").find(".ui-jqgrid-btable").get(0).triggerToolbar();
-													}
-											});
-									}')
-								)
-							)
-						)), true);
-
-						if(!isset($optionValue->defaultvalue))
-						{
-							$config->$optionName->defaultvalue = null;
-						}
-						break;
-					case "boolean":
-					case "bool":
-						$multiOptions = array(
-							'' => 'LABEL_ALL',
-							'0' => 'LABEL_NO',
-							'1' => 'LABEL_YES'
-						);
-						$multiOptions = array_map(function($key, $row){
-							$translate = App_Translate::getInstance();
-							return $key.':'.$translate->translate($row);
-						}, array_keys($multiOptions), $multiOptions);
-
-						$multiOptions = implode(';', $multiOptions);
-
-						$config->$optionName->merge(new Zend_Config(array(
-							'width' => 30,
-							'align' => 'center',
-							'jqg' => array(
-								'stype' => 'select',
-								'searchoptions' => array(
-									'sopt' => array(
-										'eq'
-									),
-									'value' => $multiOptions
-								)
-							),
-							'searchType' => '='
-						)), true);
-
-						if(!isset($optionValue->helper) && !isset($optionValue->callback))
-						{
-							$config->$optionName->merge(new Zend_Config(array(
-								'jqg' => array(
-									'formatter' => 'checkbox'
-								)
-							)), true);
-						}
+                                $optionValue->toArray()
+                            )
+						));
 
 						break;
+
 					case "int":
 						$config->$optionName->merge(new Zend_Config(array(
 							'searchType' => '='
@@ -2031,30 +1816,27 @@ abstract class Lib_Model implements Iterator
                     case self::TYPE_ID:
 						$config->$optionName->{self::SETTING_HIDDEN} = true;
                         break;
-					default:
-						debug_assert(false !== array_search($optionValue->type, self::$types), "Unknown Grid Cell Type `{$optionValue->type}`");
 				}
-
-                $formType = isset($optionValue->formType) ? $optionValue->formType : null;
-                switch ($formType)
-                {
-                    case 'select':
-
-                        if (!isset($optionValue->callback) && !isset($optionValue->helper))
-                        {
-                            $config->$optionName->callback = new Zend_Config(
-                                $this->getGridCallback(
-                                    $config->$optionName->formType,
-                                    $optionName,
-                                    $optionValue->toArray()
-                                )
-                            );
-                        }
-
-                        break;
-
-                }
 			}
+
+            $formType = isset($optionValue->formType) ? $optionValue->formType : null;
+            switch ($formType)
+            {
+                case 'select':
+
+                    $config->$optionName->merge(new Zend_Config(
+
+                        // Bad but this function will be removed anyway
+                        App_Grid::getGridCallback(
+                            $optionValue->formType,
+                            $optionName,
+                            $optionValue->toArray()
+                        )
+                    ));
+
+                    break;
+
+            }
 		}
 
 		return $config;

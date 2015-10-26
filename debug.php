@@ -743,7 +743,7 @@ if( !function_exists('debug_handler_error_default_dg') )
 	{
 		return function ($errno, $errstr, $errfile, $errline, $errcontext)
 		{
-			$e = new ErrorException($errstr.PHP_EOL, $errno, 0, $errfile, $errline);
+			$e = new ErrorException($errstr . PHP_EOL, $errno, 0, $errfile, $errline);
 			switch( $errno )
 			{
 				case E_ERROR:
@@ -970,7 +970,8 @@ if( !function_exists('exception_str') )
 				$line  = $exception->getLine();
 				$trace = backtrace_string( 0, $exception->getTrace() );
 				$ret  .= "$prefix $class in $file:$line".$eol.
-					str_indent( "Message:".$eol.
+                    str_indent( 'Code: ' . $exception->getCode()) . $eol .
+					str_indent( 'Message:' . $eol.
 						implode(
 							$eol,
 							array_map_val(
