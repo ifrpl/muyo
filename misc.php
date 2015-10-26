@@ -5,6 +5,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 const ENV_PRODUCTION    = 'production';
+const ENV_TESTING       = 'testing';
 const ENV_DEVELOPMENT   = 'development';
 
 if( !function_exists('getCurrentEnv') )
@@ -27,6 +28,11 @@ if( !function_exists('getCurrentEnv') )
     function isDev()
     {
         return ENV_DEVELOPMENT == getCurrentEnv();
+    }
+
+    function isTest()
+    {
+        return ENV_TESTING == getCurrentEnv();
     }
 
     function isProd()
