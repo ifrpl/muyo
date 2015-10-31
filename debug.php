@@ -6,6 +6,50 @@
 
 require_once __DIR__.'/string.php';
 
+if(!function_exists('is_debug_host'))
+{
+	/**
+	 * @return bool
+	 */
+	function is_debug_host()
+	{
+		$allowedSubNet = array(
+			'127.',
+			'10.10.',
+			'192.168.',
+			'172.16.'
+		);
+
+		$allowedHosts = array(
+			'10.0.2.2',
+			'89.191.162.220', //Lukasz home
+			'87.206.45.163',
+			'84.10.100.73',
+			'89.69.131.15' //IFResearch Chello
+		);
+
+		if((isCLI() && getCurrentEnv() !== 'production'))
+		{
+			return true;
+		}
+		elseif(!isCLI() && isset($_SERVER['REMOTE_ADDR']))
+		{
+			foreach($allowedSubNet as $subNet)
+			{
+				if(strpos($_SERVER['REMOTE_ADDR'], $subNet) === 0)
+				{
+					return true;
+				}
+			}
+			if(in_array($_SERVER['REMOTE_ADDR'], $allowedHosts))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
 if( !function_exists('debug_allow') )
 {
 	/**
@@ -13,57 +57,7 @@ if( !function_exists('debug_allow') )
 	 */
 	function debug_allow()
 	{
-		if(!function_exists('is_debug_host'))
-		{
-			/**
-			 * @return bool
-			 */
-			function is_debug_host()
-			{
-				$allowedSubNet = array(
-					'127.',
-					'10.10.',
-					'192.168.',
-					'172.16.'
-				);
-
-				$allowedHosts = array(
-					'10.0.2.2',
-					'89.191.162.220', //Lukasz home
-					'87.206.45.163',
-					'84.10.100.73',
-					'89.69.131.15' //IFResearch Chello
-				);
-
-				if((isCLI() && getCurrentEnv() !== 'production'))
-				{
-					return true;
-				}
-				elseif(!isCLI() && isset($_SERVER['REMOTE_ADDR']))
-				{
-					foreach($allowedSubNet as $subNet)
-					{
-						if(strpos($_SERVER['REMOTE_ADDR'], $subNet) === 0)
-						{
-							return true;
-						}
-					}
-					if(in_array($_SERVER['REMOTE_ADDR'], $allowedHosts))
-					{
-						return true;
-					}
-				}
-				return false;
-			}
-		}
-		$env = getCurrentEnv();
-
-		if(
-			!is_debug_host() ||
-			($env === 'production' && (!isset($_COOKIE['ifrShowDebug']) || $_COOKIE['ifrShowDebug'] !== 'iLuv2ki11BugsBunny!'))
-		) return false;
-
-		return true;
+		return 'production' != getCurrentEnv();
 	}
 }
 
@@ -321,60 +315,86 @@ if( !function_exists('backtrace_print') )
 
 if( !function_exists('backtrace_string') )
 {
-	/**
-	 * @param int $ignore_depth stack frames to ignore
-	 * @param null|mixed $backtrace backtrace array to print
-	 * @return string
-	 */
-	function backtrace_string($ignore_depth = 0, $backtrace = null)
-	{
-		if( is_null($backtrace) )
-		{
-			$backtrace = backtrace($ignore_depth+1);
-		}
 
-		$max_len_file = 0;
-		foreach( $backtrace as &$val )
-		{
-			if ( isset($val['file']) )
-			{
-				$val['file'] = trim_application_path($val['file']);
-				$len = strlen($val['file']);
+    /**
+     * @param int $ignore_depth stack frames to ignore
+     * @param null|mixed $backtrace backtrace array to print
+     * @return string
+     */
+    function backtrace_string($ignore_depth = 0, $backtrace = null)
+    {
+        if( is_null($backtrace) )
+        {
+            $backtrace = backtrace($ignore_depth+1);
+        }
 
-				$line = isset($val['line']) ? $val['line'] : '';
-				if ( !empty($file) && !empty($line) )
-				{
-					$len += strlen((string)$line)+1;
-				}
+        \IFR\Cli\Git::blameStacktrace($backtrace);
 
-				$max_len_file = max($max_len_file,$len);
-			}
-		}
-		$max_len_file += 2;
+        $clbs = [
+            'time' => function($val)
+            {
+                return isset($val['git']['author-time']) ? $val['git']['author-time'] : '';
+            },
+            'author' => function($val)
+            {
+                static $MAX_AUTHOR_LENGTH = 15;
 
-		$ret = '';
-		foreach( $backtrace as $val )
-		{
-			$file = isset($val['file']) ? $val['file'] : '';
-			$line = isset($val['line']) ? $val['line'] : '';
-			$function = isset($val['function']) ? $val['function'] : '';
-			$args = isset($val['args']) && is_array($val['args']) ? implode(',',array_map_val($val['args'],function($v){ return var_dump_human_compact($v); })) : '';
+                $ret = isset($val['git']['author']) ? $val['git']['author'] : '';
 
-			$append = !empty($file) ? $file : '???';
+                if(strlen($ret) > $MAX_AUTHOR_LENGTH)
+                {
+                    $ret = substr($ret, 0, $MAX_AUTHOR_LENGTH - 3) . '...';
+                }
 
-			if ( !empty($file) && !empty($line) )
-			{
-				$append .= ":$line";
-			}
-			if ( strlen($append) < $max_len_file )
-			{
-				$append = str_pad($append, $max_len_file+1);
-			}
-			$append .= "  $function($args)\n";
-			$ret .= $append;
-		}
-		return $ret;
-	}
+                return $ret;
+            },
+            'file' => function($val)
+            {
+                return isset($val['file']) ? trim_application_path($val['file']) : '';
+            },
+            'line' => function($val)
+            {
+                return isset($val['line']) ? (string)$val['line'] : '';
+            },
+            'function' => function($val)
+            {
+                return isset($val['function']) ? $val['function'] : '';
+            },
+            'args' => function($val)
+            {
+                return isset($val['args']) && is_array($val['args']) ? implode(',',array_map_val($val['args'],function($v){ return var_dump_human_compact($v); })) : '';
+            }
+        ];
+
+        $keys = array_keys($clbs);
+        unset($keys[array_search('args', $keys)]);
+
+        $max_len = array_combine(
+            $keys,
+            array_pad([], count($keys), 0)
+        );
+
+        foreach( $backtrace as & $val0 )
+        {
+            foreach($max_len as $key => $max)
+            {
+                $val0[$key] = $clbs[$key]($val0);
+                $max_len[$key] = max($max, strlen($val0[$key]));
+            }
+        }
+
+        $ret = '';
+        foreach( $backtrace as $val1 )
+        {
+            foreach($max_len as $key => $max)
+            {
+                $ret .= str_pad($val1[$key], $max_len[$key] + 1);
+            }
+
+            $ret .= sprintf("(%s)\n", $clbs['args']($val1));
+        }
+        return $ret;
+    }
 }
 
 if( !function_exists('backtrace_html') )

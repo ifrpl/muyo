@@ -13,7 +13,7 @@ if( !function_exists('proc_exec') )
 	 * @param int|null &$retval
 	 * @return string
 	 */
-	function proc_exec($command, &$output=array(), &$retval=null)
+	function proc_exec($command, &$output=array(), &$retval=null, $cwd = null)
 	{
 		$descriptors = array(
 			0 => array("pipe","r"),
@@ -21,7 +21,7 @@ if( !function_exists('proc_exec') )
 			2 => array("pipe","w"),
 		);
 
-		$res = proc_open($command, $descriptors, $pipes);
+		$res = proc_open($command, $descriptors, $pipes, $cwd);
 
 		fclose($pipes[0]);
 		$stdout = stream_get_contents($pipes[1]);
@@ -52,7 +52,9 @@ if( !function_exists('proc_exec') )
 				. " * Stdout: "                  . PHP_EOL
 				. str_indent($stdout,1)          . PHP_EOL
 			);
-			debug_assert(false);
+
+            debug_assert(false);
+
 		}
 
 		$ol = count($output);

@@ -214,16 +214,17 @@ if( !function_exists('log_level_str') )
 	 */
 	function log_level_str($level)
 	{
-		$map = array(
-			LOG_EMERG => 'EMERG',
-			LOG_ALERT => 'ALERT',
-			LOG_CRIT => 'CRIT',
-			LOG_ERR => 'ERR',
-			LOG_WARNING => 'WARNING',
-			LOG_NOTICE => 'NOTICE',
-			LOG_INFO => 'INFO',
-			LOG_DEBUG => 'DEBUG',
-		);
+		static $map = array(
+            LOG_EMERG => 'EMERG',
+            LOG_ALERT => 'ALERT',
+            LOG_CRIT => 'CRIT',
+            LOG_ERR => 'ERR',
+            LOG_WARNING => 'WARNING',
+            LOG_NOTICE => 'NOTICE',
+            LOG_INFO => 'INFO',
+            LOG_DEBUG => 'DEBUG',
+        );
+
 		if( debug_assert( array_key_exists( $level, $map ), 'Unknown log level' ) )
 		{
 			$level = $map[ $level ];
