@@ -57,7 +57,7 @@ if( !function_exists('debug_allow') )
 	 */
 	function debug_allow()
 	{
-		return 'production' != getCurrentEnv();
+		return !in_array(getCurrentEnv(), [ENV_PRODUCTION, ENV_TESTING]);
 	}
 }
 
