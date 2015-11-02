@@ -1153,8 +1153,19 @@ abstract class Lib_Model implements Iterator
 	{
 		/** @var Lib_Model $model */
 		$model = new static();
-		$model->unserializeContent($row);
-		return $model;
+
+        try
+        {
+            $model->unserializeContent($row);
+            return $model;
+        }
+        catch(Exception $e)
+        {
+            $class = get_class($model);
+            Logger::error(new Exception("Unable to unserialize object '{$class}", 0, $e));
+        }
+
+        return null;
 	}
 
 	/**

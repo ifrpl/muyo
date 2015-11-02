@@ -343,6 +343,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		$data = array();
 		$select = null === $q ? $this->getSelect() : $q;
 
+        /*
 		$groups = $select->getGroups();
 		$initial = array("items" => array());
 		$reduce = "function (obj, prev) { prev.items.push(obj); }";
@@ -351,7 +352,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 //			$cursor = $this->getCollection()->group($groups);
 //		}
 //		else
-//		{
+//		{*/
 			$cursor = $this->getCollection()->find($select->getConditions(), $select->getFields());
 //		}
 
@@ -402,7 +403,11 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		{
 			$row = func_get_arg(0);
 			$obj = $t->modelFactory( $row );
-			$obj->changedColumnsReset();
+            if(null != $obj)
+            {
+                $obj->changedColumnsReset();
+            }
+
 			return $obj;
 		} );
 		return $ret;
