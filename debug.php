@@ -328,26 +328,34 @@ if( !function_exists('backtrace_string') )
             $backtrace = backtrace($ignore_depth+1);
         }
 
-        \IFR\Cli\Git::blameStacktrace($backtrace);
+	    $clbs = [];
 
-        $clbs = [
-            'time' => function($val)
-            {
-                return isset($val['git']['author-time']) ? $val['git']['author-time'] : '';
-            },
-            'author' => function($val)
-            {
-                static $MAX_AUTHOR_LENGTH = 15;
+	    if(isDev())
+	    {
+		    \IFR\Cli\Git::blameStacktrace($backtrace);
 
-                $ret = isset($val['git']['author']) ? $val['git']['author'] : '';
+		    $clbs += [
+			    'time' => function($val)
+			    {
+				    return isset($val['git']['author-time']) ? $val['git']['author-time'] : '';
+			    },
+			    'author' => function($val)
+			    {
+				    static $MAX_AUTHOR_LENGTH = 15;
 
-                if(strlen($ret) > $MAX_AUTHOR_LENGTH)
-                {
-                    $ret = substr($ret, 0, $MAX_AUTHOR_LENGTH - 3) . '...';
-                }
+				    $ret = isset($val['git']['author']) ? $val['git']['author'] : '';
 
-                return $ret;
-            },
+				    if(strlen($ret) > $MAX_AUTHOR_LENGTH)
+				    {
+					    $ret = substr($ret, 0, $MAX_AUTHOR_LENGTH - 3) . '...';
+				    }
+
+				    return $ret;
+			    }
+		    ];
+	    }
+
+		$clbs += [
             'file' => function($val)
             {
                 return isset($val['file']) ? trim_application_path($val['file']) : '';
