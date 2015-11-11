@@ -1326,16 +1326,37 @@ abstract class Lib_Model implements Iterator
 	public function serialize()
 	{
 		$content = array(
-			'model' => get_class($this),
+			self::SERIALIZATION_MODEL => get_class($this),
 		);
 
 		$value = $this->_getValueByType($this->{self::COL_ID}, self::TYPE_ID);
 		if(!is_null($value))
 		{
-			$content[self::COL_ID] = $value;
+			$content[self::SERIALIZATION_ID] = $value;
 		}
 
 		return $content;
+	}
+
+	const SERIALIZATION_MODEL   = 'model';
+	const SERIALIZATION_ID      = 'id';
+
+	static public function unserialize($data)
+	{
+		debug_enforce(isset($data[self::SERIALIZATION_MODEL]));
+		debug_enforce(isset($data[self::SERIALIZATION_ID]));
+
+		debug_enforce(class_exists($data[self::SERIALIZATION_MODEL]));
+
+		$instance = call_user_func(
+			[
+				$data[self::SERIALIZATION_MODEL],
+				'getById'
+			],
+			$data[self::SERIALIZATION_ID]
+		);
+
+		return $instance;
 	}
 
 	/**
