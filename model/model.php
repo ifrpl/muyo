@@ -1056,7 +1056,7 @@ abstract class Lib_Model implements Iterator
 			&&
 			debug_assert(
 				array_key_exists($column,$this->changeRecordData),
-				'Trying to retrieve original record value but no stored change exists.'
+				"Trying to retrieve original record {$column} value but no stored change exists"
 			)
 		;
 	}

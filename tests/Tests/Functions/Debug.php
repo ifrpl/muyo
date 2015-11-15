@@ -22,6 +22,8 @@ class Debug extends \PHPUnit_Framework_TestCase
     {
         try
         {
+			$ret1 = backtrace(3);
+
             debug_assert(false);
         }
         catch (\Exception $e)

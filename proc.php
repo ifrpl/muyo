@@ -44,7 +44,8 @@ if( !function_exists('proc_exec') )
                 $command
             ;
 
-			logger_log("Process returned error." . PHP_EOL
+			$e = new Exception(
+				"Process returned error." . PHP_EOL
 				. " * Cli: " . $commandStr       . PHP_EOL
 				. " * Return value: " . $retval  . PHP_EOL
 				. " * Stderr: "                  . PHP_EOL
@@ -53,8 +54,7 @@ if( !function_exists('proc_exec') )
 				. str_indent($stdout,1)          . PHP_EOL
 			);
 
-            debug_assert(false);
-
+			Logger::error($e);
 		}
 
 		$ol = count($output);

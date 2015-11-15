@@ -190,10 +190,7 @@ if( !function_exists('backtrace') )
 	function backtrace($ignore_depth = 0)
 	{
 		$ignore_depth++;
-		$ret = array_map(
-			function($row){unset($row['object']); return $row;},
-			debug_backtrace()
-		);
+		$ret = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 		return array_splice($ret, $ignore_depth);
 	}
 }
@@ -330,6 +327,7 @@ if( !function_exists('backtrace_string') )
 
 	    $clbs = [];
 
+	    /*
 	    if(isDev())
 	    {
 		    \IFR\Cli\Git::blameStacktrace($backtrace);
@@ -354,6 +352,7 @@ if( !function_exists('backtrace_string') )
 			    }
 		    ];
 	    }
+		*/
 
 		$clbs += [
             'file' => function($val)

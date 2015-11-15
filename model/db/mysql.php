@@ -44,7 +44,6 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$query = $this->getDb();
 			$query->insert($this->getTable(), $data);
 
-			// dunno why below worked well, but now it broke
 			$id = $this->getDb()->lastInsertId();
 			$this->{$pkey} = $id;
 
