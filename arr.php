@@ -225,12 +225,25 @@ if( !function_exists('array_key_is_reference') )
 		foreach ($arr as $k => $val) {
 			if($k == $key)
 			{
-				$arrCopy[$k]['_test'] = true;
-				if (isset($arr[$k]['_test']))
+				if(is_array($arrCopy[$k]))
 				{
-					$isRef = true;
-					unset($arr[$k]['_test']);
-					break;
+					$arrCopy[$k]['_test'] = true;
+					if (isset($arr[$k]['_test']))
+					{
+						$isRef = true;
+						unset($arr[$k]['_test']);
+						break;
+					}
+				}
+				elseif(is_object($arrCopy[$k]))
+				{
+					$arrCopy[$k]->_test = true;
+					if (isset($arr[$k]->_test))
+					{
+						$isRef = true;
+						unset($arr[$k]->_test);
+						break;
+					}
 				}
 			}
 		}
