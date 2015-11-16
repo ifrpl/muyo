@@ -131,7 +131,7 @@ if( !function_exists('mysql_close_dg') )
  */
 function sql_union($exprBody, $term, $all=false, $corresponding=null )
 {
-	return $exprBody.' UNION'.($all ? ' ALL' : '').($corresponding!==null ? ' '.$corresponding : '').$term;
+	return $exprBody.' UNION '.($all ? 'ALL ' : '').($corresponding!==null ? $corresponding.' ' : '').$term;
 }
 
 /**

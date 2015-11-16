@@ -36,20 +36,3 @@ if( !function_exists('boolval_dg') )
 		};
 	}
 }
-
-if( !function_exists('eq_dg') )
-{
-	/**
-	 * @param callable $a
-	 * @param callable $b
-	 * @return callable
-	 */
-	function eq_dg($a,$b)
-	{
-		return function()use($a,$b)
-		{
-			$args = func_get_args();
-			return call_user_func_array($a,$args)==call_user_func_array($b,$args);
-		};
-	}
-}
