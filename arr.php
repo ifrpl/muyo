@@ -229,6 +229,7 @@ if( !function_exists('array_key_is_reference') )
 				if (isset($arr[$k]['_test']))
 				{
 					$isRef = true;
+					unset($arr[$k]['_test']);
 					break;
 				}
 			}
