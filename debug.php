@@ -819,6 +819,7 @@ if( !function_exists('debug_handler_error_default_dg') )
 				case E_USER_NOTICE:
 				case E_DEPRECATED:
 				case E_USER_DEPRECATED:
+				case E_STRICT:
 					logger_log( $e, LOG_NOTICE );
 				break;
 				default:
