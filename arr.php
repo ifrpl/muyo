@@ -220,18 +220,20 @@ if( !function_exists('array_key_is_reference') )
 	function array_key_is_reference($arr, $key)
 	{
 		$isRef = false;
-		ob_start();
-		var_dump($arr);
-		if(
-			false !== strpos(
-				preg_replace("/[ \n\r]*/i", "", preg_replace("/( ){4,}.*(\n\r)*/i", "", ob_get_contents())),
-				"[".$key."]=>&"
-			)
-		)
-		{
-			$isRef = true;
+
+		$arrCopy = $arr;
+		foreach ($arr as $k => $val) {
+			if($k == $key)
+			{
+				$arrCopy[$k]['_test'] = true;
+				if (isset($arr[$k]['_test']))
+				{
+					$isRef = true;
+					break;
+				}
+			}
 		}
-		ob_end_clean();
+
 		return $isRef;
 	}
 }
