@@ -1054,10 +1054,12 @@ abstract class Lib_Model implements Iterator
 				,'Invalid changed column name'
 			)
 			&&
+			array_key_exists($column,$this->changeRecordData)
+			/*
 			debug_assert(
 				array_key_exists($column,$this->changeRecordData),
 				"Trying to retrieve original record {$column} value but no stored change exists"
-			)
+			)*/
 		;
 	}
 

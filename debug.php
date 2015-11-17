@@ -785,12 +785,20 @@ if( !function_exists('debug_handler_error_default_dg') )
 				case E_CORE_WARNING:
 				case E_COMPILE_WARNING:
 				case E_USER_WARNING:
+					if(isDev())
+					{
+						throw $e;
+					}
 					logger_log( $e, LOG_WARNING );
 					break;
 				case E_NOTICE:
 				case E_USER_NOTICE:
 				case E_DEPRECATED:
 				case E_USER_DEPRECATED:
+					if(isDev())
+					{
+						throw $e;
+					}
 					logger_log( $e, LOG_NOTICE );
 					break;
 				default:
