@@ -15,7 +15,7 @@ if( !class_exists( 'Lib_Model' ) )
 abstract class Lib_Model_Db extends Lib_Model
 {
 	protected $_table;
-	protected $_primaryKey = 'id';
+	protected $_primaryKey = self::COL_ID;
 	protected $_alias;
 
 

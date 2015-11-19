@@ -189,9 +189,8 @@ if( !function_exists('backtrace') )
 	 */
 	function backtrace($ignore_depth = 0)
 	{
-		$ignore_depth++;
 		$ret = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-		return array_splice($ret, $ignore_depth);
+		return array_splice($ret, ++$ignore_depth);
 	}
 }
 

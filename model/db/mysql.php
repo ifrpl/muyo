@@ -17,11 +17,24 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	const LOAD_ARRAY_MODE_NESTED_COLUMN = 1;
 	const LOAD_ARRAY_MODE_RAW           = 2;
 
+	const SETTING_MYSQL_DEFAULT = 'mysql-default';
+
 	/**
 	 * @var Zend_Db_Select
 	 */
 	protected $_select;
 
+	public function init()
+	{
+		parent::init();
+
+		$this->schemaColumnsSet([
+			$this->_primaryKey  => [
+				self::SETTING_TYPE => self::TYPE_ID,
+				self::SETTING_MYSQL_DEFAULT => true,
+			]
+		]);
+	}
 	/**
 	 * @return $this
 	 */
@@ -32,14 +45,32 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		if(isset($data[$pkey]) && !empty($data[$pkey]))
 		{
 			$query = $this->getDb();
-			$where = [$pkey.' = ?' => $this->{$pkey}];
-			$query->update($this->getTable(), $data, $where);
+
+			$query->update(
+				$this->getTable(),
+				$data,
+				[
+					$pkey.' = ?' => $this->{$pkey}
+				]
+			);
 
 			$this->_onUpdate();
 		}
 		else
 		{
 			unset($data[$pkey]);
+
+			foreach($data as $key => $value)
+			{
+				$setting = $this->getSetting($key);
+
+				if( is_null($value) &&
+					isset($setting[self::SETTING_MYSQL_DEFAULT])
+				)
+				{
+					unset($data[$key]);
+				}
+			}
 
 			$query = $this->getDb();
 			$query->insert($this->getTable(), $data);
@@ -68,7 +99,12 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			throw new Exception('Nothing to delete, id is empty');
 		}
 		$delete = $this->getDb();
-		$rows = $delete->delete($this->getTable(), [$this->_primaryKey.' = ?' => $this->{$this->_primaryKey}]);
+		$rows = $delete->delete(
+			$this->getTable(),
+			[
+				$this->_primaryKey.' = ?' => $this->{$this->_primaryKey}
+			]
+		);
 
 		$this->_onDelete();
 
