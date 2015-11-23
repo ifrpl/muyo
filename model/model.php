@@ -10,6 +10,7 @@ abstract class Lib_Model implements Iterator
 	const SETTING_SET       = 'set';
 	const SETTING_GET       = 'get';
 
+	const SETTING_CALLBACK	= 'callback';
     const SETTING_DEFAULT   = 'default';
     const SETTING_FORM_TYPE = 'formType';
     const SETTING_FORM_ATTRIBS = 'formAttribs';
@@ -309,7 +310,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function recordColumnGet($name)
 	{
-		return $this->_recordAccess($name) ? $this->_data[$name] : null;
+		return $this->_recordAccess($name) && isset($this->_data[$name]) ? $this->_data[$name] : null;
 	}
 
 	/**
