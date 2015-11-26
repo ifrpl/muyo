@@ -31,10 +31,13 @@ abstract class Lib_Model implements Iterator
 	const TYPE_TIMESTAMP    = 'timestamp';
 	const TYPE_TIME         = 'time';
 
-
     const FORM_TYPE_SELECT = 'select';
 
     const COL_ID = 'id';
+
+
+	const SERIALIZATION_MODEL   = 'model';
+	const SERIALIZATION_ID      = 'id';
 
     /**
      * @deprerated
@@ -1347,14 +1350,8 @@ abstract class Lib_Model implements Iterator
 		return $content;
 	}
 
-	const SERIALIZATION_MODEL   = 'model';
-	const SERIALIZATION_ID      = 'id';
-
 	static public function unserialize($data)
 	{
-		debug_enforce(isset($data[self::SERIALIZATION_MODEL]));
-		debug_enforce(isset($data[self::SERIALIZATION_ID]));
-
 		debug_enforce(class_exists($data[self::SERIALIZATION_MODEL]));
 
 		$instance = call_user_func(
