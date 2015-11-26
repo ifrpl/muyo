@@ -1352,6 +1352,8 @@ abstract class Lib_Model implements Iterator
 
 	static public function unserialize($data)
 	{
+		debug_enforce(isset($data[self::SERIALIZATION_MODEL]));
+		
 		debug_enforce(class_exists($data[self::SERIALIZATION_MODEL]));
 
 		$instance = call_user_func(
@@ -1359,7 +1361,7 @@ abstract class Lib_Model implements Iterator
 				$data[self::SERIALIZATION_MODEL],
 				'getById'
 			],
-			$data[self::SERIALIZATION_ID]
+			isset($data[self::SERIALIZATION_ID]) ? $data[self::SERIALIZATION_ID] : 0
 		);
 
 		return $instance;
