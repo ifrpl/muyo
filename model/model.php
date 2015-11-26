@@ -26,6 +26,12 @@ abstract class Lib_Model implements Iterator
     const TYPE_ID       = 'id';
     const TYPE_INT      = 'int';
 
+	const TYPE_DATE         = 'date';
+	const TYPE_DATETIME     = 'datetime';
+	const TYPE_TIMESTAMP    = 'timestamp';
+	const TYPE_TIME         = 'time';
+
+
     const FORM_TYPE_SELECT = 'select';
 
     const COL_ID = 'id';
@@ -1845,7 +1851,7 @@ abstract class Lib_Model implements Iterator
 						$settingColumn['options']['decorators'] = $form->elementDecorators;
 					}
 					break;
-				case "date":
+				case self::TYPE_DATE:
 					if(!isset($settingColumn['options']['validators']['date']))
 					{
 						$settingColumn['options']['validators']['date'] = array('Date',false,array('Y-m-d'));
@@ -1855,7 +1861,8 @@ abstract class Lib_Model implements Iterator
 						$settingColumn['options']['decorators'] = $form->elementDecorators;
 					}
 					break;
-				case "datetime":
+				case self::TYPE_TIMESTAMP:
+				case self::TYPE_DATETIME:
 					if(!isset($settingColumn['options']['validators']['date']))
 					{
 						$settingColumn['options']['validators']['date'] = array('Date',false,array('Y-m-d H:i:s'));
@@ -1865,7 +1872,7 @@ abstract class Lib_Model implements Iterator
 						$settingColumn['options']['decorators'] = $form->elementDecorators;
 					}
 					break;
-				case "time":
+				case self::TYPE_TIME:
 					if(!isset($settingColumn['options']['validators']['date']))
 					{
 						$settingColumn['options']['validators']['date'] = array('Date',false,array('H:i:s'));
@@ -1997,13 +2004,14 @@ abstract class Lib_Model implements Iterator
 			case "array":
 				$formType = 'multiCheckbox';
 				break;
-			case "date":
+			case self::TYPE_DATE:
 				$formType = 'date';
 				break;
-			case "datetime":
+			case self::TYPE_TIMESTAMP:
+			case self::TYPE_DATETIME:
 				$formType = 'datetime';
 				break;
-			case "time":
+			case self::TYPE_TIME:
 				$formType = 'time';
 				break;
 			case "uint":

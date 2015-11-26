@@ -13,7 +13,7 @@ if( !function_exists('proc_exec') )
 	 * @param int|null &$retval
 	 * @return string
 	 */
-	function proc_exec($command, &$output=array(), &$retval=null, $cwd = null)
+	function proc_exec($command, &$output=array(), &$retval=null, $cwd = null, $report = true)
 	{
 		$descriptors = array(
 			0 => array("pipe","r"),
@@ -32,7 +32,7 @@ if( !function_exists('proc_exec') )
 		$output = explode(PHP_EOL,$stdout);
 
 		$retval = proc_close($res);
-		if( 0 !== $retval)
+		if( 0 !== $retval && $report)
 		{
             $commandStr = isProd() ?
                 preg_replace(
