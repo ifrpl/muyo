@@ -19,6 +19,9 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 	const SETTING_MYSQL_DEFAULT = 'mysql-default';
 
+
+	private $_foreignInstances = [];
+
 	/**
 	 * @var Zend_Db_Select
 	 */
@@ -1489,6 +1492,19 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			->setWhere( implode(" AND ", $where) );
 
 		return $this;
+	}
+
+	public function getRelatedBy($column, $foreignClass)
+	{
+		debug_enforce(self::TYPE_ID == $this->getSetting($column, self::SETTING_TYPE));
+
+		if(!isset($this->_foreignInstances[$column]))
+		{
+			/* @var Lib_Model $modelInstance */
+			$this->_foreignInstances[$column] = call_user_func([$foreignClass, 'getById'], $this->recordColumnGet($column));
+		}
+
+		return $this->_foreignInstances[$column];
 	}
 
 }

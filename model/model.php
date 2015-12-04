@@ -26,6 +26,9 @@ abstract class Lib_Model implements Iterator
     const TYPE_ID       = 'id';
     const TYPE_INT      = 'int';
 
+	const TYPE_BOOLEAN      = 'bool';
+
+
 	const TYPE_DATE         = 'date';
 	const TYPE_DATETIME     = 'datetime';
 	const TYPE_TIMESTAMP    = 'timestamp';
@@ -228,11 +231,14 @@ abstract class Lib_Model implements Iterator
 	 */
 	protected function schemaColumnApplyDefault(&$name, &$setting, &$defaultValue)
 	{
-		if( $name === $this->getPrimaryKey() )
+		if( $name == $this->getPrimaryKey() ||
+			(isset($setting[self::SETTING_TYPE]) && self::TYPE_ID == $setting[self::SETTING_TYPE])
+		)
 		{
-			array_set_default($setting,'type','int');
-			array_set_default($setting,self::SETTING_HIDDEN,'true');
+			array_set_default($setting, 'type', 'int');
+			array_set_default($setting, self::SETTING_HIDDEN, 'true');
 		}
+
 	}
 
 	/**
@@ -1353,7 +1359,7 @@ abstract class Lib_Model implements Iterator
 	static public function unserialize($data)
 	{
 		debug_enforce(isset($data[self::SERIALIZATION_MODEL]));
-		
+
 		debug_enforce(class_exists($data[self::SERIALIZATION_MODEL]));
 
 		$instance = call_user_func(
@@ -1806,6 +1812,17 @@ abstract class Lib_Model implements Iterator
 			{
 				$type = $setting['type'];
 			}
+
+			if(isset($setting[self::SETTING_HIDDEN]) && $setting[self::SETTING_HIDDEN])
+			{
+				$type = self::TYPE_HIDDEN;
+			}
+
+			if(self::TYPE_ID == $type)
+			{
+				$type = self::TYPE_HIDDEN;
+			}
+
 			if(isset($setting['label']))
 			{
 				$settingColumn['options']['label'] = $setting['label'];
@@ -1837,8 +1854,8 @@ abstract class Lib_Model implements Iterator
 
 			switch($type)
 			{
-				case "boolean":
-				case "bool":
+				case self::TYPE_BOOLEAN:
+				case 'bool':
 					if(!isset($settingColumn['options']['decorators']))
 					{
 						$settingColumn['options']['decorators'] = $form->elementDecorators;
@@ -1920,6 +1937,11 @@ abstract class Lib_Model implements Iterator
 					{
 						$settingColumn['options']['decorators'] = $form->hiddenDecorators;
 					}
+
+					if(isset($setting[self::SETTING_MULTI_OPTIONS]))
+					{
+						unset($setting[self::SETTING_MULTI_OPTIONS]);
+					}
 					break;
 				default:
 					debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
@@ -1965,12 +1987,6 @@ abstract class Lib_Model implements Iterator
                 }
 			}
 
-			if(isset($setting[self::SETTING_HIDDEN]) && $setting[self::SETTING_HIDDEN] == true)
-			{
-				$settingColumn['options']['decorators'] = $form->hiddenDecorators;
-				$settingColumn['type'] = self::TYPE_HIDDEN;
-			}
-
 			if(isset($setting[self::SETTING_FORM_ATTRIBS]))
 			{
 				$settingColumn['options']['attribs'] = $setting[self::SETTING_FORM_ATTRIBS];
@@ -1996,8 +2012,8 @@ abstract class Lib_Model implements Iterator
 		$formType = 'text';
 		switch($type)
 		{
-			case "boolean":
-			case "bool":
+			case self::TYPE_BOOLEAN:
+			case 'bool':
 				$formType = 'checkbox';
 				break;
 			case "array":
