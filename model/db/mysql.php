@@ -19,8 +19,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 	const SETTING_MYSQL_DEFAULT = 'mysql-default';
 
-
-	private $_foreignInstances = [];
+	protected $_foreignInstances = [];
 
 	/**
 	 * @var Zend_Db_Select
@@ -1494,14 +1493,30 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		return $this;
 	}
 
-	public function getRelatedBy($column, $foreignClass)
+
+	public function getRelatedBy($column, $foreignClass, $foreignKey = self::COL_ID)
 	{
 		debug_enforce(self::TYPE_ID == $this->getSetting($column, self::SETTING_TYPE));
 
 		if(!isset($this->_foreignInstances[$column]))
 		{
-			/* @var Lib_Model $modelInstance */
-			$this->_foreignInstances[$column] = call_user_func([$foreignClass, 'getById'], $this->recordColumnGet($column));
+			/* @var Lib_Model_Db_MySql $model */
+			$model = call_user_func([$foreignClass, 'find']);
+
+			$model->filterBy([
+				$foreignKey => $this->recordColumnGet($column)]
+			);
+
+			$instances = $model->load();
+
+			if(empty($instances))
+			{
+				$model->getSelect()->reset();
+
+				$instances = [$model];
+			}
+
+			$this->_foreignInstances[$column] = ($foreignKey == $model->getPrimaryKey()) ? reset($instances): $instances;
 		}
 
 		return $this->_foreignInstances[$column];

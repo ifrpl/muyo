@@ -368,7 +368,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	{
 		$ret = self::getListBy($conditions,$constructor);
 		$count = count($ret);
-		if ($count === 0)
+		if(0 == $count)
 		{
 			return static::find();
 		}

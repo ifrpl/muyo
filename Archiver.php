@@ -114,6 +114,11 @@ if( !class_exists('Archiver') )
 			return $this;
 		}
 
+		public function getTarget()
+		{
+			return $this->target;
+		}
+
 		public function setType($archiverName)
 		{
 			if(array_key_exists($archiverName,self::$_config))
