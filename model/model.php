@@ -24,6 +24,7 @@ abstract class Lib_Model implements Iterator
 
     const TYPE_HIDDEN   = 'hidden';
     const TYPE_ID       = 'id';
+
     const TYPE_INT      = 'int';
 
 	const TYPE_BOOLEAN      = 'bool';
@@ -231,12 +232,9 @@ abstract class Lib_Model implements Iterator
 	 */
 	protected function schemaColumnApplyDefault(&$name, &$setting, &$defaultValue)
 	{
-		if( $name == $this->getPrimaryKey() ||
-			(isset($setting[self::SETTING_TYPE]) && self::TYPE_ID == $setting[self::SETTING_TYPE])
-		)
+		if( $name == $this->getPrimaryKey())
 		{
-			array_set_default($setting, 'type', 'int');
-			array_set_default($setting, self::SETTING_HIDDEN, 'true');
+			array_set_default($setting, 'type', self::TYPE_ID);
 		}
 
 	}
@@ -1818,7 +1816,7 @@ abstract class Lib_Model implements Iterator
 				$type = self::TYPE_HIDDEN;
 			}
 
-			if(self::TYPE_ID == $type)
+			if(self::TYPE_ID == $type && !isset($setting[self::SETTING_FORM_TYPE]))
 			{
 				$type = self::TYPE_HIDDEN;
 			}
