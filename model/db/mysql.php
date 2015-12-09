@@ -755,7 +755,6 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 					{
 						$cond2 = $value['condition'];
 						$value = $value['value'];
-						$valueChar = '?';
 					}
 
 					if( is_array($value) )

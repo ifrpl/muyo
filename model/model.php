@@ -1948,7 +1948,7 @@ abstract class Lib_Model implements Iterator
 					break;
 			}
 
-			if(isset($setting[self::SETTING_FORM_TYPE]))
+			if(self::TYPE_HIDDEN != $type && isset($setting[self::SETTING_FORM_TYPE]))
 			{
 				$settingColumn['type'] = $setting[self::SETTING_FORM_TYPE];
 			}

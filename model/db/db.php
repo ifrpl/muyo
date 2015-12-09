@@ -480,7 +480,7 @@ abstract class Lib_Model_Db extends Lib_Model
 			$filter = new Zend_Filter_Word_CamelCaseToSeparator('_');
 			$attr = strtolower($filter->filter($matches[2]));
 
-			if( $attr == 'id' )
+			if( $attr == self::COL_ID )
 			{
 				$attr = $model->getPrimaryKey();
 			}
@@ -488,7 +488,7 @@ abstract class Lib_Model_Db extends Lib_Model
 			if( !array_key_exists($attr, $model->toArray()) )
 			{
 				$class = get_class($model);
-				throw new Exception("Attribute '{$attr}' not exists in model '{$class}'");
+				throw new Exception("Attribute '{$attr}' does not exist in model '{$class}'");
 			}
 
 			$cond[$attr] = array_shift($args);
