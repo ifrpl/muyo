@@ -234,7 +234,8 @@ abstract class Lib_Model implements Iterator
 	{
 		if( $name == $this->getPrimaryKey())
 		{
-			array_set_default($setting, 'type', self::TYPE_ID);
+			array_set_default($setting, self::SETTING_TYPE, self::TYPE_INT);
+			array_set_default($setting, self::SETTING_FORM_TYPE, self::TYPE_HIDDEN);
 		}
 
 	}
