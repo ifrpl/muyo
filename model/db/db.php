@@ -573,7 +573,7 @@ abstract class Lib_Model_Db extends Lib_Model
 
 		debug_enforce_count_gte( $collection, 1 );
 		debug_assert_count_eq( $collection, 1 );
-		return current($ret);
+		return current($collection);
 	}
 
 	/**
