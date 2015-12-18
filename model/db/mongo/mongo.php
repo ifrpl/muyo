@@ -223,7 +223,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 		array_walk($cond, array(
 			$this,
-			'filterByWalk'
+			'_filterByWalk'
 		));
 
 		$cond = $this->_buildConditions;
@@ -251,7 +251,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 * @param        $key
 	 * @param string $prefix
 	 */
-	private function filterByWalk($item, $key, $prefix = '')
+	private function _filterByWalk($item, $key, $prefix = '')
 	{
 		if($item instanceof Lib_Model)
 		{
@@ -295,7 +295,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 			{
 				array_walk($item, array(
 					$this,
-					'filterByWalk'
+					'_filterByWalk'
 				), $prefix . $key . '.');
 			}
 		}
