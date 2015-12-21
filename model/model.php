@@ -36,6 +36,7 @@ abstract class Lib_Model implements Iterator
 	const TYPE_TIME         = 'time';
 
     const FORM_TYPE_SELECT = 'select';
+	const FORM_TYPE_HIDDEN = 'hidden';
 
     const COL_ID = 'id';
 
@@ -248,22 +249,22 @@ abstract class Lib_Model implements Iterator
 	 */
 	protected function schemaColumnSet($name,$settings,$defaultValue=null)
 	{
-		if( debug_assert(is_string($name) && is_array($settings),'Invalid parameters') )
+		debug_enforce(is_string($name) && is_array($settings), 'Invalid parameters') ;
+
+		if(is_null($defaultValue) && array_key_exists('default', $settings))
 		{
-			if(is_null($defaultValue) && array_key_exists('default', $settings))
-			{
-				$defaultValue = array_get_unset($settings,'default');
-			}
-
-			$this->schemaColumnApplyDefault($name,$settings,$defaultValue);
-
-			$this->addSetting($name,$settings);
-			$this->settingDefaultSet($name,$settings);
-			if( !$this->getSetting( $name, self::SETTING_VIRTUAL ) )
-			{
-				$this->recordColumnSet( $name, $defaultValue );
-			}
+			$defaultValue = array_get_unset($settings,'default');
 		}
+
+		$this->schemaColumnApplyDefault($name,$settings,$defaultValue);
+
+		$this->addSetting($name,$settings);
+		$this->settingDefaultSet($name,$settings);
+		if( !$this->getSetting( $name, self::SETTING_VIRTUAL ) )
+		{
+			$this->recordColumnSet( $name, $defaultValue );
+		}
+
 		return $this;
 	}
 
