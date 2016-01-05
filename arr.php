@@ -198,6 +198,9 @@ if( !function_exists('array_key_is_reference') )
 	 */
 	function array_key_is_reference($arr, $key)
 	{
+		return false;
+		// TODO: problem with this function when output is too big,ob_get_contents() exceeds memory
+
 		$isRef = false;
 		ob_start();
 		var_dump($arr);
