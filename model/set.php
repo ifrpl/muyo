@@ -46,7 +46,12 @@ class Lib_Model_Set implements Iterator
 	protected function _getModelWithData($data)
 	{
 		$model = $this->getModel();
-		$model->unserializeContent($data);
+
+        if(is_array($data))
+        {
+            $model->unserializeContent($data);
+        }
+
 		$model->changedColumnsReset();
 
 		return $model;
