@@ -689,7 +689,7 @@ if( !function_exists('array_pluck') )
 			$array,
 			function ( $collection ) use ( $key )
 			{
-				return is_object( $collection ) ? $collection->$key : isset($collection[ $key ]) ? $collection[ $key ] : null ;
+				return is_object( $collection ) ? $collection->$key : (isset($collection[ $key ]) ? $collection[ $key ] : null);
 			}
 		);
 	}
