@@ -1147,3 +1147,13 @@ if( !function_exists('gt_dg') )
 		};
 	}
 }
+
+if (!function_exists('coalesce')) {
+    /**
+     * @return string
+     */
+    function coalesce($var, $replacement)
+    {
+        return isset($var) ? $var : $replacement;
+    }
+}
