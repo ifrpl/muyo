@@ -919,3 +919,13 @@ if( !function_exists('max_execution_time_set_dg') )
 		};
 	}
 }
+
+if (!function_exists('coalesce')) {
+    /**
+     * @return string
+     */
+    function coalesce($var,$replacement)
+    {
+        return isset($var) ? $var : $replacement;
+    }
+}
