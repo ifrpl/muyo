@@ -1,12 +1,10 @@
 <?php
 
-namespace Lib\Object\Member\Operator;
+namespace IFR\Main\Object\Member\Operator;
 
 /**
  * Reads a $member to $value and returns $this
  *
- * @package Lib\Object\Member\Operator
- * @see Lib\Object\Member\Operator\Get
  */
 trait Read
 {

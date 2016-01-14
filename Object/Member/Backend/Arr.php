@@ -1,10 +1,7 @@
 <?php
 
-namespace Lib\Object\Member\Backend;
+namespace IFR\Main\Object\Member\Backend;
 
-/**
- * @package Lib\Object\Member\Backend
- */
 trait Arr
 {
 	private $arr = [];

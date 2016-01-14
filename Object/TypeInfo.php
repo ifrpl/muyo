@@ -1,6 +1,6 @@
 <?php
 
-namespace Lib\Object;
+namespace IFR\Object\Member;
 
 trait TypeInfo
 {

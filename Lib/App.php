@@ -1,6 +1,6 @@
 <?php
 
-namespace IFR\Main;
+namespace IFR\Main\Lib;
 
 class App
 {

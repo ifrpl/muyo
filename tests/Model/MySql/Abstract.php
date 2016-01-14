@@ -2,9 +2,9 @@
 
 namespace Tests\Model\Mysql;
 
-abstract class Abstract_ extends \Lib_Model_Db_Mysql
+abstract class Abstract_ extends \IFR\Main\Model\Db\Mysql
 {
-	/* @var \IFR\Main\App $app */
+	/* @var \IFR\Main\Lib\App $app */
 	protected $app = null;
 
 	/* @var \Zend_Db_Adapter_Pdo_Mysql _db */
@@ -38,7 +38,7 @@ abstract class Abstract_ extends \Lib_Model_Db_Mysql
 
 		//
 
-		$this->app = \IFR\Main\App::get();
+		$this->app = \IFR\Main\Lib\App::get();
 
 
 		// PDO

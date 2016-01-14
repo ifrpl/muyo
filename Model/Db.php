@@ -28,12 +28,12 @@ abstract class Db extends \IFR\Main\Model
 	 * @param mixed $q
 	 * @param bool $collection
 	 * @return array [ string $tableAlias => [ string $columnAlias => mixed $columnValue ] ]
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	abstract public function loadArray( $q=null, $collection=false );
 
 	/**
-	 * @return Lib_Model_Set
+	 * @return \IFR\Main\Model\Set
 	 */
 	abstract public function loadSet();
 
@@ -45,7 +45,7 @@ abstract class Db extends \IFR\Main\Model
 	/**
 	 * @param array|string $cols comma-separated columns list, *, or array of columns to read during query
 	 * @param null|string $correlationName
-	 * @return Lib_Model_Db
+	 * @return Db
 	 */
 	abstract public function setColumns($cols = '*', $correlationName = null);
 
@@ -75,7 +75,7 @@ abstract class Db extends \IFR\Main\Model
 	/**
 	 * @param bool $clear
 	 * @param string $cols
-	 * @return Zend_Db_Select
+	 * @return \Zend_Db_Select
 	 */
 	abstract public function getSelect($clear = false, $cols = '*');
 
@@ -235,8 +235,8 @@ abstract class Db extends \IFR\Main\Model
 		}
 
 		$select = $this->getSelect();
-		$from = $select->getPart( Zend_Db_Select::FROM );
-		$select->reset( Zend_Db_Select::FROM );
+		$from = $select->getPart( \Zend_Db_Select::FROM );
+		$select->reset( \Zend_Db_Select::FROM );
 		foreach( $from as $tableAlias => $descriptor )
 		{
 			if( $tableAlias === $oldValue )
@@ -266,7 +266,7 @@ abstract class Db extends \IFR\Main\Model
 	}
 
 	/**
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return string
 	 */
 	public function getTable()
@@ -302,7 +302,7 @@ abstract class Db extends \IFR\Main\Model
 	}
 
 	/**
-	 * @param int|array|Zend_Db_Expr $id
+	 * @param int|array|\Zend_Db_Expr $id
 	 *
 	 * @return $this
 	 */
@@ -337,7 +337,7 @@ abstract class Db extends \IFR\Main\Model
 	}
 
 	/**
-	 * @param int|array|MongoID $id
+	 * @param int|array|\MongoID $id
 	 *
 	 * @return static
 	 */
@@ -454,15 +454,14 @@ abstract class Db extends \IFR\Main\Model
 	 *
 	 *
 	 * @return array[self]|self|mixed
-	 * @throws Lib_Exception
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public static function __callStatic($name, $args)
 	{
 		$matches = array();
 		if( preg_match('/^get(List|Set)*By([a-zA-Z]+)$/', $name, $matches) )
 		{
-			/** @var Model $model */
+			/** @var Db $model */
 			$model = new static;
 			$cond = array();
 			$list = false;
@@ -479,7 +478,7 @@ abstract class Db extends \IFR\Main\Model
 				}
 			}
 
-			$filter = new Zend_Filter_Word_CamelCaseToSeparator('_');
+			$filter = new \Zend_Filter_Word_CamelCaseToSeparator('_');
 			$attr = strtolower($filter->filter($matches[2]));
 
 			if( $attr == self::COL_ID )
@@ -490,7 +489,7 @@ abstract class Db extends \IFR\Main\Model
 			if( !array_key_exists($attr, $model->toArray()) )
 			{
 				$class = get_class($model);
-				throw new Exception("Attribute '{$attr}' does not exist in model '{$class}'");
+				throw new \Exception("Attribute '{$attr}' does not exist in model '{$class}'");
 			}
 
 			$cond[$attr] = array_shift($args);
@@ -507,7 +506,7 @@ abstract class Db extends \IFR\Main\Model
 				if( count($result) > 1 )
 				{
 					$class = get_class($model);
-					throw new Exception("Trying get more than 1 row by attribute '{$attr}' from model '{$class}'");
+					throw new \Exception("Trying get more than 1 row by attribute '{$attr}' from model '{$class}'");
 				}
 				elseif( count($result) == 1 )
 				{
@@ -525,7 +524,7 @@ abstract class Db extends \IFR\Main\Model
 		}
 		else
 		{
-			throw new Exception("Static method '{$name}' not implemented.");
+			throw new \Exception("Static method '{$name}' not implemented.");
 		}
 	}
 
@@ -560,7 +559,7 @@ abstract class Db extends \IFR\Main\Model
 	}
 
 	/**
-	 * @param Zend_Db_Select|null $q
+	 * @param \Zend_Db_Select|null $q
 	 *
 	 * @return $this
 	 */
@@ -580,9 +579,9 @@ abstract class Db extends \IFR\Main\Model
 	}
 
 	/**
-	 * @param Zend_Db_Select|null $q
+	 * @param \Zend_Db_Select|null $q
 	 * @param bool $collection
-	 * @return Lib_Model_Db
+	 * @return Db
 	 *
 	 * @deprecated
 	 * @see loadOne

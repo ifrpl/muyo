@@ -1,6 +1,6 @@
 <?php
 
-namespace Lib\Object\Instance;
+namespace IFR\Main\Object\Instance;
 
 trait Simple
 {

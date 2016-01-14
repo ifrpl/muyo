@@ -29,7 +29,7 @@
 		"shell.php",
 		"string.php",
 		"Time.php",
-		"wkhtmlltox.php",
+		"wkhtmltox.php",
 		"zend.php"
 	  ],
 	  "psr-4": {

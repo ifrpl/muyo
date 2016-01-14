@@ -6,7 +6,7 @@ class Config
 {
 
 	/**
-	 * @var Zend_Config
+	 * @var \Zend_Config
 	 */
 	protected $_config;
 
@@ -30,15 +30,15 @@ class Config
 
 		$this->_config->env = $env;
 
-		if(Zend_Registry::isRegistered('config'))
+		if(\Zend_Registry::isRegistered('config'))
 		{
-			$c = Zend_Registry::get('config');
+			$c = \Zend_Registry::get('config');
 			$c->merge($this->_config);
-			Zend_Registry::set('config', $c);
+			\Zend_Registry::set('config', $c);
 		}
 		else
 		{
-			Zend_Registry::set('config', $this->_config);
+			\Zend_Registry::set('config', $this->_config);
 		}
 		return $this;
 	}
@@ -66,17 +66,17 @@ class Config
 			switch($ext)
 			{
 				case 'ini':
-					$cfg = new Zend_Config_Ini($fullpath, null, $write);
+					$cfg = new \Zend_Config_Ini($fullpath, null, $write);
 					break;
 				case 'xml':
-					$cfg = new Zend_Config_Xml($fullpath, null, $write);
+					$cfg = new \Zend_Config_Xml($fullpath, null, $write);
 					break;
 				default:
-					throw new Zend_Config_Exception("Invalid '$ext' format for config file");
+					throw new \Zend_Config_Exception("Invalid '$ext' format for config file");
 					break;
 			}
 		} else {
-				throw new Zend_Application_Resource_Exception("File '$fullpath' does not exist");
+				throw new \Zend_Application_Resource_Exception("File '$fullpath' does not exist");
 		}
 		return $cfg;
 	}
@@ -107,7 +107,7 @@ class Config
 
 		if($configIn === null)
 		{
-			$ret = Zend_Json::encode(object($ret));
+			$ret = \Zend_Json::encode(object($ret));
 		}
 		return $ret;
 	}

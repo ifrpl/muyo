@@ -2,7 +2,7 @@
 
 namespace Tests\Model\Array_;
 
-class M00 extends \Lib_Model_Array
+class M00 extends \IFR\Main\Model\Array_
 {
     public function init()
     {

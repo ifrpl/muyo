@@ -923,7 +923,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 		$db = $this->getDb();
 		try
 		{
-			$rows = $db->fetchAll( $this->getSQL(), [], Zend_Db::FETCH_NUM );
+			$rows = $db->fetchAll( $this->getSQL(), [], \Zend_Db::FETCH_NUM );
 		}
 		catch( \Exception $e )
 		{

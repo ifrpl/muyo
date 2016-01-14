@@ -1,12 +1,10 @@
 <?php
 
-namespace Lib\Object\Member\Operator;
+namespace IFR\Main\Object\Member\Operator;
 
 /**
  * Sets a member to $value, and returns $value
  *
- * @package Lib\Object\Member\Operator
- * @see Lib\Object\Member\Operator\Store
  */
 trait Set
 {

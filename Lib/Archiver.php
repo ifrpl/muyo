@@ -4,7 +4,7 @@
 * Date: 07.05.15 15:19
  */
 
-namespace IFR\Main;
+namespace IFR\Main\Lib;
 
 class Archiver
 {
