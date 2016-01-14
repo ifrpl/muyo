@@ -5,7 +5,10 @@
  *
  * @property int id
  */
-class Lib_Model_Set implements Iterator
+
+namespace IFR\Main\Model;
+
+class Set implements \Iterator
 {
 
 	/**
@@ -14,7 +17,7 @@ class Lib_Model_Set implements Iterator
 	protected $_resultSet = array();
 
 	/**
-	 * @var Lib_Model
+	 * @var \IFR\Main\Model $_modelObject
 	 */
 	protected $_modelObject = null;
 
@@ -29,14 +32,14 @@ class Lib_Model_Set implements Iterator
 		return $this;
 	}
 
-	public function setModel(Lib_Model $model)
+	public function setModel(\IFR\Main\Model $model)
 	{
 		$this->_modelObject = $model;
 		return $this;
 	}
 
 	/**
-	 * @return Lib_Model
+	 * @return \IFR\Main\Model
 	 */
 	protected function getModel()
 	{

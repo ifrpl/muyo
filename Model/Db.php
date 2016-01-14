@@ -1,23 +1,19 @@
 <?php
 
-if( !class_exists( 'Lib_Model' ) )
-{
-	require_once( implode( DIRECTORY_SEPARATOR, array(__DIR__, '..','model.php') ) );
-}
+namespace IFR\Main\Model;
 
 /**
  * @package App
  *
- * @method static Lib_Model_Db getByColumn($value) returns loaded row, that has "column" matching $value
+ * @method static Db getByColumn($value) returns loaded row, that has "column" matching $value
  * @method static array getListByColumn($value) returns all rows, that has "column" matching $value
  * @method static array getListById($id)
  */
-abstract class Lib_Model_Db extends Lib_Model
+abstract class Db extends \IFR\Main\Model
 {
 	protected $_table;
 	protected $_primaryKey = self::COL_ID;
 	protected $_alias;
-
 
 
 	/** @return mixed */
@@ -52,7 +48,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 * @return Lib_Model_Db
 	 */
 	abstract public function setColumns($cols = '*', $correlationName = null);
-	abstract public function clearColumns($clearPK = false);
+
 
 	/**
 	 * @param string|array $cond condition (if one param) or column name if more than one params
@@ -76,6 +72,12 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	abstract public function setSelect($select);
 
+	/**
+	 * @param bool $clear
+	 * @param string $cols
+	 * @return Zend_Db_Select
+	 */
+	abstract public function getSelect($clear = false, $cols = '*');
 
 
 	/**
@@ -292,7 +294,7 @@ abstract class Lib_Model_Db extends Lib_Model
 		array_each(
 			$matched,
 			function($model)
-			{ /** @var Lib_Model_Db $model */
+			{ /** @var Db $model */
 				$model->delete();
 			}
 		);
@@ -321,7 +323,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public static function get($clearColumns = false)
 	{
-		/** @var Lib_Model_Db $ret */
+		/** @var Db $ret */
 		$ret = new static();
 		if ($clearColumns)
 		{
@@ -351,7 +353,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 */
 	public static function find($resetSettings=false)
 	{
-		/** @var Lib_Model_Db $ret */
+		/** @var Db $ret */
 		$ret = parent::find($resetSettings);
 		$ret->clearColumns();
 		return $ret;
@@ -424,7 +426,7 @@ abstract class Lib_Model_Db extends Lib_Model
 	 * @param array $conditions
 	 * @param array|callable|null $constructor
 	 *
-	 * @return Lib_Model_Set
+	 * @return \IFR\Main\Model\Set
 	 */
 	public static function getSetBy($conditions,$constructor=null)
 	{
@@ -460,7 +462,7 @@ abstract class Lib_Model_Db extends Lib_Model
 		$matches = array();
 		if( preg_match('/^get(List|Set)*By([a-zA-Z]+)$/', $name, $matches) )
 		{
-			/** @var Lib_Model $model */
+			/** @var Model $model */
 			$model = new static;
 			$cond = array();
 			$list = false;

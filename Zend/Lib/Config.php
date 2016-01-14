@@ -1,17 +1,8 @@
 <?php
-//          Copyright IF Research Sp. z o.o. 2013.
-// Distributed under the Boost Software License, Version 1.0.
-//    (See accompanying file LICENSE_1_0.txt or copy at
-//          http://www.boost.org/LICENSE_1_0.txt)
 
+namespace IFR\Main\Zend\Lib;
 
-require_once 'Zend/Registry.php';
-require_once 'Zend/Config.php';
-require_once 'Zend/Config/Xml.php';
-require_once 'Zend/Config/Ini.php';
-require_once 'Zend/Config/Exception.php';
-
-class Lib_Config
+class Config
 {
 
 	/**
@@ -126,7 +117,7 @@ class Lib_Config
 		return $this->_config->toArray();
 	}
 
-	public function merge(Lib_Config $config)
+	public function merge(Config $config)
 	{
 		$this->_config->merge($config->getConfig());
 		return $this;

@@ -1,10 +1,12 @@
 <?php
 
 
-abstract class Lib_Model_Db_Sqlite
-	extends Lib_Model_Db_Mysql
+namespace IFR\Main\Model\Db;
+
+abstract class Sqlite
+	extends Mysql
 {
-    /** @var  Zend_Db_Adapter_Pdo_Sqlite  $pdo */
+    /** @var \Zend_Db_Adapter_Pdo_Sqlite  $pdo */
     static protected $adapter = null;
 
     public function __construct($options = null, $init = true)

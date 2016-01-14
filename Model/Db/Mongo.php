@@ -1,14 +1,6 @@
 <?php
 
-if( !class_exists('Lib_Model_Db') )
-{
-	require_once( implode( DIRECTORY_SEPARATOR, array(__DIR__,'..','db.php') ) );
-}
-
-if( !class_exists('Lib_Db_Mongo_Select') )
-{
-	require_once( implode( DIRECTORY_SEPARATOR, array(__DIR__,'select.php') ) );
-}
+namespace IFR\Main\Model\Db;
 
 /**
  * @package App
@@ -18,11 +10,11 @@ if( !class_exists('Lib_Db_Mongo_Select') )
  *
  * @property MongoID id
  */
-abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
+abstract class Mongo extends \IFR\Main\Model\Db
 {
 	protected $_primaryKey = '_id';
 
-	/** @var Lib_Db_Mongo_Select */
+	/** @var \IFR\Main\Model\Db\Mongo\Select */
 	private $_select;
 	private $_buildConditions;
 
@@ -60,9 +52,9 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		if(isset($data[$this->_primaryKey]) && !empty($data[$this->_primaryKey]))
 		{
 			$id = $this->{$this->_primaryKey};
-			if(!($id instanceof MongoId))
+			if(!($id instanceof \MongoId))
 			{
-				$id = new MongoId($id);
+				$id = new \MongoId($id);
 			}
 			$where = array($this->_primaryKey => $id);
 
@@ -114,7 +106,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		{
 			$value = $this->recordColumnGet($key);
 
-			if($value instanceof Lib_Model)
+			if($value instanceof \IFR\Main\Model)
 			{
 				$data[$key] = $value->serialize();
 			}
@@ -128,7 +120,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function delete()
@@ -137,11 +129,11 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 		$pkval = $this->{$pkey};
 		if(is_null($pkval))
 		{
-			throw new Exception('Nothing to delete, id is empty');
+			throw new \Exception('Nothing to delete, id is empty');
 		}
 
 		if(!is_object($pkval)){
-			$pkval = new MongoId($pkval);
+			$pkval = new \MongoId($pkval);
 		};
 
 		$ret = $this->getCollection()->remove(array($pkey => $pkval), array('justOne' => true));
@@ -216,9 +208,9 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 */
 	public function filterBy($cond)
 	{
-		if(array_key_exists($this->_primaryKey, $cond) && !($cond[$this->_primaryKey] instanceof MongoId))
+		if(array_key_exists($this->_primaryKey, $cond) && !($cond[$this->_primaryKey] instanceof \MongoId))
 		{
-			$cond[$this->_primaryKey] = new MongoId($cond[$this->_primaryKey]);
+			$cond[$this->_primaryKey] = new \MongoId($cond[$this->_primaryKey]);
 		}
 
 		array_walk($cond, array(
@@ -253,7 +245,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 */
 	private function _filterByWalk($item, $key, $prefix = '')
 	{
-		if($item instanceof Lib_Model)
+		if($item instanceof \IFR\Main\Model)
 		{
 			$item = $item->serialize();
 
@@ -281,10 +273,10 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 						break;
 					case "REGEX":
 						$condition = '$regex';
-						$value = new MongoRegex("/{$value}/");
+						$value = new \MongoRegex("/{$value}/");
 						break;
 					default:
-						throw new Exception('Mongo condition "'.$condition.'" not implemented');
+						throw new \Exception('Mongo condition "'.$condition.'" not implemented');
 				}
 
 				$this->_buildConditions[$key] = array(
@@ -326,7 +318,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
-	 * @param null|Lib_Db_Mongo_Select $q
+	 * @param null|\IFR\Main\Model\Db\Mongo\Select $q
 	 * @param bool $collection
 	 * @return array
 	 * @fixme support for multiple result collections
@@ -414,14 +406,14 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
-	 * @return Lib_Model_Set
+	 * @return \IFR\Main\Model\Set
 	 */
 	public function loadSet()
 	{
 		$alias = $this->getAlias();
 		$array = $this->loadArray();
 
-		$set = new Lib_Model_Set;
+		$set = new \IFR\Main\Model\Set();
 		$set->setResultSet($array[$alias]);
 		$set->setModel($this);
 
@@ -507,56 +499,56 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
-	 * @param array|Lib_Model|string $name
+	 * @param array|\IFR\Main\Model|string $name
 	 * @param string                 $cond
 	 * @param array|string           $cols
 	 * @param null                   $schema
 	 *
 	 * @return $this
 	 */
-	public function setJoin($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	public function setJoin($name, $cond, $cols = \Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
 		debug_assert(false);
 		return $this;
 	}
 
 	/**
-	 * @param array|Lib_Model|string $name
+	 * @param array|\IFR\Main\Model|string $name
 	 * @param string                 $cond
 	 * @param array|string           $cols
 	 * @param null                   $schema
 	 *
 	 * @return $this
 	 */
-	public function setJoinLeft($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	public function setJoinLeft($name, $cond, $cols = \Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
 		debug_assert(false);
 		return $this;
 	}
 
 	/**
-	 * @param array|Lib_Model|string $name
+	 * @param array|\IFR\Main\Model|string $name
 	 * @param string                 $cond
 	 * @param array|string           $cols
 	 * @param null                   $schema
 	 *
 	 * @return $this
 	 */
-	public function setJoinRight($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	public function setJoinRight($name, $cond, $cols = \Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
 		debug_assert(false);
 		return $this;
 	}
 
 	/**
-	 * @param array|Lib_Model|string $name
+	 * @param array|\IFR\Main\Model|string $name
 	 * @param string                 $cond
 	 * @param array|string           $cols
 	 * @param null                   $schema
 	 *
 	 * @return $this
 	 */
-	public function setJoinInner($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	public function setJoinInner($name, $cond, $cols = \Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
 		debug_assert(false);
 		return $this;
@@ -564,11 +556,11 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 
 	/**
 	 * WARNING: Only columns copying supported.
-	 * @param Lib_Model $model
+	 * @param \IFR\Main\Model $model
 	 * @param string|null $thisKeyCol may contain table prefix or not
 	 * @param string|null $thatKeyCol may contain table prefix or not
 	 * @param string $conditions ['and' => '{this}.column={that}.column' ]
-	 * @return Lib_Model
+	 * @return \IFR\Main\Model
 	 */
 	public function joinTo($model,$thisKeyCol,$thatKeyCol=null,$conditions='')
 	{
@@ -581,7 +573,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 * @param string $export
 	 * @param null   $source
 	 *
-	 * @return Bvb_Grid
+	 * @return \Bvb_Grid
 	 */
 	public function getDataTable($export = 'JqGrid', $source = null)
 	{
@@ -651,19 +643,19 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 * @param bool   $clear
 	 * @param string $cols
 	 *
-	 * @return Lib_Db_Mongo_Select
+	 * @return \IFR\Main\Model\Db\Mongo\Select
 	 */
 	public function getSelect($clear = false, $cols = '*')
 	{
 		if( !$this->_select )
 		{
-			$this->_select = new Lib_Db_Mongo_Select();
+			$this->_select = new \IFR\Main\Model\Db\Mongo\Select();
 		}
 		return $this->_select;
 	}
 
 	/**
-	 * @param Lib_Db_Mongo_Select $select
+	 * @param \IFR\Main\Model\Db\Mongo\Select $select
 	 * @return $this
 	 * @override
 	 */
@@ -674,13 +666,13 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	}
 
 	/**
-	 * @return MongoCollection
+	 * @return \MongoCollection
 	 */
 	protected function getCollection()
 	{
-		/** @var $db MongoDB  */
+		/** @var $db \MongoDB  */
 		$db = $this->getDb();
-		return new MongoCollection($db, $this->getTable());
+		return new \MongoCollection($db, $this->getTable());
 	}
 
 	/**
@@ -710,7 +702,7 @@ abstract class Lib_Model_Db_Mongo extends Lib_Model_Db
 	 */
 	public function getRef()
 	{
-		return MongoDBRef::create($this->_table, (is_object($this->id) ? $this->id : new MongoId($this->id)));
+		return \MongoDBRef::create($this->_table, (is_object($this->id) ? $this->id : new \MongoId($this->id)));
 	}
 
 	/**

@@ -1,11 +1,13 @@
 <?php
 
+namespace IFR\Main;
+
 /**
  * @package App
  *
  * @property int id
  */
-abstract class Lib_Model implements Iterator
+abstract class Model implements \Iterator
 {
 	const SETTING_SET       = 'set';
 	const SETTING_GET       = 'get';
@@ -139,9 +141,13 @@ abstract class Lib_Model implements Iterator
 	 */
 	abstract public function debug();
 
+	abstract protected function isColumnSetLocally($name);
+	abstract public function clearColumns($clearPK = false);
+	abstract public function getAlias();
+
 	public static function getConstants($prefix)
 	{
-		$r = new ReflectionClass(get_called_class());
+		$r = new \ReflectionClass(get_called_class());
 
 		$constants = $r->getConstants();
 
@@ -499,7 +505,7 @@ abstract class Lib_Model implements Iterator
 	 * @param string $name_after
 	 * @param string $name_setting
 	 * @param array  $setting
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return $this
 	 */
 	public function addSettingAfter($name_after, $name_setting, $setting)
@@ -518,7 +524,7 @@ abstract class Lib_Model implements Iterator
 		}
 		if (!$modified)
 		{
-			throw new Exception( "Tried to insert setting ${name_setting} after ${name_after}, which doesn't exists" );
+			throw new \Exception( "Tried to insert setting ${name_setting} after ${name_after}, which doesn't exists" );
 		}
 		return $this;
 	}
@@ -537,7 +543,7 @@ abstract class Lib_Model implements Iterator
 	 * @param string|array $key
 	 * @param mixed $value
 	 * @return $this
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function settingsSet( $key, $value )
 	{
@@ -557,7 +563,7 @@ abstract class Lib_Model implements Iterator
 	/**
 	 * @param string|array $key
 	 * @return mixed
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function settingsGet( $key=[] )
 	{
@@ -959,7 +965,7 @@ abstract class Lib_Model implements Iterator
 	/**
 	 * @param string|callable $column
 	 * @return mixed
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function propertyGetDg($column)
 	{
@@ -1049,7 +1055,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public static function find($resetSettings = false)
 	{
-		/** @var Lib_Model $ret */
+		/** @var Model $ret */
 		$ret = new static(null, !$resetSettings);
 		if( $resetSettings )
 		{
@@ -1165,11 +1171,11 @@ abstract class Lib_Model implements Iterator
 
 	/**
 	 * @param array $row
-	 * @return Lib_Model
+	 * @return Model
 	 */
 	protected function modelFactory($row)
 	{
-		/** @var Lib_Model $model */
+		/** @var Model $model */
 		$model = new static();
 
         try
@@ -1177,10 +1183,10 @@ abstract class Lib_Model implements Iterator
             $model->unserializeContent($row);
             return $model;
         }
-        catch(Exception $e)
+        catch(\Exception $e)
         {
             $class = get_class($model);
-            Logger::error(new Exception("Unable to unserialize object '{$class}", 0, $e));
+            \IFR\Main\Logger::error(new \Exception("Unable to unserialize object '{$class}", 0, $e));
         }
 
         return null;
@@ -1188,11 +1194,11 @@ abstract class Lib_Model implements Iterator
 
 	/**
 	 * @param array $row
-	 * @return Lib_Model
+	 * @return Model
 	 */
 	public static function modelFactory_s($row)
 	{
-		/** @var Lib_Model $model */
+		/** @var Model $model */
 		$model = new static();
 		return $model->modelFactory($row);
 	}
@@ -1225,9 +1231,9 @@ abstract class Lib_Model implements Iterator
 	}
 
 	/**
-	 * @param Lib_Model $from
+	 * @param Model $from
 	 */
-	protected function settingsJoin($from)
+	protected function settingsJoin(Model $from)
 	{
 		foreach( $from->_settingsJoined as $name => $value )
 		{ // join external from externals perspective
@@ -1390,7 +1396,7 @@ abstract class Lib_Model implements Iterator
 		$data = array();
 		foreach($array as $key => $value)
 		{
-			if($value instanceof Lib_Model)
+			if($value instanceof Model)
 			{
 				$value = $value->serialize();
 			}
@@ -1588,14 +1594,14 @@ abstract class Lib_Model implements Iterator
 
 				if(array_key_exists('data', $value))
 				{
-					/** @var Lib_Model $value */
+					/** @var Model $value */
 					$obj = new $class();
 					$obj->unserializeContent($value['data']);
 					$value = $obj;
 				}
 				elseif(array_key_exists(self::COL_ID, $value))
 				{
-					/** @var Lib_Model $value */
+					/** @var Model $value */
 					$value = $class::getById($value[self::COL_ID]);
 				}
 
@@ -1658,7 +1664,7 @@ abstract class Lib_Model implements Iterator
 		}
 		else
 		{
-			$query = $this instanceof Lib_Model_Db_Mysql ? $this->getSQL() : '';
+			$query = '';
 			return $class.'{'.$query.'}';
 		}
 	}
@@ -1668,7 +1674,7 @@ abstract class Lib_Model implements Iterator
 	 */
 	public function toJson()
 	{
-		return Zend_Json::encode($this->toArray());
+		return \Zend_Json::encode($this->toArray());
 	}
 
 	/**
@@ -1717,349 +1723,6 @@ abstract class Lib_Model implements Iterator
 	public function rewind()
 	{
 		$this->recordColumnRewind();
-	}
-
-
-	/**
-	 * TODO: move to external class / trait
-	 * @return array
-	 */
-	public function getImportConfig()
-	{
-		return array();
-	}
-
-	/**
-	 * TODO: move to external class / trait
-	 * @param App_Import $import
-	 * @return string String contains MySQL statements for import
-	 */
-	public function getImportQuery($import)
-	{
-		return '';
-	}
-
-	/**
-	 * TODO: move to external class / trait
-	 * @return bool|array
-	 */
-	public function isValid()
-	{
-		$isValid = true;
-
-		$form = $this->getForm();
-
-		foreach($this->recordColumnsGet() as $column => $value)
-		{
-			$element = $form->getElement($column);
-			if($element && !$element->isValid($value))
-			{
-				$isValid = false;
-				$this->_validationErrors[$element->getId()] = $element->getErrors();
-			}
-		}
-
-		return $isValid;
-	}
-
-	/**
-	 * TODO: move to external class / trait
-	 * @return array
-	 */
-	public function getValidationErrors()
-	{
-		return $this->_validationErrors;
-	}
-
-	/**
-	 * TODO: move to external class / trait
-	 * @return App_Form_New
-     * @deprecated will be removed soon
-	 */
-	public function getForm()
-	{
-		$form = new App_Form_New();
-
-		$elements = [];
-
-		foreach($this->_settings as $column => $setting)
-		{
-			if(!$this->recordColumnExists($column) )
-			{
-				continue;
-			}
-
-			if(isset($setting['show_in']) && (isset($setting['show_in']) && !in_array('form', $setting['show_in'])))
-			{
-				continue;
-			}
-
-			$settingColumn = array(
-				'type' => 'text'
-			);
-
-			if(isset($setting['formOptions']))
-			{
-				$settingColumn['options'] = $setting['formOptions'];
-			}
-			elseif(!array_key_exists('options', $settingColumn))
-			{
-				$settingColumn['options'] = array();
-			}
-
-			$type = 'text';
-			if(isset($setting['type']))
-			{
-				$type = $setting['type'];
-			}
-
-			if(isset($setting[self::SETTING_HIDDEN]) && $setting[self::SETTING_HIDDEN])
-			{
-				$type = self::TYPE_HIDDEN;
-			}
-
-			if(self::TYPE_ID == $type && !isset($setting[self::SETTING_FORM_TYPE]))
-			{
-				$type = self::TYPE_HIDDEN;
-			}
-
-			if(isset($setting['label']))
-			{
-				$settingColumn['options']['label'] = $setting['label'];
-			}
-			elseif(isset($setting['title']))
-			{
-				$settingColumn['options']['label'] = $setting['title'];
-			}
-
-			if(isset($setting['options']['validators']))
-			{
-				$settingColumn['options']['validators'] = $setting['validators'];
-			}
-			if(isset($setting['filters']))
-			{
-				$settingColumn['options']['filters'] = $setting['filters'];
-			}
-			if(isset($setting['decorators']))
-			{
-				$settingColumn['options']['decorators'] = $setting['decorators'];
-			}
-
-			if(isset($setting['helper']) && isset($setting['helper']['name']))
-			{
-				/* TODO 20150401 : make helper definition compatible with FormElement one
-				$settingColumn['options']['helper'] = $setting['helper']['name'];
-				*/
-			}
-
-			switch($type)
-			{
-				case self::TYPE_BOOLEAN:
-				case 'bool':
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->elementDecorators;
-					}
-					break;
-				case "array":
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->elementDecorators;
-					}
-					break;
-				case self::TYPE_DATE:
-					if(!isset($settingColumn['options']['validators']['date']))
-					{
-						$settingColumn['options']['validators']['date'] = array('Date',false,array('Y-m-d'));
-					}
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->elementDecorators;
-					}
-					break;
-				case self::TYPE_TIMESTAMP:
-				case self::TYPE_DATETIME:
-					if(!isset($settingColumn['options']['validators']['date']))
-					{
-						$settingColumn['options']['validators']['date'] = array('Date',false,array('Y-m-d H:i:s'));
-					}
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->elementDecorators;
-					}
-					break;
-				case self::TYPE_TIME:
-					if(!isset($settingColumn['options']['validators']['date']))
-					{
-						$settingColumn['options']['validators']['date'] = array('Date',false,array('H:i:s'));
-					}
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->elementDecorators;
-					}
-					break;
-				case "uint":
-				case "int":
-					@$settingColumn['options']['validators'][] = 'Int';
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->elementDecorators;
-					}
-					break;
-				case "float":
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->elementDecorators;
-					}
-					break;
-				case "email":
-					@$settingColumn['options']['validators'][] = 'EmailAddress';
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->elementDecorators;
-					}
-					break;
-				case "host":
-					@$settingColumn['options']['validators'][] = 'Hostname';
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->elementDecorators;
-					}
-					break;
-				case "text":
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->elementDecorators;
-					}
-					break;
-				case self::TYPE_HIDDEN:
-					if(!isset($settingColumn['options']['decorators']))
-					{
-						$settingColumn['options']['decorators'] = $form->hiddenDecorators;
-					}
-
-					if(isset($setting[self::SETTING_MULTI_OPTIONS]))
-					{
-						unset($setting[self::SETTING_MULTI_OPTIONS]);
-					}
-					break;
-				default:
-					debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
-					break;
-			}
-
-			if(self::TYPE_HIDDEN != $type && isset($setting[self::SETTING_FORM_TYPE]))
-			{
-				$settingColumn['type'] = $setting[self::SETTING_FORM_TYPE];
-			}
-			else
-			{
-				$settingColumn['type'] = $this->_getFormType($type);
-			}
-
-			if(isset($setting['unique']) && $setting['unique'] == true)
-			{
-				if(!isset($settingColumn['options']['validators']))
-				{
-					$settingColumn['options']['validators'] = array();
-				}
-				if(!isset($settingColumn['options']['validators']['unique']))
-				{
-					$settingColumn['options']['validators']['unique'] = array('Db_RecordNotExistOrIsUnique', false, array(array(
-						'table' => $this->getTable(),
-						'field' => $column,
-						'primary_key' => $this->getPrimaryKey()
-					)));
-				}
-			}
-			if(isset($setting['required']) && $setting['required'] == true)
-			{
-				$settingColumn['options']['required'] = true;
-			}
-
-			if(isset($setting[self::SETTING_MULTI_OPTIONS]))
-			{
-                $settingColumn['options'][self::SETTING_MULTI_OPTIONS] = $setting[self::SETTING_MULTI_OPTIONS];
-
-                if(isset($setting['otherMultioption']) && $setting[self::SETTING_FORM_TYPE] == 'multiCheckbox')
-                {
-                    $settingColumn['options']['otherMultioption'] = $setting['otherMultioption'];
-                }
-			}
-
-			if(isset($setting[self::SETTING_FORM_ATTRIBS]))
-			{
-				$settingColumn['options']['attribs'] = $setting[self::SETTING_FORM_ATTRIBS];
-			}
-
-			$elements[$column] = $settingColumn;
-		}
-
-		$form->setElements($elements);
-		$form->setDisableLoadDefaultDecorators(true);
-
-		return $form;
-	}
-
-	/**
-	 * TODO: move to external class / trait
-	 * @param $type
-	 * @return string
-     * @deprecated will be removed soon
-	 */
-	private function _getFormType($type)
-	{
-		$formType = 'text';
-		switch($type)
-		{
-			case self::TYPE_BOOLEAN:
-			case 'bool':
-				$formType = 'checkbox';
-				break;
-			case "array":
-				$formType = 'multiCheckbox';
-				break;
-			case self::TYPE_DATE:
-				$formType = 'date';
-				break;
-			case self::TYPE_TIMESTAMP:
-			case self::TYPE_DATETIME:
-				$formType = 'datetime';
-				break;
-			case self::TYPE_TIME:
-				$formType = 'time';
-				break;
-			case "uint":
-			case "int":
-				$formType = 'int';
-				break;
-			case "float":
-				$formType = 'float';
-				break;
-			case "email":
-				$formType = 'email';
-				break;
-			case "host":
-				$formType = 'host';
-				break;
-			case "text":
-				$formType = 'text';
-				break;
-			case "currency":
-				$formType = 'currency';
-				break;
-			case "country":
-				$formType = 'country';
-				break;
-			case self::TYPE_HIDDEN:
-				$formType = self::TYPE_HIDDEN;
-				break;
-			default:
-				debug_assert(false !== array_search($type, self::$types), "Unknown Form Type `{$type}`");
-				break;
-		}
-
-		return $formType;
 	}
 
     public function getDereferencedSettingName($name)

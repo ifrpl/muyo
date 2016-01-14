@@ -18,8 +18,7 @@ if( !function_exists('getConfig') )
 	 */
 	function getConfig($path, $env = null)
 	{
-		require_once 'Lib/Config.php';
-		$config = new Lib_Config($path);
+		$config = new \IFR\Main\Zend\Lib\Config($path);
 		return $config->getConfig($env);
 	}
 }

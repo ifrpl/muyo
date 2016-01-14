@@ -1,6 +1,8 @@
 <?php
 
-class Lib_Db_Mongo_Select
+namespace IFR\Main\Model\Db\Mongo;
+
+class Select
 {
 	private $_fields = array();
 	private $_query = array();

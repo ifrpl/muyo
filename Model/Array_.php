@@ -1,15 +1,12 @@
 <?php
 
-if( !class_exists('Lib_Model') )
-{
-	require_once( implode(DIRECTORY_SEPARATOR, [__DIR__,"..","model.php"] ) );
-}
+namespace IFR\Main\Model;
 
 /**
  * @package App
  * @subpackage Model
  */
-class Lib_Model_Array extends Lib_Model
+class Array_ extends \IFR\Main\Model
 {
 
 	/**
@@ -33,7 +30,7 @@ class Lib_Model_Array extends Lib_Model
 	public function serializeContent()
 	{
 		return array_map_val($this->recordColumnsGet(), function($row){
-			if($row instanceof Lib_Model)
+			if($row instanceof \IFR\Main\Model)
 			{
 				return $row->serialize();
 			}
@@ -50,4 +47,18 @@ class Lib_Model_Array extends Lib_Model
 		return $this;
 	}
 
+	protected function isColumnSetLocally($name)
+	{
+
+	}
+
+	public function clearColumns($clearPK = false)
+	{
+
+	}
+
+	public function getAlias()
+	{
+		return null;
+	}
 }

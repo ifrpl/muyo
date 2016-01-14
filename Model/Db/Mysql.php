@@ -1,17 +1,14 @@
 <?php
 
-if( !class_exists('Lib_Model_Db') )
-{
-	require_once( implode( DIRECTORY_SEPARATOR, [__DIR__,'db.php'] ) );
-}
+namespace IFR\Main\Model\Db;
 
 /**
  * @package App
  * @subpackage Db
  *
- * @method Zend_Db_Adapter_Pdo_Mysql getDb()
+ * @method \Zend_Db_Adapter_Pdo_Mysql getDb()
  */
-abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
+abstract class Mysql extends \IFR\Main\Model\Db
 {
 	const LOAD_ARRAY_MODE_NESTED_TABLE  = 0;
 	const LOAD_ARRAY_MODE_NESTED_COLUMN = 1;
@@ -22,7 +19,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	protected $_foreignInstances = [];
 
 	/**
-	 * @var Zend_Db_Select
+	 * @var \Zend_Db_Select
 	 */
 	protected $_select;
 
@@ -91,14 +88,14 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
-	 * @throws Exception
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function delete()
 	{
 		if(is_null($this->{$this->_primaryKey}))
 		{
-			throw new Exception('Nothing to delete, id is empty');
+			throw new \Exception('Nothing to delete, id is empty');
 		}
 		$delete = $this->getDb();
 		$rows = $delete->delete(
@@ -121,10 +118,10 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
-	 * @param Zend_Db_Select|null $q
+	 * @param \Zend_Db_Select|null $q
 	 * @param bool $collection do not index by id
 	 * @return array[static]
-	 * @throws Exception
+	 * @throws \Exception
 	 */
 	public function load($q = null, $collection = false)
 	{
@@ -183,7 +180,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	public function setCount( $expr='1', $bindAs='count' )
 	{
 		return $this->setColumns([
-			$bindAs => new Zend_Db_Expr("COUNT($expr)"),
+			$bindAs => new \Zend_Db_Expr("COUNT($expr)"),
 		]);
 	}
 
@@ -200,7 +197,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		}
 		else
 		{
-			$this->prefixColumn( $this, $expr );
+			$this->_prefixColumn( $this, $expr );
 		}
 		if( $bindAs===null )
 		{
@@ -210,7 +207,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
-	 * @param string|Zend_Db_Expr $expr
+	 * @param string|\Zend_Db_Expr $expr
 	 * @param bool $distinct
 	 * @param null|string &$bindAs
 	 * @return $this
@@ -218,7 +215,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	public function maxSet( $expr, $distinct=false, &$bindAs=null )
 	{
 		$exprCopy = $expr;
-		if( true===$this->prefixColumn( $this, $expr ) )
+		if( true===$this->_prefixColumn( $this, $expr ) )
 		{
 			$bindAs = $exprCopy;
 		}
@@ -244,17 +241,17 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 	/**
 	 * WARNING: proper string/expression escaping is missing
-	 * @param array|Zend_Db_Expr|string $expr
+	 * @param array|\Zend_Db_Expr|string $expr
 	 * @param string|null $alias
 	 * @param string|null $separator
 	 * @param bool|null $distinct
-	 * @param null|array|int|string|Zend_Db_Expr $order
+	 * @param null|array|int|string|\Zend_Db_Expr $order
 	 * @return $this
 	 */
 	public function groupConcatSet( $expr, $alias=null, $separator=null, $distinct=null, $order=null )
 	{
 		debug_assert(
-			is_string($expr) || is_array($expr) || (is_object($expr) && $expr instanceof Zend_Db_Expr),
+			is_string($expr) || is_array($expr) || (is_object($expr) && $expr instanceof \Zend_Db_Expr),
 			"Invalid expression value `".var_dump_human_compact($expr)."`"
 		);
 		debug_assert(
@@ -357,8 +354,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	/**
 	 * Inserts to table from different query.
 	 * Warning: silently discards remote aliases if not existing as local column.
-	 * @param App_Model_Db_Mysql $model
-	 * @return App_Model_Db_Mysql
+	 * @param Mysql $model
+	 * @return Mysql
 	 */
 	public function insertFrom($model)
 	{
@@ -495,11 +492,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 	}
 
-	/**
-	 * @param bool $clear
-	 * @param string $cols
-	 * @return Zend_Db_Select
-	 */
+
 	public function getSelect($clear = false, $cols = '*')
 	{
 		if( is_null($this->_select) || $clear )
@@ -515,7 +508,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
-	 * @param Zend_Db_Select $select
+	 * @param \Zend_Db_Select $select
 	 * @return $this
 	 * @override
 	 */
@@ -619,7 +612,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
-	 * @param string|array|Lib_Model $name
+	 * @param string|array|\IFR\Main\Model\Db $name
 	 * @return array|mixed
 	 */
 	private function _prepareTableForJoin($name)
@@ -637,7 +630,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$name = new $name(null, false);
 		}
 
-		if( $name instanceOf Lib_Model_Db )
+		if( $name instanceOf \IFR\Main\Model\Db )
 		{
 			if(is_null($alias))
 			{
@@ -654,52 +647,52 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
-	 * @param string|array|Lib_Model $name
+	 * @param string|array|\IFR\Main\Model\Db $name
 	 * @param string $cond
 	 * @param string|array $cols
 	 * @param null|string $schema
 	 * @return $this
 	 */
-	public function setJoin($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	public function setJoin($name, $cond, $cols = \Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
 		$this->getSelect()->join($this->_prepareTableForJoin($name), $cond, $cols, $schema);
 		return $this;
 	}
 
 	/**
-	 * @param string|array|Lib_Model $name
+	 * @param string|array|\IFR\Main\Model\Db $name
 	 * @param string $cond
 	 * @param string|array $cols
 	 * @param null|string $schema
 	 * @return $this
 	 */
-	public function setJoinLeft($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	public function setJoinLeft($name, $cond, $cols = \Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
 		$this->getSelect()->joinLeft($this->_prepareTableForJoin($name), $cond, $cols, $schema);
 		return $this;
 	}
 
 	/**
-	 * @param string|array|Lib_Model $name
+	 * @param string|array|\IFR\Main\Model\Db $name
 	 * @param string $cond
 	 * @param string|array $cols
 	 * @param null|string $schema
 	 * @return $this
 	 */
-	public function setJoinRight($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	public function setJoinRight($name, $cond, $cols = \Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
 		$this->getSelect()->joinRight($this->_prepareTableForJoin($name), $cond, $cols, $schema);
 		return $this;
 	}
 
 	/**
-	 * @param string|array|Lib_Model $name
+	 * @param string|array|\IFR\Main\Model\Db $name
 	 * @param string $cond
 	 * @param string|array $cols
 	 * @param null|string $schema
 	 * @return $this
 	 */
-	public function setJoinInner($name, $cond, $cols = Zend_Db_Select::SQL_WILDCARD, $schema = null)
+	public function setJoinInner($name, $cond, $cols = \Zend_Db_Select::SQL_WILDCARD, $schema = null)
 	{
 		$this->getSelect()->joinInner($this->_prepareTableForJoin($name), $cond, $cols, $schema);
 		return $this;
@@ -779,7 +772,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 					{
 						$select->where($col.' IS NULL');
 					}
-					elseif( $value instanceof Zend_Db_Expr )
+					elseif( $value instanceof \Zend_Db_Expr )
 					{
 						$select->where($col.' '.$value);
 					}
@@ -869,7 +862,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
-	 * @param int|array|Zend_Db_Expr $id
+	 * @param int|array|\Zend_Db_Expr $id
 	 * @return $this
 	 */
 	public function filterNotById($id)
@@ -896,7 +889,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	 * @param bool $collection
 	 * @param int $mode defines how results should be structured
 	 * @return array
-	 * @throws Exception
+	 * @throws \Exception
 	 * @fixme $q and $collection
 	 */
 	public function loadArray( $q=null, $collection=false, $mode=self::LOAD_ARRAY_MODE_NESTED_TABLE )
@@ -932,9 +925,9 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		{
 			$rows = $db->fetchAll( $this->getSQL(), [], Zend_Db::FETCH_NUM );
 		}
-		catch( Exception $e )
+		catch( \Exception $e )
 		{
-			throw new Exception('Error while loading: '.$e->getMessage().' | SQL: '.$this->getSQL());
+			throw new \Exception('Error while loading: '.$e->getMessage().' | SQL: '.$this->getSQL());
 		}
 
 		if(self::LOAD_ARRAY_MODE_RAW == $mode)
@@ -985,8 +978,8 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	/**
 	 * @param string|null $q
 	 * @param bool $collection
-	 * @return Lib_Model_Set
-	 * @throws Exception
+	 * @return \IFR\Main\Model\Set
+	 * @throws \Exception
 	 */
 	public function loadSet( $q=null, $collection=false )
 	{
@@ -1013,13 +1006,13 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 				$result[ $row[ $this->getPrimaryKey() ] ] = $row;
 			});
 		}
-		catch( Exception $e )
+		catch( \Exception $e )
 		{
-			throw new Exception('Error while loading: '.$e->getMessage().' | SQL: '.$q->assemble());
+			throw new \Exception('Error while loading: '.$e->getMessage().' | SQL: '.$q->assemble());
 		}
 		$this->postLoad();
 
-		$set = new Lib_Model_Set;
+		$set = new \IFR\Main\Model\Set();
 		$set->setResultSet($result);
 		$set->setModel($this);
 
@@ -1106,11 +1099,11 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	}
 
 	/**
-	 * @param Lib_Model_db $model
+	 * @param Mysql $model
 	 * @param string &$column
 	 * @return string
 	 */
-	private function prefixColumn($model, &$column)
+	private function _prefixColumn(Mysql $model, &$column)
 	{
 		if( false === strpos($column,'.') )
 		{
@@ -1127,11 +1120,11 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	/**
 	 * @param $callable
 	 */
-	private function mapPartWhere( $callable )
+	private function _mapPartWhere( $callable )
 	{
 		$select = $this->getSelect();
-		$where=$select->getPart( Zend_Db_Select::WHERE );
-		$select->reset( Zend_Db_Select::WHERE );
+		$where=$select->getPart( \Zend_Db_Select::WHERE );
+		$select->reset( \Zend_Db_Select::WHERE );
 		foreach( $where as $string )
 		{
 			if(
@@ -1193,13 +1186,13 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 	/**
 	 * WARNING: Only columns copying supported.
-	 * @param Lib_Model_Db_Mysql $model
+	 * @param Mysql $model
 	 * @param string|null $thisKeyCol may contain table prefix or not
 	 * @param string|null $thatKeyCol may contain table prefix or not
 	 * @param string $conditions ['and' => '{this}.column={that}.column' ]
-	 * @return Lib_Model_Db_Mysql
+	 * @return Mysql
 	 */
-	public function joinTo($model,$thisKeyCol,$thatKeyCol=null,$conditions='')
+	public function joinTo(Mysql $model,$thisKeyCol,$thatKeyCol=null,$conditions='')
 	{
 		if( $thatKeyCol===null )
 		{
@@ -1212,14 +1205,14 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$thisKeyCol = $this->getPrimaryKey();
 		}
 
-		$this->prefixColumn($model, $thatKeyCol);
-		$this->prefixColumn($this, $thisKeyCol);
+		$this->_prefixColumn($model, $thatKeyCol);
+		$this->_prefixColumn($this, $thisKeyCol);
 
 		$conditions = str_replace('{that}',$model->getAlias(),$conditions);
 		$conditions = str_replace('{this}',$this->getAlias(),$conditions);
 
-		$this->mapPartWhere( $this->addAliasToConditionDg() );
-		$model->mapPartWhere( $model->addAliasToConditionDg() );
+		$this->_mapPartWhere( $this->addAliasToConditionDg() );
+		$model->_mapPartWhere( $model->addAliasToConditionDg() );
 
 		$this->setJoinLeft($model, "{$thisKeyCol}={$thatKeyCol} ".$conditions, '');
 		$model->settingsJoin($this);
@@ -1245,13 +1238,13 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 	/**
 	 * WARNING: Only columns copying supported.
-	 * @param Lib_Model_Db_Mysql $model
+	 * @param Mysql $model
 	 * @param string|null $thisKeyCol may contain table prefix or not
 	 * @param string|null $thatKeyCol may contain table prefix or not
 	 * @param string $conditions
 	 * @return $this
 	 */
-	public function joinFrom($model, $thisKeyCol, $thatKeyCol=null, $conditions='')
+	public function joinFrom(Mysql $model, $thisKeyCol, $thatKeyCol=null, $conditions='')
 	{
 		if( $thatKeyCol===null )
 		{
@@ -1264,18 +1257,18 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 			$thisKeyCol = $this->getPrimaryKey();
 		}
 
-		$this->prefixColumn($model, $thatKeyCol);
-		$this->prefixColumn($this, $thisKeyCol);
+		$this->_prefixColumn($model, $thatKeyCol);
+		$this->_prefixColumn($this, $thisKeyCol);
 
 		$conditions = str_replace('{that}', $model->getAlias(), $conditions);
 		$conditions = str_replace('{this}', $this->getAlias(), $conditions);
 
-		$this->mapPartWhere( $this->addAliasToConditionDg() );
-		$model->mapPartWhere( $model->addAliasToConditionDg() );
+		$this->_mapPartWhere( $this->addAliasToConditionDg() );
+		$model->_mapPartWhere( $model->addAliasToConditionDg() );
 
-		$thisFrom = $this->_select->getPart(Zend_Db_Select::FROM);
+		$thisFrom = $this->_select->getPart(\Zend_Db_Select::FROM);
 		$modelColumns = array_chain(
-			$model->_select->getPart(Zend_Db_Select::COLUMNS),
+			$model->_select->getPart(\Zend_Db_Select::COLUMNS),
 			array_group_dg( array_get_dg(return_dg(0)) ),
 			array_map_val_dg(
 				array_chain_dg(
@@ -1310,7 +1303,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 		);
 
 		array_each(
-			$model->_select->getPart(Zend_Db_Select::FROM),
+			$model->_select->getPart(\Zend_Db_Select::FROM),
 			function( $descriptor, $alias )use($modelColumns,$thisFrom,$model,$thisKeyCol,$thatKeyCol,$conditions)
 			{
 				debug_enforce(
@@ -1320,7 +1313,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 				switch( $descriptor['joinType'] )
 				{
-					case Zend_Db_Select::FROM:
+					case \Zend_Db_Select::FROM:
 						$this->_select->joinLeft(
 							[$model->getAlias()=>$model->getTable()],
 							"{$thisKeyCol}={$thatKeyCol} ".$conditions,
@@ -1328,7 +1321,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							$descriptor[ 'schema' ]
 						);
 					    break;
-					case Zend_Db_Select::INNER_JOIN:
+					case \Zend_Db_Select::INNER_JOIN:
 						$this->_select->joinInner(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
@@ -1336,7 +1329,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							$descriptor['schema']
 						);
 					    break;
-					case Zend_Db_Select::LEFT_JOIN:
+					case \Zend_Db_Select::LEFT_JOIN:
 						$this->_select->joinLeft(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
@@ -1344,7 +1337,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							$descriptor['schema']
 						);
 					    break;
-					case Zend_Db_Select::RIGHT_JOIN:
+					case \Zend_Db_Select::RIGHT_JOIN:
 						$this->_select->joinRight(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
@@ -1352,7 +1345,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							$descriptor['schema']
 						);
 					    break;
-					case Zend_Db_Select::FULL_JOIN:
+					case \Zend_Db_Select::FULL_JOIN:
 						$this->_select->joinFull(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
@@ -1368,7 +1361,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 							$descriptor['schema']
 						);
 					    break;
-					case Zend_Db_Select::NATURAL_JOIN:
+					case \Zend_Db_Select::NATURAL_JOIN:
 						$this->_select->joinNatural(
 							[$alias=>$descriptor['tableName']],
 							$descriptor['joinCondition'],
@@ -1418,7 +1411,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 	/**
 	 * Return row object for current id
 	 *
-	 * @return Zend_Db_Table_Row|null
+	 * @return \Zend_Db_Table_Row|null
 	 * @deprecated
 	 */
 	public function getRow()
@@ -1499,7 +1492,7 @@ abstract class Lib_Model_Db_Mysql extends Lib_Model_Db
 
 		if(!isset($this->_foreignInstances[$column]))
 		{
-			/* @var Lib_Model_Db_MySql $model */
+			/* @var Mysql $model */
 			$model = call_user_func([$foreignClass, 'find']);
 
 			$model->filterBy([
