@@ -6,7 +6,6 @@
 
 const ENV_PRODUCTION    = 'production';
 const ENV_DEVELOPMENT   = 'development';
-const ENV_TEST          = 'test';
 
 if( !function_exists('getCurrentEnv') )
 {
@@ -50,7 +49,7 @@ if( !function_exists('is_type') )
 	 */
 	function is_type( $var, $type )
 	{
-		if( $type === 'callable' && is_callable($var) )
+		if( is_callable($var) && $type === 'callable' )
 		{
 			$t = 'callable';
 		}
@@ -92,8 +91,8 @@ if( !function_exists('is_type_dg') )
 		{
 			$args = func_get_args();
 			return is_type(
-				call_user_func_array( $var, $args ),
-				call_user_func_array( $type, $args )
+				call_user_func_array( $type, $args ),
+				call_user_func_array( $var, $args )
 			);
 		};
 	}
@@ -215,40 +214,20 @@ if( !function_exists('tuple_get') )
 if( !function_exists('tuple_carry') )
 {
 	/**
-	 * @param callable|int|null $carry_setter
+	 * @param int  $n
 	 * @param callable|null $apply
 	 * @param mixed $seed
 	 * @return callable
 	 */
-	function tuple_carry($carry_setter=null,$apply=null,$seed=null)
+	function tuple_carry($n=0,$apply=null,$seed=null)
 	{
 		$carry = $seed;
-		if( $carry_setter===null )
-		{
-			$carry_setter = tuple_get(1);
-		}
-		elseif( is_int( $carry_setter ) )
-		{
-			$carry_setter = tuple_get( $carry_setter );
-		}
-		else
-		{
-			debug_enforce_type( $carry_setter, 'callable' );
-		}
-		if( $apply===null )
-		{
-			$apply = tuple_get(0);
-		}
-		else
-		{
-			debug_enforce_type( $apply, 'callable' );
-		}
-		return function()use($carry_setter,$apply,&$carry)
+		return function()use($n,$apply,&$carry)
 		{
 			$args = func_get_args();
-			$argsWithCarry = array_prepend( $args, $carry );
-			$carry = call_user_func_array( $carry_setter, $argsWithCarry );
-			return call_user_func_array( $apply, $argsWithCarry );
+			$ret = $apply ? $apply($carry) : $carry;
+			$carry = $args[$n];
+			return $ret;
 		};
 	}
 }
@@ -308,25 +287,6 @@ if( !function_exists('intval_dg') )
 		return function()use($getter)
 		{
 			return intval( call_user_func_array( $getter, func_get_args() ) );
-		};
-	}
-}
-
-if( !function_exists('floatval_dg') )
-{
-	/**
-	 * @param callable|null $getter
-	 * @return callable
-	 */
-	function floatval_dg($getter=null)
-	{
-		if( $getter===null )
-		{
-			$getter = tuple_get();
-		}
-		return function()use($getter)
-		{
-			return floatval( call_user_func_array( $getter, func_get_args() ) );
 		};
 	}
 }
@@ -668,101 +628,6 @@ if( !function_exists('if_dg') )
 	}
 }
 
-if( !function_exists('match') )
-{
-	/**
-	 * @param mixed $subject
-	 * @param array,.. $option [$match($subject)=>$bool,$response($subject)=>$mixed]
-	 * @return mixed
-	 * @see ensure
-	 */
-	function match( $subject, $option )
-	{
-		$options = array_chain(
-			func_get_args(),
-			array_rest_dg(1),
-			array_map_val_dg( if_dg( is_type_dg('array'), tuple_get(0), array_dg(return_dg(return_dg(true)),tuple_get(0)) ) )
-		);
-		foreach( $options as $pair )
-		{
-			list($match,$project) = $pair;
-			if( is_callable($match) ? $match( $subject ) : $match===$subject )
-			{
-				return is_callable($project) ? $project( $subject ) : $project;
-			}
-		}
-		debug_assert( false, 'Cannot find match for '.var_dump_human_compact($subject).' out of '.var_dump_human_compact($options) );
-		return $subject;
-	}
-}
-
-if( !function_exists('match_dg') )
-{
-	/**
-	 * @param mixed|callable|null $subject
-	 * @param array,.. $option [$match($subject)=>$bool,$response($subject)=>$mixed]
-	 * @return mixed
-	 * @see ensure_dg
-	 */
-	function match_dg( $subject, $option )
-	{
-		if( $subject===null )
-		{
-			$subject = tuple_get(0);
-		}
-		else
-		{
-			$subject = callablize( $subject );
-		}
-		$options = array_rest( func_get_args(), 1 );
-		return function () use ( $subject, $options )
-		{
-			$args = $options;
-			array_unshift( $args, call_user_func_array( $subject, func_get_args() ) );
-			return call_user_func_array( 'match', $args );
-		};
-	}
-}
-
-if( !function_exists('switch_dg') )
-{
-	/**
-	 * @param mixed|callable $subject
-	 * @param callable|mixed $option
-	 * @return callable
-	 */
-	function switch_dg( $subject, $option )
-	{
-		$subject = callablize($subject);
-		$options = array_chain(
-			func_get_args(),
-			array_rest_dg(1),
-			array_map_val_dg(
-				if_dg(
-					is_type_dg('array'),
-					function($array){ return [eq_dg(tuple_get(0),callablize(array_get($array,0))),callablize(array_get($array,1))]; }, //FIXME
-					array_dg( return_dg(return_dg(true)), tuple_get(0,'callablize') )
-				)
-			)
-		);
-		return function()use($subject,$options)
-		{
-			$args = func_get_args();
-			$subject = call_user_func_array( $subject, $args );
-			foreach( $options as $pair )
-			{
-				list($match,$result) = $pair;
-				if( call_user_func( $match, $subject ) )
-				{
-					return call_user_func_array( $result, $args );
-				}
-			}
-			debug_assert( false, 'Cannot switch from '.var_dump_human_compact($subject).' to '.var_dump_human_compact($options) );
-			return $subject;
-		};
-	}
-}
-
 if( !function_exists('call_safe') )
 {
 	/**
@@ -1055,104 +920,11 @@ if( !function_exists('max_execution_time_set_dg') )
 	}
 }
 
-if( !function_exists('tuple_add_dg') )
-{
-	/**
-	 * @param $arg1
-	 * @param $arg2
-	 * @return Closure
-	 */
-	function tuple_add_dg($arg1,$arg2)
-	{
-		$outerArgs = array_map_val( func_get_args(), function($arg){ return is_callable($arg) ? $arg : return_dg($arg); } );
-		return function()use($outerArgs)
-		{
-			$innerArgs = func_get_args();
-			return array_reduce_val(
-				$outerArgs,
-				function($carry, $outerArg)use( $innerArgs )
-				{
-					return $carry + call_user_func_array( $outerArg, $innerArgs );
-				},
-				0
-			);
-		};
-	}
-}
-
-if( !function_exists('eq_dg') )
-{
-	/**
-	 * @param callable $a
-	 * @param callable $b
-	 * @return callable
-	 */
-	function eq_dg($a,$b)
-	{
-		return function()use($a,$b)
-		{
-			$args = func_get_args();
-			return call_user_func_array($a,$args) == call_user_func_array($b,$args);
-		};
-	}
-}
-
-if( !function_exists('equals_dg') )
-{
-	/**
-	 * @param callable $a
-	 * @param callable $b
-	 * @return callable
-	 */
-	function equals_dg($a,$b)
-	{
-		return function()use($a,$b)
-		{
-			$args = func_get_args();
-			return call_user_func_array($a,$args) === call_user_func_array($b,$args);
-		};
-	}
-}
-
-if( !function_exists('lt_dg') )
-{
-	/**
-	 * @param callable $a
-	 * @param callable $b
-	 * @return callable
-	 */
-	function lt_dg($a,$b)
-	{
-		return function()use($a,$b)
-		{
-			$args = func_get_args();
-			return call_user_func_array($a,$args) < call_user_func_array($b,$args);
-		};
-	}
-}
-
-if( !function_exists('gt_dg') )
-{
-	/**
-	 * @param callable $a
-	 * @param callable $b
-	 * @return callable
-	 */
-	function gt_dg($a,$b)
-	{
-		return function()use($a,$b)
-		{
-			$args = func_get_args();
-			return call_user_func_array($a,$args) > call_user_func_array($b,$args);
-		};
-	}
-}
-
 if (!function_exists('coalesce')) {
     /**
-     * @return string
+     * @return int|string
      */
-    function coalesce($var, $replacement)
+    function coalesce($var,$replacement)
     {
         return isset($var) ? $var : $replacement;
     }
