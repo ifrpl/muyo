@@ -924,7 +924,7 @@ if (!function_exists('coalesce')) {
     /**
      * @return int|string
      */
-    function coalesce($var,$replacement)
+    function coalesce(&$var,$replacement)
     {
         return isset($var) ? $var : $replacement;
     }
