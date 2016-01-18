@@ -860,7 +860,6 @@ if( !function_exists('array_get_unset') )
 	 */
 	function array_get_unset(&$array, $key, $default = null)
 	{
-		debug_enforce( is_array($array), "array_get_unset expects first parameter to be array, ".gettype($array)." given" );
 		$ret = array_key_exists($key, $array) ? $array[$key] : $default;
 		unset($array[$key]);
 		return $ret;

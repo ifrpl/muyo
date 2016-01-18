@@ -8,6 +8,7 @@
 	},
 	"autoload": {
 	  "files": [
+		"index.php",
 		"arr.php",
 		"bool.php",
 		"cli.php",

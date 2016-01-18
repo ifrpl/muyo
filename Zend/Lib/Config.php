@@ -20,11 +20,7 @@ class Config
 			$this->_config->merge($this->_loadConfig($this->_configFile . ".local"));
 		}
 
-		$env = 'production';
-		if(defined('APPLICATION_ENV'))
-		{
-			$env = APPLICATION_ENV;
-		}
+		$env = getCurrentEnv();
 
 		$this->_config->merge($this->_config->{$env});
 

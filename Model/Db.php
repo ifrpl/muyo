@@ -11,10 +11,8 @@ namespace IFR\Main\Model;
  */
 abstract class Db extends \IFR\Main\Model
 {
-	protected $_table;
-	protected $_primaryKey = self::COL_ID;
-	protected $_alias;
-
+	static protected $_table;
+	static protected $_primaryKey = self::COL_ID;
 
 	/** @return mixed */
 	abstract public function getDb();
@@ -87,12 +85,7 @@ abstract class Db extends \IFR\Main\Model
 	{
 		if( empty($this->_alias) )
 		{
-			$this->_alias = array_chain(
-				get_class($this),
-				str_replace_dg('_',''),
-				str_replace_dg('\\',''),
-				strtolower_dg()
-			);
+			$this->_alias = strtolower(str_replace(['_', '\\'], '', get_class($this)));
 		}
 
 		parent::__construct($options, $init);
@@ -195,27 +188,6 @@ abstract class Db extends \IFR\Main\Model
 	}
 
 	/**
-	 * Returns currently set alias
-	 * @return string
-	 */
-	public function getAlias()
-	{
-		return $this->_alias;
-	}
-
-	/**
-	 * Sets alias to be used for setting columns in the future.
-	 * @param string $value
-	 * @return $this
-	 * @see aliasSet version that replaces currently set columns
-	 */
-	public function setAlias($value)
-	{
-		$this->_alias = $value;
-		return $this;
-	}
-
-	/**
 	 * Replaces current alias with different one.
 	 * @param string $value
 	 * @return $this
@@ -245,7 +217,7 @@ abstract class Db extends \IFR\Main\Model
 				$from[$value] = $descriptor;
 			}
 		}
-		$select->from( array( $value => $this->getTable() ), array() );
+		$select->from( array( $value => self::getTable() ), array() );
 
 		return $this
 			->setAlias( $value )
@@ -269,11 +241,9 @@ abstract class Db extends \IFR\Main\Model
 	 * @throws \Exception
 	 * @return string
 	 */
-	public function getTable()
+	static public function getTable()
 	{
-		$model = get_called_class();
-		debug_enforce( !is_null($this->_table), "Table name for model $model is empty" );
-		return $this->_table;
+		return static::$_table;
 	}
 
 	/**
@@ -309,7 +279,7 @@ abstract class Db extends \IFR\Main\Model
 	public function filterById($id)
 	{
 		$alias = $this->getAlias();
-		$key = $this->getPrimaryKey();
+		$key = self::getPrimaryKey();
 		return $this->filterBy(array("{$alias}.{$key}"=>$id));
 	}
 
@@ -368,15 +338,16 @@ abstract class Db extends \IFR\Main\Model
 	 */
 	public static function getBy($conditions, $constructor=null)
 	{
-		$ret = self::getListBy($conditions,$constructor);
+		list($model, $ret) = self::getListByAlt($conditions,$constructor);
+
 		$count = count($ret);
 		if(0 == $count)
 		{
-			return static::find();
+			return $model;
 		}
 		else
 		{
-			debug_assert($count === 1, 'getBy expects single or no result, but `'.$count.'` resulted.');
+			debug_assert($count == 1, 'getBy expects single or no result, but `'.$count.'` resulted.');
 			return array_shift($ret);
 		}
 	}
@@ -388,9 +359,8 @@ abstract class Db extends \IFR\Main\Model
 	 */
 	public static function getById( $id, $constructor=null )
 	{
-		$dummy = static::find();
 		return static::getBy(
-			[$dummy->getPrimaryKey()=>$id],
+			[self::getPrimaryKey()=>$id],
 			$constructor
 		);
 	}
@@ -403,6 +373,13 @@ abstract class Db extends \IFR\Main\Model
 	 * @return array
 	 */
 	public static function getListBy($conditions,$constructor=null)
+	{
+		$ret = self::getListByAlt($conditions,$constructor);
+
+		return $ret[1];
+	}
+
+	public static function getListByAlt($conditions,$constructor=null)
 	{
 		$model = static::find()->filterBy($conditions);
 		if( null === $constructor )
@@ -418,7 +395,7 @@ abstract class Db extends \IFR\Main\Model
 			arrayize($constructor);
 			$model->setColumns($constructor);
 		}
-		return $model->load();
+		return [$model, $model->load()];
 	}
 
 	/**
@@ -483,7 +460,7 @@ abstract class Db extends \IFR\Main\Model
 
 			if( $attr == self::COL_ID )
 			{
-				$attr = $model->getPrimaryKey();
+				$attr = self::getPrimaryKey();
 			}
 
 			if( !array_key_exists($attr, $model->toArray()) )
@@ -546,7 +523,7 @@ abstract class Db extends \IFR\Main\Model
 	 */
 	public function countById($id)
 	{
-		return $this->countBy(array($this->getPrimaryKey()=>$id));
+		return $this->countBy(array(self::getPrimaryKey()=>$id));
 	}
 
 	/**
@@ -570,7 +547,7 @@ abstract class Db extends \IFR\Main\Model
 
 		if( $count === 0 )
 		{
-			return new static();
+			return clone $this;
 		}
 		else
 		{
@@ -649,7 +626,7 @@ abstract class Db extends \IFR\Main\Model
 	 */
 	public function readId( &$target )
 	{
-		return $this->read( $this->getPrimaryKey(), $target );
+		return $this->read( self::getPrimaryKey(), $target );
 	}
 
 	/**
@@ -658,7 +635,7 @@ abstract class Db extends \IFR\Main\Model
 	 */
 	public function storeId( $value )
 	{
-		return $this->store( $this->getPrimaryKey(), $value );
+		return $this->store( self::getPrimaryKey(), $value );
 	}
 	
 }

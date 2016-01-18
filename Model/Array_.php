@@ -56,9 +56,4 @@ class Array_ extends \IFR\Main\Model
 	{
 
 	}
-
-	public function getAlias()
-	{
-		return null;
-	}
 }

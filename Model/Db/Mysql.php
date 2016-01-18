@@ -28,7 +28,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 		parent::init();
 
 		$this->schemaColumnsSet([
-			$this->_primaryKey  => [
+			self::getPrimaryKey()  => [
 				self::SETTING_TYPE => self::TYPE_ID,
 				self::SETTING_MYSQL_DEFAULT => true,
 			]
@@ -39,14 +39,14 @@ abstract class Mysql extends \IFR\Main\Model\Db
 	 */
 	public function save()
 	{
-		$pkey = $this->getPrimaryKey();
+		$pkey = self::getPrimaryKey();
 		$data = $this->serializeContent();
 		if(isset($data[$pkey]) && !empty($data[$pkey]))
 		{
 			$query = $this->getDb();
 
 			$query->update(
-				$this->getTable(),
+				self::getTable(),
 				$data,
 				[
 					$pkey.' = ?' => $this->{$pkey}
@@ -72,7 +72,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 			}
 
 			$query = $this->getDb();
-			$query->insert($this->getTable(), $data);
+			$query->insert(self::getTable(), $data);
 
 			$id = $this->getDb()->lastInsertId();
 			$this->{$pkey} = $id;
@@ -99,7 +99,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 		}
 		$delete = $this->getDb();
 		$rows = $delete->delete(
-			$this->getTable(),
+			self::getTable(),
 			[
 				$this->_primaryKey.' = ?' => $this->{$this->_primaryKey}
 			]
@@ -130,7 +130,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 			$q = $this->getSelect();
 		}
 
-		$pkey = $this->getPrimaryKey();
+		$pkey = self::getPrimaryKey();
 
 		if( count($q->getPart('columns')) == 0 )
 		{
@@ -147,25 +147,26 @@ abstract class Mysql extends \IFR\Main\Model\Db
 		{
 			$result = $db->fetchAll($q);
 		}
-		catch( Exception $e )
+		catch( \Exception $e )
 		{
-			throw new Exception('Error while loading: '.$e->getMessage().' | SQL: '.$q->assemble());
+			throw new \Exception('Error while loading: '.$e->getMessage().' | SQL: '.$q->assemble());
 		}
 		$this->postLoad();
 
 		$data = [];
+
 		foreach( $result as $row )
 		{
-			$obj = $this->modelFactory($row);
-			$obj->changedColumnsReset();
+			$instance = $this->modelFactory($row);
+			$instance->changedColumnsReset();
 
-			if( !$collection && $obj->id )
+			if( !$collection && $instance->id )
 			{
-				$data[$obj->id] = $obj;
+				$data[$instance->id] = $instance;
 			}
 			else
 			{
-				$data[] = $obj;
+				$data[] = $instance;
 			}
 		}
 
@@ -342,11 +343,11 @@ abstract class Mysql extends \IFR\Main\Model\Db
 	{
 		if( null === $table )
 		{
-			$table = $this->getTable();
+			$table = self::getTable();
 		}
 		if( null === $pkey )
 		{
-			$pkey = $this->getPrimaryKey();
+			$pkey = self::getPrimaryKey();
 		}
 		return $this->getDb()->lastInsertId( $table, $pkey );
 	}
@@ -412,7 +413,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 	{
 		if( null === $name )
 		{
-			$name = $this->getTable();
+			$name = self::getTable();
 		}
 		return $this->getDb()->quoteTableAs( $name );
 	}
@@ -479,7 +480,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 		}
 
 		$k = array_find_key($columns, function($v, $k){
-				return $v == $this->getPrimaryKey();
+				return $v == self::getPrimaryKey();
 			}
 		);
 
@@ -502,8 +503,9 @@ abstract class Mysql extends \IFR\Main\Model\Db
 				$cols = array_keys($this->schemaColumnsGet());
 			}
 			$this->_select = $this->getDb()->select();
-			$this->_select->from([$this->getAlias() => $this->getTable()], $cols);
+			$this->_select->from([$this->getAlias() => self::getTable()], $cols);
 		}
+
 		return $this->_select;
 	}
 
@@ -637,7 +639,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 				$alias = $name->getAlias();
 			}
 
-			$name = [$alias => $name->getTable()];
+			$name = [$alias => call_user_func([get_class($name), 'getTable'])];
 		}
 		elseif( $alias )
 		{
@@ -868,7 +870,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 	public function filterNotById($id)
 	{
 		$alias = $this->getAlias();
-		$key = $this->getPrimaryKey();
+		$key = self::getPrimaryKey();
 		return $this->filterNotBy(["{$alias}.{$key}"=>$id]);
 	}
 
@@ -878,7 +880,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 	public function groupById()
 	{
 		$alias = $this->getAlias();
-		$key = $this->getPrimaryKey();
+		$key = self::getPrimaryKey();
 		return $this->setGroup("{$alias}.{$key}");
 	}
 
@@ -905,7 +907,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 
 		if( !$collection )
 		{
-			$key_name = $this->getPrimaryKey();
+			$key_name = self::getPrimaryKey();
 			$key_idx = array_find_key( $descriptors, zend_column_eq_dg( $alias, $key_name ) );
 			if( !debug_assert( !is_null($key_idx), "Key '$key_name' needs to be set to load hash-set of '$alias'") )
 			{
@@ -985,7 +987,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 	{
 		$q = $this->getSelect();
 
-		$pkey = $this->getPrimaryKey();
+		$pkey = self::getPrimaryKey();
 
 		if( count($q->getPart('columns')) == 0 )
 		{
@@ -1197,12 +1199,12 @@ abstract class Mysql extends \IFR\Main\Model\Db
 		if( $thatKeyCol===null )
 		{
 			debug_assert( $thisKeyCol!==null );
-			$thatKeyCol = $model->getPrimaryKey();
+			$thatKeyCol = call_user_func(get_class($model), 'getPrimaryKey');
 		}
 		elseif( $thisKeyCol===null )
 		{
 			debug_assert( $thatKeyCol!==null );
-			$thisKeyCol = $this->getPrimaryKey();
+			$thisKeyCol = self::getPrimaryKey();
 		}
 
 		$this->_prefixColumn($model, $thatKeyCol);
@@ -1249,12 +1251,12 @@ abstract class Mysql extends \IFR\Main\Model\Db
 		if( $thatKeyCol===null )
 		{
 			debug_assert( $thisKeyCol!==null );
-			$thatKeyCol = $model->getPrimaryKey();
+			$thatKeyCol = call_user_func(get_class($model), 'getPrimaryKey');
 		}
 		elseif( $thisKeyCol===null )
 		{
 			debug_assert( $thatKeyCol!==null );
-			$thisKeyCol = $this->getPrimaryKey();
+			$thisKeyCol = self::getPrimaryKey();
 		}
 
 		$this->_prefixColumn($model, $thatKeyCol);
@@ -1315,7 +1317,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 				{
 					case \Zend_Db_Select::FROM:
 						$this->_select->joinLeft(
-							[$model->getAlias()=>$model->getTable()],
+							[$model->getAlias() => call_user_func([get_class($model), 'getTable'], $model)],
 							"{$thisKeyCol}={$thatKeyCol} ".$conditions,
 							array_key_exists( $alias, $modelColumns ) ? $modelColumns[ $alias ] : [],
 							$descriptor[ 'schema' ]
@@ -1419,7 +1421,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 // 		removed, cause it is to big change to do it in one simple step.
 //		debug_assert( false, 'Function getRow is scheduled for deletion, replace with Model::getById( $id )' );
 
-		$key = $this->getPrimaryKey();
+		$key = self::getPrimaryKey();
 		if( null !== $key )
 		{
 			$ret = static::getById( $key );
@@ -1508,7 +1510,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 				$instances = [$model];
 			}
 
-			$this->_foreignInstances[$column] = ($foreignKey == $model->getPrimaryKey()) ? reset($instances): $instances;
+			$this->_foreignInstances[$column] = ($foreignKey == self::getPrimaryKey()) ? reset($instances): $instances;
 		}
 
 		return $this->_foreignInstances[$column];

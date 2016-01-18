@@ -78,7 +78,9 @@ abstract class Model implements \Iterator
 	 * Name of primary key
 	 * @var string|array
 	 */
-	protected $_primaryKey = null;
+	static protected $_primaryKey = null;
+
+	protected $_alias = null;
 
 	/**
 	 * Data of model
@@ -143,7 +145,6 @@ abstract class Model implements \Iterator
 
 	abstract protected function isColumnSetLocally($name);
 	abstract public function clearColumns($clearPK = false);
-	abstract public function getAlias();
 
 	public static function getConstants($prefix)
 	{
@@ -180,7 +181,7 @@ abstract class Model implements \Iterator
 		}
 		elseif( !is_null($options) )
 		{
-			$this->{$this->getPrimaryKey()} = $options;
+			$this->{self::getPrimaryKey()} = $options;
 			$this->getRow();
 		}
 	}
@@ -220,16 +221,32 @@ abstract class Model implements \Iterator
 		return array('_data', '_settings');
 	}
 
-	/**
-	 * @return string
-	 */
-	public function __toString()
-	{
-		return $this->toString();
-	}
 
 	public function init()
 	{
+	}
+
+
+
+	/**
+	 * Returns currently set alias
+	 * @return string
+	 */
+	public function getAlias()
+	{
+		return $this->_alias;
+	}
+
+	/**
+	 * Sets alias to be used for setting columns in the future.
+	 * @param string $value
+	 * @return $this
+	 * @see aliasSet version that replaces currently set columns
+	 */
+	public function setAlias($value)
+	{
+		$this->_alias = $value;
+		return $this;
 	}
 
 	/**
@@ -239,7 +256,7 @@ abstract class Model implements \Iterator
 	 */
 	protected function schemaColumnApplyDefault(&$name, &$setting, &$defaultValue)
 	{
-		if( $name == $this->getPrimaryKey())
+		if( $name == self::getPrimaryKey())
 		{
 			array_set_default($setting, self::SETTING_TYPE, self::TYPE_INT);
 			array_set_default($setting, self::SETTING_FORM_TYPE, self::TYPE_HIDDEN);
@@ -425,9 +442,9 @@ abstract class Model implements \Iterator
 	/**
 	 * @return string
 	 */
-	public function getPrimaryKey()
+	static public function getPrimaryKey()
 	{
-		return $this->_primaryKey;
+		return static::$_primaryKey;
 	}
 
 	/**
@@ -435,7 +452,7 @@ abstract class Model implements \Iterator
 	 */
 	public function recordExists()
 	{
-		$name = $this->getPrimaryKey();
+		$name = self::getPrimaryKey();
 		if( $this->propertyExists( $name ) )
 		{
 			$val = $this->propertyGet( $name );
@@ -853,9 +870,9 @@ abstract class Model implements \Iterator
 	public function propertySet( $column, $value )
 	{
 		debug_enforce( !empty($column), "Cannot set value of empty property" );
-		if( $column == self::COL_ID && $this->getPrimaryKey())
+		if( $column == self::COL_ID && self::getPrimaryKey())
 		{
-			$column = $this->getPrimaryKey();
+			$column = self::getPrimaryKey();
 		}
 		if(
 			debug_assert(
@@ -920,9 +937,9 @@ abstract class Model implements \Iterator
 	public function propertyGet( $column )
 	{
 		debug_enforce( !empty($column), "Cannot get name of empty property" );
-		if( $column == self::COL_ID && $this->getPrimaryKey() )
+		if( $column == self::COL_ID && self::getPrimaryKey() )
 		{
-			$column = $this->getPrimaryKey();
+			$column = self::getPrimaryKey();
 		}
 		if(
 			debug_assert(
@@ -994,9 +1011,9 @@ abstract class Model implements \Iterator
 	public function propertyExists($column)
 	{
 		debug_enforce( !empty($column), "Cannot check if empty property exists" );
-		if( $column == self::COL_ID && $this->getPrimaryKey())
+		if( $column == self::COL_ID && self::getPrimaryKey())
 		{
-			$column = $this->getPrimaryKey();
+			$column = self::getPrimaryKey();
 		}
 
 		// Watch out for this incompatible change
@@ -1176,7 +1193,7 @@ abstract class Model implements \Iterator
 	protected function modelFactory($row)
 	{
 		/** @var Model $model */
-		$model = new static();
+		$model = clone $this;
 
         try
         {
@@ -1186,7 +1203,7 @@ abstract class Model implements \Iterator
         catch(\Exception $e)
         {
             $class = get_class($model);
-            \IFR\Main\Logger::error(new \Exception("Unable to unserialize object '{$class}", 0, $e));
+            \Logger::error(new \Exception("Unable to unserialize object '{$class}", 0, $e));
         }
 
         return null;
@@ -1649,24 +1666,6 @@ abstract class Model implements \Iterator
 		}
 
 		return $data;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function toString()
-	{
-		$class = get_called_class();
-		if( $this->recordExists() )
-		{
-			$data = var_dump_human_compact( $this->recordColumnsGet() );
-			return $class.'{'.$data.'}';
-		}
-		else
-		{
-			$query = '';
-			return $class.'{'.$query.'}';
-		}
 	}
 
 	/**

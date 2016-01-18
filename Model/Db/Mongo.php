@@ -12,7 +12,7 @@ namespace IFR\Main\Model\Db;
  */
 abstract class Mongo extends \IFR\Main\Model\Db
 {
-	protected $_primaryKey = '_id';
+	static protected $_primaryKey = '_id';
 
 	/** @var \IFR\Main\Model\Db\Mongo\Select */
 	private $_select;
@@ -33,7 +33,7 @@ abstract class Mongo extends \IFR\Main\Model\Db
 	 */
 	protected function schemaColumnApplyDefault(&$name, &$setting, &$defaultValue)
 	{
-		if( $name == $this->getPrimaryKey() )
+		if( $name == self::getPrimaryKey() )
 		{
 			array_set_default($setting,'type','string');
 		}
@@ -49,26 +49,28 @@ abstract class Mongo extends \IFR\Main\Model\Db
 
 		$collection = $this->getCollection();
 
-		if(isset($data[$this->_primaryKey]) && !empty($data[$this->_primaryKey]))
+		$primaryKey = $this->getPrimaryKey();
+
+		if(isset($data[$primaryKey]) && !empty($data[$primaryKey]))
 		{
-			$id = $this->{$this->_primaryKey};
+			$id = $this->{$primaryKey};
 			if(!($id instanceof \MongoId))
 			{
 				$id = new \MongoId($id);
 			}
-			$where = array($this->_primaryKey => $id);
+			$where = array($primaryKey => $id);
 
-			unset($data[$this->_primaryKey]);
+			unset($data[$primaryKey]);
 			$collection->update($where, $data);
 
 			$this->_onUpdate();
 		}
 		else
 		{
-			unset($data[$this->_primaryKey]);
+			unset($data[$primaryKey]);
 
 			$collection->insert($data);
-			$this->{$this->_primaryKey} = $data[$this->_primaryKey];
+			$this->{$primaryKey} = $data[$primaryKey];
 
 			$this->_onInsert();
 		}
@@ -125,7 +127,7 @@ abstract class Mongo extends \IFR\Main\Model\Db
 	 */
 	public function delete()
 	{
-		$pkey = $this->getPrimaryKey();
+		$pkey = self::getPrimaryKey();
 		$pkval = $this->{$pkey};
 		if(is_null($pkval))
 		{
@@ -151,7 +153,7 @@ abstract class Mongo extends \IFR\Main\Model\Db
 		if( !$clearPK )
 		{
 			$this->setColumns(array(
-				'id' => $this->getPrimaryKey()
+				'id' => self::getPrimaryKey()
 			));
 		}
 		return $this;
@@ -169,7 +171,7 @@ abstract class Mongo extends \IFR\Main\Model\Db
 			if('id'===$key)
 			{
 				unset($cols[$key]);
-				$cols[$this->getPrimaryKey()] = $val;
+				$cols[self::getPrimaryKey()] = $val;
 			}
 		}
 		if(null === $correlationName)
@@ -326,7 +328,7 @@ abstract class Mongo extends \IFR\Main\Model\Db
 	 */
 	public function loadArray( $q=null, $collection=false )
 	{
-		$pkey = $this->getPrimaryKey();
+		$pkey = self::getPrimaryKey();
 		if( !array_some( $this->getColumns(), function($arr)use($pkey){ return $arr[2]===$pkey; } ) )
 		{
 			$this->setColumns($pkey);
@@ -672,7 +674,7 @@ abstract class Mongo extends \IFR\Main\Model\Db
 	{
 		/** @var $db \MongoDB  */
 		$db = $this->getDb();
-		return new \MongoCollection($db, $this->getTable());
+		return new \MongoCollection($db, self::getTable());
 	}
 
 	/**
