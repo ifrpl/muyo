@@ -1174,7 +1174,7 @@ if (!function_exists('removeNonUTF8Chars')) {
 
          //reject overly long 3 byte sequences and UTF-16 surrogates
         $text = preg_replace('/\xE0[\x80-\x9F][\x80-\xBF]' .
-            '|\xED[\xA0-\xBF][\x80-\xBF]/S', '?', $text);
+            '|\xED[\xA0-\xBF][\x80-\xBF]/S', '', $text);
 
         return $text;
     }
