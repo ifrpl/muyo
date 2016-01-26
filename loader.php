@@ -5,7 +5,7 @@
 //          http://www.boost.org/LICENSE_1_0.txt)
 
 
-if( !function_exists('mutate_include_path') )
+if( !function_exists('include_path_mutate') )
 {
 	/**
 	 * @param callable $callable
@@ -18,7 +18,7 @@ if( !function_exists('mutate_include_path') )
 	}
 }
 
-if( !function_exists('add_include_path') )
+if( !function_exists('include_path_append') )
 {
 	/**
 	 * @param string|array $entry
