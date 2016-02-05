@@ -113,13 +113,18 @@ abstract class Lib_Model_Db extends Lib_Model
 	{
 		if( is_null($alias) )
 		{
-			$alias = $name;
-			$this->setColumns($name, $this->getAlias());
+			if(is_array($name))
+			{
+				$alias = array_keys($name)[0];
+				$name = array_values($name)[0];
+			}
+			else
+			{
+				$alias = $name;
+			}
 		}
-		else
-		{
-			$this->setColumns([$alias=>$name], $this->getAlias());
-		}
+
+		$this->setColumns([$alias=>$name], $this->getAlias());
 		$this->addSetting($alias,self::settingDefaultGet($name));
 		return $this;
 	}
