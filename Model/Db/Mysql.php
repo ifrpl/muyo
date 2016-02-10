@@ -1199,7 +1199,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 		if( $thatKeyCol===null )
 		{
 			debug_assert( $thisKeyCol!==null );
-			$thatKeyCol = call_user_func(get_class($model), 'getPrimaryKey');
+			$thatKeyCol = call_user_func([get_class($model), 'getPrimaryKey']);
 		}
 		elseif( $thisKeyCol===null )
 		{
@@ -1251,7 +1251,7 @@ abstract class Mysql extends \IFR\Main\Model\Db
 		if( $thatKeyCol===null )
 		{
 			debug_assert( $thisKeyCol!==null );
-			$thatKeyCol = call_user_func(get_class($model), 'getPrimaryKey');
+			$thatKeyCol = call_user_func([get_class($model), 'getPrimaryKey']);
 		}
 		elseif( $thisKeyCol===null )
 		{
