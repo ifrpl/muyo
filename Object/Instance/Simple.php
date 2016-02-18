@@ -1,0 +1,11 @@
+<?php
+
+namespace IFR\Main\Object\Instance;
+
+trait Simple
+{
+	public static function instance()
+	{
+		return new static;
+	}
+}

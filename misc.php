@@ -10,34 +10,51 @@ const ENV_DEVELOPMENT   = 'development';
 
 if( !function_exists('getCurrentEnv') )
 {
+	$GLOBALS[LIB_NAME]['ENV'] = [];
+	$GLOBALS[LIB_NAME]['ENV'][ENV_DEVELOPMENT] = false;
+	$GLOBALS[LIB_NAME]['ENV'][ENV_TESTING] = false;
+	$GLOBALS[LIB_NAME]['ENV'][ENV_PRODUCTION] = true;
+	$GLOBALS[LIB_NAME]['ENV']['current'] = ENV_PRODUCTION;
+
+	function setCurrentEnv($env = null)
+	{
+		if(null == $env)
+		{
+			if(!defined('APPLICATION_ENV'))
+			{
+				return;
+			}
+
+			$env = APPLICATION_ENV;
+		}
+		$old = $GLOBALS[LIB_NAME]['ENV']['current'];
+
+		$GLOBALS[LIB_NAME]['ENV'][$old] = false;
+		$GLOBALS[LIB_NAME]['ENV'][$env] = true;
+		$GLOBALS[LIB_NAME]['ENV']['current'] = $env;
+	}
+
 	/**
 	 * @return string
 	 */
 	function getCurrentEnv()
 	{
-		if(defined('APPLICATION_ENV'))
-		{
-			return APPLICATION_ENV;
-		}
-		else
-		{
-			return ENV_DEVELOPMENT;
-		}
+		return $GLOBALS[LIB_NAME]['ENV']['current'];
 	}
 
     function isDev()
     {
-        return ENV_DEVELOPMENT == getCurrentEnv();
+        return $GLOBALS[LIB_NAME]['ENV'][ENV_DEVELOPMENT];
     }
 
     function isTest()
     {
-        return ENV_TESTING == getCurrentEnv();
+	    return $GLOBALS[LIB_NAME]['ENV'][ENV_TESTING];
     }
 
     function isProd()
     {
-        return ENV_PRODUCTION == getCurrentEnv();
+	    return $GLOBALS[LIB_NAME]['ENV'][ENV_PRODUCTION];
     }
 }
 

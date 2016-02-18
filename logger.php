@@ -1,44 +1,36 @@
 <?php
-//          Copyright IF Research Sp. z o.o. 2013.
-// Distributed under the Boost Software License, Version 1.0.
-//    (See accompanying file LICENSE_1_0.txt or copy at
-//          http://www.boost.org/LICENSE_1_0.txt)
-
 
 /** @var callable $logger */
 $logger = null;
 
-
-if( !class_exists('Logger') )
+class Logger
 {
-	class Logger
+	static public function debug($message)
 	{
-		static public function debug($message)
-		{
-			return logger_log($message, LOG_DEBUG);
-		}
+		return logger_log($message, LOG_DEBUG);
+	}
 
-		static public function info($message)
-		{
-			return logger_log($message, LOG_INFO);
-		}
+	static public function info($message)
+	{
+		return logger_log($message, LOG_INFO);
+	}
 
-		static public function warn($message)
-		{
-			return logger_log($message, LOG_WARNING);
-		}
+	static public function warn($message)
+	{
+		return logger_log($message, LOG_WARNING);
+	}
 
-		static public function error($message)
-		{
-			return logger_log($message, LOG_ERR);
-		}
+	static public function error($message)
+	{
+		return logger_log($message, LOG_ERR);
+	}
 
-		public static function notice($message)
-		{
-			return logger_log($message, LOG_NOTICE);
-		}
+	public static function notice($message)
+	{
+		return logger_log($message, LOG_NOTICE);
 	}
 }
+
 
 if( !function_exists('logger_format') )
 {

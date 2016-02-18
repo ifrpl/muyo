@@ -1,0 +1,641 @@
+<?php
+
+namespace IFR\Main\Model;
+
+/**
+ * @package App
+ *
+ * @method static Db getByColumn($value) returns loaded row, that has "column" matching $value
+ * @method static array getListByColumn($value) returns all rows, that has "column" matching $value
+ * @method static array getListById($id)
+ */
+abstract class Db extends \IFR\Main\Model
+{
+	static protected $_table;
+	static protected $_primaryKey = self::COL_ID;
+
+	/** @return mixed */
+	abstract public function getDb();
+	/** @return array [ [$tableAlias,$columnValueOrName,$columnAliasOrNull], ... ] */
+	abstract public function getColumns();
+
+	abstract public function save();
+	abstract public function delete();
+	abstract public function load($q = null, $collection = false);
+	/**
+	 * @param mixed $q
+	 * @param bool $collection
+	 * @return array [ string $tableAlias => [ string $columnAlias => mixed $columnValue ] ]
+	 * @throws \Exception
+	 */
+	abstract public function loadArray( $q=null, $collection=false );
+
+	/**
+	 * @return \IFR\Main\Model\Set
+	 */
+	abstract public function loadSet();
+
+	protected function _onSave(){}
+	protected function _onUpdate(){}
+	protected function _onInsert(){}
+	protected function _onDelete(){}
+
+	/**
+	 * @param array|string $cols comma-separated columns list, *, or array of columns to read during query
+	 * @param null|string $correlationName
+	 * @return Db
+	 */
+	abstract public function setColumns($cols = '*', $correlationName = null);
+
+
+	/**
+	 * @param string|array $cond condition (if one param) or column name if more than one params
+	 * @return $this
+	 */
+	abstract public function filterBy($cond);
+
+	/**
+	 * @return $this
+	 */
+	abstract public function filterFalse();
+
+	/** @return int */
+	abstract public function count();
+	/** @return string */
+	abstract public function getSQL();
+
+	/**
+	 * @param mixed $select
+	 * @return $this
+	 */
+	abstract public function setSelect($select);
+
+	/**
+	 * @param bool $clear
+	 * @param string $cols
+	 * @return \Zend_Db_Select
+	 */
+	abstract public function getSelect($clear = false, $cols = '*');
+
+
+	/**
+	 * @param array|int|null $options
+	 */
+	public function __construct($options = null, $init = true)
+	{
+		if( empty($this->_alias) )
+		{
+			$this->_alias = strtolower(str_replace(['_', '\\'], '', get_class($this)));
+		}
+
+		parent::__construct($options, $init);
+
+		$this->normalizeColumns();
+	}
+
+	/**
+	 * Sets "name" column from this table for SELECTing, and being visible on grid/forms
+	 *
+	 * @param string $name
+	 * @param string|null $alias
+	 * @return $this
+	 */
+	public function columnSet($name,&$alias=null)
+	{
+		if( is_null($alias) )
+		{
+			$alias = $name;
+			$this->setColumns($name, $this->getAlias());
+		}
+		else
+		{
+			$this->setColumns(array($alias=>$name), $this->getAlias());
+		}
+		$this->addSetting($alias,self::settingDefaultGet($name));
+		return $this;
+	}
+
+	/**
+	 * Replace dreaded '*' with all columns
+	 */
+	public function normalizeColumns()
+	{
+		$model_alias = $this->getAlias();
+		$ret = array();
+
+		foreach( $this->getColumns() as $descriptor )
+		{
+			$alias = $descriptor[0];
+			if( $alias === $model_alias )
+			{
+				if( null === $descriptor[2] && $descriptor[1] === '*' )
+				{
+					foreach( array_keys($this->schemaColumnsGet()) as $column_name )
+					{
+						$ret []= array($alias, $column_name, null);
+					}
+				}
+				else
+				{
+					$ret []= $descriptor;
+				}
+			}
+			else
+			{
+				$ret []= $descriptor;
+			}
+		}
+
+		$this->resetColumns( $ret );
+	}
+
+	/**
+	 * @param array $newColumns [[$tableAlias,$columnValue,$columnAlias],..]
+	 * @return $this
+	 */
+	public function resetColumns($newColumns)
+	{
+		$this->clearColumns();
+
+		foreach( $newColumns as $descriptor )
+		{
+			if ( $descriptor[2] )
+				$this->setColumns(array($descriptor[2] => $descriptor[1]), $descriptor[0]);
+			else
+				$this->setColumns($descriptor[1], $descriptor[0]);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * @param string $name
+	 *
+	 * @return bool
+	 */
+	protected function isColumnSetLocally($name)
+	{
+		$columns = $this->getColumns();
+		return array_contains(
+			$columns,
+			function($descriptor) use ($name)
+			{
+				$alias = $descriptor[2];
+				$column = $descriptor[1];
+				return $name === (null === $alias ? $column : $alias);
+			}
+		);
+	}
+
+	/**
+	 * Replaces current alias with different one.
+	 * @param string $value
+	 * @return $this
+	 * @see setAlias version that do not replaces currently set columns
+	 */
+	public function aliasSet( $value )
+	{
+		$columns = $this->getColumns();
+		$this->aliasGet( $oldValue );
+		foreach( $columns as &$column )
+		{
+			$tableAlias = $column[0];
+			if( $tableAlias === $oldValue )
+			{
+				$column[0] = $value;
+			}
+		}
+
+		$select = $this->getSelect();
+		$from = $select->getPart( \Zend_Db_Select::FROM );
+		$select->reset( \Zend_Db_Select::FROM );
+		foreach( $from as $tableAlias => $descriptor )
+		{
+			if( $tableAlias === $oldValue )
+			{
+				unset($from[$oldValue]);
+				$from[$value] = $descriptor;
+			}
+		}
+		$select->from( array( $value => self::getTable() ), array() );
+
+		return $this
+			->setAlias( $value )
+			->resetColumns( $columns )
+		;
+	}
+
+	/**
+	 * Returns currently set table alias.
+	 * @param &$ret
+	 * @return $this
+	 * @see aliasSet complementary setter
+	 */
+	public function aliasGet( &$ret )
+	{
+		$ret = $this->getAlias();
+		return $this;
+	}
+
+	/**
+	 * @throws \Exception
+	 * @return string
+	 */
+	static public function getTable()
+	{
+		return static::$_table;
+	}
+
+	/**
+	 *  Delete records by specified conditions.
+	 *
+	 * @param array $condition array of conditions
+	 * @return bool deleted?
+	 *
+	 * @todo Update logging to handle batches, then we can implement this function properly
+	 */
+	public function deleteBy($condition = null)
+	{
+		if( !is_null($condition) )
+		{
+			$this->filterBy($condition);
+		}
+		$matched = $this->load();
+		array_each(
+			$matched,
+			function($model)
+			{ /** @var Db $model */
+				$model->delete();
+			}
+		);
+		return !empty($matched);
+	}
+
+	/**
+	 * @param int|array|\Zend_Db_Expr $id
+	 *
+	 * @return $this
+	 */
+	public function filterById($id)
+	{
+		$alias = $this->getAlias();
+		$key = self::getPrimaryKey();
+		return $this->filterBy(array("{$alias}.{$key}"=>$id));
+	}
+
+	/**
+	 * @static
+	 * @param bool $clearColumns
+	 * @deprecated please use find instead
+	 * @see find
+	 *
+	 * @return static
+	 */
+	public static function get($clearColumns = false)
+	{
+		/** @var Db $ret */
+		$ret = new static();
+		if ($clearColumns)
+		{
+			$ret->clearColumns();
+		}
+		else
+		{
+			$ret->normalizeColumns();
+		}
+		return $ret;
+	}
+
+	/**
+	 * @param int|array|\MongoID $id
+	 *
+	 * @return static
+	 */
+	public static function findById($id)
+	{
+		return static::find()->filterById($id);
+	}
+
+	/**
+	 * @static
+	 * @param bool $resetSettings
+	 * @return static
+	 */
+	public static function find($resetSettings=false)
+	{
+		/** @var Db $ret */
+		$ret = parent::find($resetSettings);
+		$ret->clearColumns();
+		return $ret;
+	}
+
+	/**
+	 * @static
+	 * @param array $conditions
+	 * @param array|callable|null $constructor
+	 *
+	 * @return static
+	 */
+	public static function getBy($conditions, $constructor=null)
+	{
+		list($model, $ret) = self::getListByAlt($conditions,$constructor);
+
+		$count = count($ret);
+		if(0 == $count)
+		{
+			return $model;
+		}
+		else
+		{
+			debug_assert($count == 1, 'getBy expects single or no result, but `'.$count.'` resulted.');
+			return array_shift($ret);
+		}
+	}
+
+	/**
+	 * @param int $id
+	 * @param array|callable|null $constructor
+	 * @return static
+	 */
+	public static function getById( $id, $constructor=null )
+	{
+		return static::getBy(
+			[self::getPrimaryKey()=>$id],
+			$constructor
+		);
+	}
+
+	/**
+	 * @static
+	 * @param array $conditions
+	 * @param array|callable|null $constructor
+	 *
+	 * @return array
+	 */
+	public static function getListBy($conditions,$constructor=null)
+	{
+		$ret = self::getListByAlt($conditions,$constructor);
+
+		return $ret[1];
+	}
+
+	public static function getListByAlt($conditions,$constructor=null)
+	{
+		$model = static::find()->filterBy($conditions);
+		if( null === $constructor )
+		{
+			$constructor = array_keys($model->recordColumnsGet());
+		}
+		if( is_callable($constructor) )
+		{
+			$constructor($model);
+		}
+		else
+		{
+			arrayize($constructor);
+			$model->setColumns($constructor);
+		}
+		return [$model, $model->load()];
+	}
+
+	/**
+	 * @static
+	 * @param array $conditions
+	 * @param array|callable|null $constructor
+	 *
+	 * @return \IFR\Main\Model\Set
+	 */
+	public static function getSetBy($conditions,$constructor=null)
+	{
+		$model = static::find()->filterBy($conditions);
+		if( null === $constructor )
+		{
+			$constructor = array_keys($model->_data);
+		}
+		if( is_array($constructor) )
+		{
+			$model->setColumns($constructor);
+		}
+		else
+		{
+			$constructor($model);
+		}
+		return $model->loadSet();
+	}
+
+	/**
+	 * @static
+	 *
+	 * @param $name
+	 * @param $args
+	 *
+	 *
+	 * @return array[self]|self|mixed
+	 * @throws \Exception
+	 */
+	public static function __callStatic($name, $args)
+	{
+		$matches = array();
+		if( preg_match('/^get(List|Set)*By([a-zA-Z]+)$/', $name, $matches) )
+		{
+			/** @var Db $model */
+			$model = new static;
+			$cond = array();
+			$list = false;
+			$set = false;
+			if( !empty($matches[1]) )
+			{
+				if($matches[1] == 'List')
+				{
+					$list = true;
+				}
+				else
+				{
+					$set = true;
+				}
+			}
+
+			$filter = new \Zend_Filter_Word_CamelCaseToSeparator('_');
+			$attr = strtolower($filter->filter($matches[2]));
+
+			if( $attr == self::COL_ID )
+			{
+				$attr = self::getPrimaryKey();
+			}
+
+			if( !array_key_exists($attr, $model->toArray()) )
+			{
+				$class = get_class($model);
+				throw new \Exception("Attribute '{$attr}' does not exist in model '{$class}'");
+			}
+
+			$cond[$attr] = array_shift($args);
+
+			if($set)
+			{
+				return static::getSetBy($cond);
+			}
+
+			$result = static::getListBy($cond);
+
+			if( !$list )
+			{
+				if( count($result) > 1 )
+				{
+					$class = get_class($model);
+					throw new \Exception("Trying get more than 1 row by attribute '{$attr}' from model '{$class}'");
+				}
+				elseif( count($result) == 1 )
+				{
+					return array_shift($result);
+				}
+				else
+				{
+					return new static;
+				}
+			}
+			else
+			{
+				return $result;
+			}
+		}
+		else
+		{
+			throw new \Exception("Static method '{$name}' not implemented.");
+		}
+	}
+
+	/**
+	 * @static
+	 * @param int $id
+	 *
+	 * @return string
+	 */
+	public static function getCountById($id)
+	{
+		return static::find()->countById($id);
+	}
+
+	/**
+	 * @param int $id
+	 *
+	 * @return string
+	 */
+	public function countById($id)
+	{
+		return $this->countBy(array(self::getPrimaryKey()=>$id));
+	}
+
+	/**
+	 * @param array $cond
+	 * @return int
+	 */
+	public function countBy($cond)
+	{
+		return $this->filterBy($cond)->count();
+	}
+
+	/**
+	 * @param \Zend_Db_Select|null $q
+	 *
+	 * @return $this
+	 */
+	public function loadOne($q = null)
+	{
+		$ret = $this->load($q,true);
+		$count = count($ret);
+
+		if( $count === 0 )
+		{
+			return clone $this;
+		}
+		else
+		{
+			return current($ret);
+		}
+	}
+
+	/**
+	 * @param \Zend_Db_Select|null $q
+	 * @param bool $collection
+	 * @return Db
+	 *
+	 * @deprecated
+	 * @see loadOne
+	 */
+	public function getOne( $q = null, $collection = false )
+	{
+		$ret = $this->load( $q, $collection );
+		$count = count($ret);
+
+		debug_enforce( 1 === $count, "getOne expects single result, but $count given" );
+		return array_shift($ret);
+	}
+
+	protected function preLoad()
+	{
+	}
+
+	protected function postLoad()
+	{
+	}
+
+	protected function clearAfterLoad()
+	{
+		$this->setSelect(null);
+	}
+
+	/**
+	 * @return $this
+	 */
+	public function debug()
+	{
+		$value = $this->recordExists() ? $this->toArray() : $this->getSQL();
+		debug($value);
+		return $this;
+	}
+
+	/**
+	 * @param callable $iterator
+	 */
+	public function each($iterator)
+	{
+		array_each(
+			$this->load(),
+			$iterator
+		);
+	}
+
+	/**
+	 * Returns result keys (aliases).
+	 * @return array
+	 */
+	public function getColumnAliases( )
+	{
+		return array_map_val( $this->getColumns(), function()
+		{
+			$column = func_get_arg( 0 );
+			$alias = $column[2] === null ? $column[1] : $column[2];
+			return $alias;
+		} );
+	}
+
+	/**
+	 * @param int $target
+	 * @return $this
+	 */
+	public function readId( &$target )
+	{
+		return $this->read( self::getPrimaryKey(), $target );
+	}
+
+	/**
+	 * @param int $value
+	 * @return $this
+	 */
+	public function storeId( $value )
+	{
+		return $this->store( self::getPrimaryKey(), $value );
+	}
+	
+}
