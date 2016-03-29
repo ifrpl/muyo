@@ -550,39 +550,38 @@ if( !function_exists('tar_ls') )
 		return $output;
 	}
 }
-
-if( !function_exists('zip') )
+/**
+ * @param $outputFilePath
+ * @param $inputFilePaths
+ *
+ * @return bool
+ */
+function zip($outputFilePath, $inputFilePaths)
 {
-	/**
-	 * @param $outputFilePath
-	 * @param $inputFilePaths
-	 *
-	 * @return bool
-	 */
-	function zip($outputFilePath, $inputFilePaths)
+	$dirPath = dirname($outputFilePath);
+	if(!file_exists($dirPath))
 	{
-		$dirPath = dirname($outputFilePath);
-		if(!file_exists($dirPath))
-		{
-			mkdir($dirPath, App_Constants::FILE_MODE, true);
-		}
-
-		$zip = new ZipArchive();
-		if(!$zip->open($outputFilePath, ZIPARCHIVE::CREATE))
-		{
-			return false;
-		}
-
-		foreach($inputFilePaths as $inputFilePath)
-		{
-			$fileName = iconv('UTF-8', 'ASCII//TRANSLIT', basename($inputFilePath));
-			$zip->addFile($inputFilePath, $fileName);
-		}
-
-		$zip->close();
-
-		return file_exists($outputFilePath);
+		mkdir($dirPath, App_Constants::FILE_MODE, true);
 	}
+
+	$zip = new ZipArchive();
+	if(!$zip->open($outputFilePath, ZIPARCHIVE::CREATE))
+	{
+		Logger::error("Unable to create file {$outputFilePath}");
+		return false;
+	}
+
+	foreach($inputFilePaths as $inputFilePath)
+	{
+		$localPath = path_rel( $inputFilePath, $dirPath );
+		$localPath = dirname($localPath) . DIRECTORY_SEPARATOR . iconv('UTF-8', 'ASCII//TRANSLIT', basename($localPath));
+
+		$zip->addFile($inputFilePath, $localPath);
+	}
+
+	$zip->close();
+
+	return file_exists($outputFilePath);
 }
 
 if( !function_exists('basename_dg') )

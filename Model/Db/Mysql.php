@@ -10,10 +10,6 @@ namespace IFR\Main\Model\Db;
  */
 abstract class Mysql extends \IFR\Main\Model\Db
 {
-	const LOAD_ARRAY_MODE_NESTED_TABLE  = 0;
-	const LOAD_ARRAY_MODE_NESTED_COLUMN = 1;
-	const LOAD_ARRAY_MODE_RAW           = 2;
-
 	const SETTING_MYSQL_DEFAULT = 'mysql-default';
 
 	protected $_foreignInstances = [];

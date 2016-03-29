@@ -12,7 +12,9 @@ namespace IFR\Main\Model\Db;
  */
 abstract class Mongo extends \IFR\Main\Model\Db
 {
-	static protected $_primaryKey = '_id';
+	const COL_ID = '_id';
+
+	static protected $_primaryKey = self::COL_ID;
 
 	/** @var \IFR\Main\Model\Db\Mongo\Select */
 	private $_select;
@@ -21,8 +23,8 @@ abstract class Mongo extends \IFR\Main\Model\Db
 	private $_timeout = null;
 
 	protected $_settings = array(
-		'_id' => array(
-			'hidden' => true
+		self::COL_ID => array(
+			self::SETTING_HIDDEN => true
 		)
 	);
 
@@ -326,7 +328,7 @@ abstract class Mongo extends \IFR\Main\Model\Db
 	 * @fixme support for multiple result collections
 	 * @fixme $q needs relation with model
 	 */
-	public function loadArray( $q=null, $collection=false )
+	public function loadArray( $q=null, $collection=false, $mode=self::LOAD_ARRAY_MODE_NESTED_TABLE )
 	{
 		$pkey = self::getPrimaryKey();
 		if( !array_some( $this->getColumns(), function($arr)use($pkey){ return $arr[2]===$pkey; } ) )
@@ -337,18 +339,7 @@ abstract class Mongo extends \IFR\Main\Model\Db
 		$data = array();
 		$select = null === $q ? $this->getSelect() : $q;
 
-        /*
-		$groups = $select->getGroups();
-		$initial = array("items" => array());
-		$reduce = "function (obj, prev) { prev.items.push(obj); }";
-//		if(!empty($groups))
-//		{
-//			$cursor = $this->getCollection()->group($groups);
-//		}
-//		else
-//		{*/
-			$cursor = $this->getCollection()->find($select->getConditions(), $select->getFields());
-//		}
+    	$cursor = $this->getCollection()->find($select->getConditions(), $select->getFields());
 
 		if($this->_timeout)
 		{
@@ -369,7 +360,7 @@ abstract class Mongo extends \IFR\Main\Model\Db
 		{
 			if( !$collection )
 			{
-				$id = (string) $row[$pkey];
+				$id = strval($row[$pkey]);
 				$data[$id] = $row;
 			}
 			else
@@ -378,7 +369,13 @@ abstract class Mongo extends \IFR\Main\Model\Db
 			}
 		}
 		$alias = $this->getAlias();
-		return array( $alias => $data );
+
+		if(self::LOAD_ARRAY_MODE_NESTED_TABLE == $mode)
+		{
+			return array( $alias => $data );
+		}
+
+		return $data;
 	}
 
 	/**

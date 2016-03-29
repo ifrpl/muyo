@@ -11,6 +11,10 @@ namespace IFR\Main\Model;
  */
 abstract class Db extends \IFR\Main\Model
 {
+	const LOAD_ARRAY_MODE_NESTED_TABLE  = 0;
+	const LOAD_ARRAY_MODE_NESTED_COLUMN = 1;
+	const LOAD_ARRAY_MODE_RAW           = 2;
+
 	static protected $_table;
 	static protected $_primaryKey = self::COL_ID;
 

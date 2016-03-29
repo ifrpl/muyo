@@ -221,9 +221,18 @@ abstract class Model implements \Iterator
 		return array('_data', '_settings');
 	}
 
+	public function __toString()
+	{
+		return $this->toString();
+	}
 
 	public function init()
 	{
+	}
+
+	public function toString()
+	{
+		return '';
 	}
 
 

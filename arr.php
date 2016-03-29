@@ -1126,32 +1126,6 @@ if( !function_exists('array_flatten_dg') )
 	}
 }
 
-if( !function_exists('array_flatten_recursive') )
-{
-	/**
-	 * @param $array
-	 * @return array
-	 */
-	function array_flatten_recursive($array)
-	{
-        $ret = [];
-
-        foreach($array as $key => $value)
-        {
-            if(is_array($value))
-            {
-                array_merge_alt($ret, array_flatten_recursive($value));
-            }
-            else
-            {
-                $ret[$key] = $value;
-            }
-        }
-
-        return $ret;
-	}
-}
-
 if( !function_exists('array_flatten_recursive_dg') )
 {
 	/**
@@ -1516,38 +1490,6 @@ if( !function_exists('uasort_dg') )
 	}
 }
 
-if( !function_exists('array_join') )
-{
-	/**
-	 *
-	 * @param $array0
-	 * @param $array1
-	 *
-	 * @return array
-	 */
-	function array_join($array0, $array1, $preserveKey = true)
-	{
-		$ret = array();
-
-		foreach($array0 as $key0 => $value0)
-		{
-			if(!isset($array1[$value0]))
-			{
-				continue;
-			}
-
-			if(!$preserveKey)
-			{
-				$key0 = $value0;
-			}
-
-			$ret[$key0] = $array1[$value0] ;
-		}
-
-		return $ret;
-	}
-}
-
 if( !function_exists('array_append') )
 {
 	/**
@@ -1602,4 +1544,53 @@ if( !function_exists('array_eq') )
 		);
 		return empty($diff);
 	}
+}
+
+
+function array_flatten_recursive($array)
+{
+	$ret = [];
+
+	foreach($array as $key => $value)
+	{
+		if(is_array($value))
+		{
+			array_merge_alt($ret, array_flatten_recursive($value));
+		}
+		else
+		{
+			$ret[$key] = $value;
+		}
+	}
+
+	return $ret;
+}
+
+/**
+ *
+ * @param $array0
+ * @param $array1
+ *
+ * @return array
+ */
+function array_join($array0, $array1, $preserveKey = true)
+{
+	$ret = array();
+
+	foreach($array0 as $key0 => $value0)
+	{
+		if(!array_key_exists($value0, $array1))
+		{
+			continue;
+		}
+
+		if(!$preserveKey)
+		{
+			$key0 = $value0;
+		}
+
+		$ret[$key0] = $array1[$value0];
+	}
+
+	return $ret;
 }
