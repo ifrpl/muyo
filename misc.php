@@ -4,9 +4,9 @@
 //    (See accompanying file LICENSE_1_0.txt or copy at
 //          http://www.boost.org/LICENSE_1_0.txt)
 
-const ENV_PRODUCTION    = 'production';
-const ENV_DEVELOPMENT   = 'development';
-const ENV_TEST          = 'test';
+defined('ENV_PRODUCTION') or define('ENV_PRODUCTION', 'production');
+defined('ENV_DEVELOPMENT') or define('ENV_DEVELOPMENT', 'development');
+defined('ENV_TEST') or define('ENV_TEST', 'test');
 
 if( !function_exists('getCurrentEnv') )
 {
