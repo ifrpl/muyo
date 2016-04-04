@@ -60,7 +60,7 @@ if( !function_exists('zend_column_table') )
 	/**
 	 * @param array $column column descriptor
 	 * @return string table name
-	 * @see Lib_Model_Db_Mysql::getColumns
+	 * @see \IFR\Main\Model\Db\Mysql::getColumns
 	 */
 	function zend_column_table($column)
 	{
@@ -73,7 +73,6 @@ if( !function_exists('zend_column_name') )
 	/**
 	 * @param array $column column descriptor
 	 * @return string column name
-	 * @see Lib_Model_Db_Mysql::getColumns
 	 */
 	function zend_column_name( $column )
 	{
@@ -86,7 +85,6 @@ if( !function_exists('zend_column_name_dg') )
 {
 	/**
 	 * @return callable
-	 * @see Lib_Model_Db_Mysql::getColumns
 	 */
 	function zend_column_name_dg()
 	{
@@ -102,7 +100,6 @@ if( !function_exists('zend_column_value') )
 	/**
 	 * @param array $column
 	 * @return string|Zend_Db_Expr
-	 * @see Lib_Model_Db_Mysql::getColumns
 	 */
 	function zend_column_value( $column )
 	{
@@ -115,7 +112,6 @@ if( !function_exists('zend_column_value_dg') )
 {
 	/**
 	 * @return callable
-	 * @see Lib_Model_Db_Mysql::getColumns
 	 */
 	function zend_column_value_dg()
 	{

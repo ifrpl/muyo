@@ -342,7 +342,7 @@ abstract class Db extends \IFR\Main\Model
 	 */
 	public static function getBy($conditions, $constructor=null)
 	{
-		list($model, $ret) = self::getListByAlt($conditions,$constructor);
+		list($model, $ret) = self::getListByAlt($conditions, $constructor);
 
 		$count = count($ret);
 		if(0 == $count)
@@ -376,14 +376,14 @@ abstract class Db extends \IFR\Main\Model
 	 *
 	 * @return array
 	 */
-	public static function getListBy($conditions,$constructor=null)
+	public static function getListBy($conditions, $constructor=null)
 	{
 		$ret = self::getListByAlt($conditions,$constructor);
 
 		return $ret[1];
 	}
 
-	public static function getListByAlt($conditions,$constructor=null)
+	public static function getListByAlt($conditions, $constructor=null)
 	{
 		$model = static::find()->filterBy($conditions);
 		if( null === $constructor )
@@ -399,6 +399,7 @@ abstract class Db extends \IFR\Main\Model
 			arrayize($constructor);
 			$model->setColumns($constructor);
 		}
+
 		return [$model, $model->load()];
 	}
 
@@ -409,7 +410,7 @@ abstract class Db extends \IFR\Main\Model
 	 *
 	 * @return \IFR\Main\Model\Set
 	 */
-	public static function getSetBy($conditions,$constructor=null)
+	public static function getSetBy($conditions, $constructor=null)
 	{
 		$model = static::find()->filterBy($conditions);
 		if( null === $constructor )
@@ -564,7 +565,6 @@ abstract class Db extends \IFR\Main\Model
 	 * @param bool $collection
 	 * @return Db
 	 *
-	 * @deprecated
 	 * @see loadOne
 	 */
 	public function getOne( $q = null, $collection = false )

@@ -456,6 +456,11 @@ abstract class Model implements \Iterator
 		return static::$_primaryKey;
 	}
 
+	public function getPrimaryValue()
+	{
+		return $this->{static::getPrimaryKey()};
+	}
+
 	/**
 	 * @return bool
 	 */
@@ -1379,7 +1384,7 @@ abstract class Model implements \Iterator
 			self::SERIALIZATION_MODEL => get_class($this),
 		);
 
-		$value = $this->_getValueByType($this->{self::COL_ID}, self::TYPE_ID);
+		$value = $this->_getValueByType($this->getPrimaryValue(), self::TYPE_ID);
 		if(!is_null($value))
 		{
 			$content[self::SERIALIZATION_ID] = $value;
