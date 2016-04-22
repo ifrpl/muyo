@@ -252,7 +252,6 @@ abstract class Mongo extends \IFR\Main\Model\Db
 		if($item instanceof \IFR\Main\Model)
 		{
 			$item = $item->serialize();
-
 		}
 
 		if(is_array($item))
@@ -279,8 +278,6 @@ abstract class Mongo extends \IFR\Main\Model\Db
 						$condition = '$regex';
 						$value = new \MongoRegex("/{$value}/");
 						break;
-					default:
-						throw new \Exception('Mongo condition "'.$condition.'" not implemented');
 				}
 
 				$this->_buildConditions[$key] = array(
