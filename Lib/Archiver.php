@@ -16,7 +16,8 @@ class Archiver
 			'list'=>'unzip -l',
 			'list_options'=>['column'=>4,'skip'=>3],
 			'target'=>'-d',
-			'ext'=>'zip'
+			'ext'=>'zip',
+			'delete' => 'zip --delete'
 		],
 		'tar.gz'=>[
 			'compress'=>'tar -cvzf',
@@ -25,7 +26,8 @@ class Archiver
 			'list'=>'tar -ztvf',
 			'list_options'=>['column'=>6],
 			'target'=>'-C',
-			'ext'=>'tar.gz'
+			'ext'=>'tar.gz',
+			'delete' => null
 		]
 	];
 
@@ -98,6 +100,38 @@ class Archiver
 		return $this->fileList;
 	}
 
+	public function deleteEntries($paths)
+	{
+		debug_enforce(isset($this->config->delete));
+
+		$this->getFileList();
+
+		foreach($paths as $i => $path)
+		{
+			if(in_array($path, $this->fileList))
+			{
+				continue;
+			}
+
+			unset($paths[$i]);
+		}
+
+		if(empty($paths))
+		{
+			return true;
+		}
+
+		$output = [];
+		$retval = null;
+
+		proc_exec(
+			"{$this->config->delete} {$this->getFileName()} " . implode(' ', $paths),
+			$output,
+			$retval
+		);
+
+		return 0 != $retval;
+	}
 
 	public function setName($archiveFile)
 	{

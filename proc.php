@@ -29,7 +29,8 @@ if( !function_exists('proc_exec') )
 		$stderr = stream_get_contents($pipes[2]);
 		fclose($pipes[2]);
 
-		$output = explode(PHP_EOL,$stdout);
+		$output = explode(PHP_EOL, $stdout);
+		$output = array_filter($output);
 
 		$retval = proc_close($res);
 		if( 0 !== $retval && $report)
