@@ -1619,7 +1619,7 @@ abstract class Model implements \Iterator
 				}
 			}
 
-			if($this->_unserilizeModels && is_array($value) && array_key_exists('model', $value))
+			if($this->_unserilizeModels && is_array($value) && array_key_exists('model', $value) && class_exists($value['model']))
 			{
 				$class = $value['model'];
 
