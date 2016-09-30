@@ -1619,8 +1619,13 @@ abstract class Model implements \Iterator
 				}
 			}
 
-			if($this->_unserilizeModels && is_array($value) && array_key_exists('model', $value) && class_exists($value['model']))
+			if($this->_unserilizeModels && is_array($value) && array_key_exists('model', $value))
 			{
+				if(!class_exists($value['model']))
+				{
+					throw new \Exception("{$value['model']} class does not exist");
+				}
+
 				$class = $value['model'];
 
 				if(array_key_exists('data', $value))
