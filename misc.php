@@ -1015,3 +1015,21 @@ if (!function_exists('get_zip_error_message')) {
         }
     }
 }
+
+if (!function_exists('getenv_default')) {
+	/**
+	 * @param string $name
+	 * @param mixed $default
+	 *
+	 * @return mixed
+	 */
+	function getenv_default($name, $default = "")
+	{
+		if( getenv( $name ) )
+		{
+			return getenv( $name );
+		}
+
+		return $default;
+	}
+}
